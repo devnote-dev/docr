@@ -9,6 +9,10 @@ var mainCommand = &cobra.Command{
 	Run: func(*cobra.Command, []string) {},
 }
 
+func init() {
+	mainCommand.AddCommand(envCommand)
+}
+
 func Execute() {
 	_ = mainCommand.Execute()
 }
