@@ -1,0 +1,12 @@
+# Binaries for programs and plugins
+/build
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries and files
+/test
+/samples
+*.test
+*.test.*
