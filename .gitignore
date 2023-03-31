@@ -1,3 +1,6 @@
+# Workspace configurations
+/.vscode
+
 # Binaries for programs and plugins
 /build
 *.exe
