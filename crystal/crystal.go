@@ -6,8 +6,9 @@ type TopLevel struct {
 
 type Type struct {
 	Name         string        `json:"name"`
+	FullName     string        `json:"full_name"`
 	Summary      string        `json:"summary"`
-	Description  string        `json:"doc"`
+	Doc          string        `json:"doc"`
 	Kind         string        `json:"kind"`
 	Abstract     bool          `json:"abstract"`
 	Program      bool          `json:"program"`
@@ -15,7 +16,7 @@ type Type struct {
 	Alias        bool          `json:"alias"`
 	Const        bool          `json:"const"`
 	Locations    []*Location   `json:"locations"`
-	SuperClass   *SuperClass   `json:"superclass"`
+	SuperClass   *SuperClass   `json:"superclass,omitempty"`
 	Constants    []*Constant   `json:"constants,omitempty"`
 	Ancestors    []*SuperClass `json:"ancestors,omitempty"`
 	Included     []*SuperClass `json:"included_modules,omitempty"`
@@ -32,28 +33,29 @@ type Location struct {
 }
 
 type SuperClass struct {
-	Name string `json:"name"`
-	Kind string `json:"kind"`
+	Name     string `json:"name"`
+	FullName string `json:"full_name"`
+	Kind     string `json:"kind"`
 }
 
 type Constant struct {
-	Name        string `json:"name"`
-	Value       string `json:"value"`
-	Summary     string `json:"summary"`
-	Description string `json:"doc"`
+	Name    string `json:"name"`
+	Value   string `json:"value"`
+	Summary string `json:"summary,omitempty"`
+	Doc     string `json:"doc,omitempty"`
 }
 
 type Definition struct {
-	Name        string   `json:"name"`
-	Args        string   `json:"args_string,omitempty"`
-	Summary     string   `json:"summary,omitempty"`
-	Description string   `json:"doc,omitempty"`
-	Abstract    bool     `json:"abstract"`
-	Alias       bool     `json:"alias"`
-	Aliased     string   `json:"aliased,omitempty"`
-	Enum        bool     `json:"enum"`
-	Location    Location `json:"location"`
-	Def         *struct {
+	Name     string    `json:"name"`
+	Args     string    `json:"args_string,omitempty"`
+	Summary  string    `json:"summary,omitempty"`
+	Doc      string    `json:"doc,omitempty"`
+	Abstract bool      `json:"abstract"`
+	Alias    bool      `json:"alias"`
+	Aliased  string    `json:"aliased,omitempty"`
+	Enum     bool      `json:"enum"`
+	Location *Location `json:"location"`
+	Def      *struct {
 		Visibility string `json:"visibility"`
 	} `json:"def,omitempty"`
 }
