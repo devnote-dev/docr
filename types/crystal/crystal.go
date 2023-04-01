@@ -1,0 +1,59 @@
+package crystal
+
+type Body struct {
+	Program Type `json:"program"`
+}
+
+type Type struct {
+	Name         string       `json:"name"`
+	Summary      string       `json:"summary"`
+	Description  string       `json:"doc"`
+	Kind         string       `json:"kind"`
+	Abstract     bool         `json:"abstract"`
+	Program      bool         `json:"program"`
+	Enum         bool         `json:"enum"`
+	Alias        bool         `json:"alias"`
+	Const        bool         `json:"const"`
+	Locations    []Location   `json:"locations"`
+	SuperClass   SuperClass   `json:"superclass"`
+	Constants    []Constant   `json:"constants,omitempty"`
+	Ancestors    []SuperClass `json:"ancestors,omitempty"`
+	Included     []SuperClass `json:"included_modules,omitempty"`
+	Extended     []SuperClass `json:"extended_modules,omitempty"`
+	Constructors []Definition `json:"constructors,omitempty"`
+	ClassMethods []Definition `json:"class_methods,omitempty"`
+	Macros       []Definition `json:"macros,omitempty"`
+	Types        []Type       `json:"types,omitempty"`
+}
+
+type Location struct {
+	File string `json:"filename"`
+	Line int    `json:"line_number"`
+}
+
+type SuperClass struct {
+	Name string `json:"name"`
+	Kind string `json:"kind"`
+}
+
+type Constant struct {
+	Name        string `json:"name"`
+	Value       string `json:"value"`
+	Summary     string `json:"summary"`
+	Description string `json:"doc"`
+}
+
+type Definition struct {
+	Name        string   `json:"name"`
+	Args        string   `json:"args_string,omitempty"`
+	Summary     string   `json:"summary,omitempty"`
+	Description string   `json:"doc,omitempty"`
+	Abstract    bool     `json:"abstract"`
+	Alias       bool     `json:"alias"`
+	Aliased     string   `json:"aliased,omitempty"`
+	Enum        bool     `json:"enum"`
+	Location    Location `json:"location"`
+	Def         struct {
+		Visibility string `json:"visibility"`
+	} `json:"def,omitempty"`
+}
