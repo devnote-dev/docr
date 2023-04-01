@@ -1,11 +1,14 @@
 package env
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/devnote-dev/docr/crystal"
 )
 
 var (
@@ -74,24 +77,30 @@ func GetLibraryVersions(name string) ([]string, error) {
 	var versions []string
 	for _, e := range entries {
 		if strings.HasSuffix(e.Name(), ".json") && e.Type().IsRegular() {
-			versions = append(versions, e.Name())
+			versions = append(versions, strings.TrimSuffix(e.Name(), ".json"))
 		}
 	}
 
 	return versions, nil
 }
 
-func GetLibrary(name, version string) (string, error) {
+func GetLibrary(name, version string) (*crystal.Tree, error) {
 	path := filepath.Join(lib, name, version+".json")
-	if exists(path) {
-		return path, nil
+	if !exists(path) {
+		return nil, fmt.Errorf("could not find documentation for %s version %s", name, version)
 	}
 
-	if exists(filepath.Join(lib, name)) {
-		return "", fmt.Errorf("documentation not available for %s version %s", name, version)
+	buf, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
 	}
 
-	return "", fmt.Errorf("could not find documentation for %s", name)
+	var tree crystal.Tree
+	if err := json.Unmarshal(buf, &tree); err != nil {
+		return nil, err
+	}
+
+	return &tree, nil
 }
 
 func CreateLibrary(name, version string, data []byte) (string, error) {
