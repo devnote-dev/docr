@@ -16,10 +16,14 @@ var indexCommand = &cobra.Command{
 
 var indexListCommand = &cobra.Command{
 	Use: "list [options]",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(*cobra.Command, []string) {
 		libraries, err := env.GetLibraries()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+
+		if len(libraries) == 0 {
 			return
 		}
 
