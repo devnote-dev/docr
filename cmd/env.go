@@ -22,19 +22,12 @@ var envCommand = &cobra.Command{
 				if os.MkdirAll(cache, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)) != nil {
 					fmt.Fprintln(os.Stderr, "failed to create cache directory")
 				}
-
-				fmt.Printf("Cache: %s\n", cache)
 			}
-
 			if !exists(lib) {
 				if os.MkdirAll(lib, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)) != nil {
 					fmt.Fprintln(os.Stderr, "failed to create library directory")
 				}
-
-				fmt.Printf("Library: %s\n", lib)
 			}
-
-			return
 		}
 
 		if len(args) > 0 {
@@ -53,8 +46,22 @@ var envCommand = &cobra.Command{
 			return
 		}
 
-		fmt.Printf("Cache: %s\nLibrary: %s\n", cache, lib)
+		cacheWarn := ""
+		if !exists(cache) {
+			cacheWarn = " \033[33m(!)\033[0m"
+		}
+
+		libWarn := ""
+		if !exists(lib) {
+			libWarn = " \033[33m(!)\033[0m"
+		}
+
+		fmt.Printf("Cache:   %s%s\nLibrary: %s%s\n", cache, cacheWarn, lib, libWarn)
 	},
+}
+
+func init() {
+	envCommand.Flags().Bool("init", false, "create the required directories if missing")
 }
 
 func exists(p string) bool {
