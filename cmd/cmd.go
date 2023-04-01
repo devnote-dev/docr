@@ -11,6 +11,7 @@ var mainCommand = &cobra.Command{
 
 func init() {
 	mainCommand.AddCommand(envCommand)
+	mainCommand.AddCommand(indexCommand)
 }
 
 func Execute() {
