@@ -29,6 +29,36 @@ func LibDir() string {
 	return lib
 }
 
+func GetLibraries() (map[string][]string, error) {
+	entries, err := os.ReadDir(lib)
+	if err != nil {
+		return nil, err
+	}
+
+	libraries := map[string][]string{}
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+
+		inner, err := os.ReadDir(filepath.Join(lib, e.Name()))
+		if err != nil {
+			continue
+		}
+
+		var versions []string
+		for _, i := range inner {
+			if strings.HasSuffix(i.Name(), ".json") && i.Type().IsRegular() {
+				versions = append(versions, i.Name())
+			}
+		}
+
+		libraries[e.Name()] = versions
+	}
+
+	return libraries, nil
+}
+
 func GetLibraryVersions(name string) ([]string, error) {
 	entries, err := os.ReadDir(filepath.Join(lib, name))
 	if err != nil {
