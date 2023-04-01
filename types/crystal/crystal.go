@@ -1,6 +1,6 @@
 package crystal
 
-type Body struct {
+type TopLevel struct {
 	Program Type `json:"program"`
 }
 
