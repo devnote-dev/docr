@@ -8,8 +8,10 @@ import (
 	"strings"
 )
 
-var cache string
-var lib string
+var (
+	cache string
+	lib   string
+)
 
 func init() {
 	root, err := os.UserHomeDir()
