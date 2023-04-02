@@ -1,33 +1,14 @@
 package search
 
 import (
-	"sort"
-
 	"github.com/devnote-dev/docr/crystal"
+	"github.com/devnote-dev/docr/levenshtein"
 )
 
 type Result struct {
 	Name   string
 	Source *crystal.Location
 }
-
-type constants []*crystal.Constant
-
-func (c constants) Len() int           { return len(c) }
-func (c constants) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }
-func (c constants) Less(i, j int) bool { return c[i].Name < c[j].Name }
-
-type definitions []*crystal.Definition
-
-func (d definitions) Len() int           { return len(d) }
-func (d definitions) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
-func (d definitions) Less(i, j int) bool { return d[i].Name < d[j].Name }
-
-type types []*crystal.Type
-
-func (t types) Len() int           { return len(t) }
-func (t types) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
-func (t types) Less(i, j int) bool { return t[i].FullName < t[j].FullName }
 
 func FindConstants(lib *crystal.Type, symbol string) []*Result {
 	if lib.Constants == nil {
@@ -38,10 +19,11 @@ func FindConstants(lib *crystal.Type, symbol string) []*Result {
 		return nil
 	}
 
-	consts := (constants)(lib.Constants)
-	sort.Sort(consts)
+	consts := levenshtein.SortBy(symbol, lib.Constants, func(c *crystal.Constant) string {
+		return c.Name
+	})
 
-	r := make([]*Result, len(lib.Constants))
+	r := make([]*Result, len(consts))
 	for i, c := range consts {
 		r[i] = &Result{Name: c.Name, Source: nil}
 	}
@@ -58,11 +40,12 @@ func FindConstructors(lib *crystal.Type, symbol string) []*Result {
 		return nil
 	}
 
-	defs := (definitions)(lib.Constructors)
-	sort.Sort(defs)
+	consts := levenshtein.SortBy(symbol, lib.Constructors, func(d *crystal.Definition) string {
+		return d.Name
+	})
 
-	r := make([]*Result, len(lib.Constructors))
-	for i, c := range defs {
+	r := make([]*Result, len(consts))
+	for i, c := range consts {
 		r[i] = &Result{Name: c.Name, Source: nil}
 	}
 
@@ -78,10 +61,11 @@ func FindMethods(lib *crystal.Type, symbol string) []*Result {
 		return nil
 	}
 
-	defs := (definitions)(lib.ClassMethods)
-	sort.Sort(defs)
+	defs := levenshtein.SortBy(symbol, lib.ClassMethods, func(d *crystal.Definition) string {
+		return d.Name
+	})
 
-	r := make([]*Result, len(lib.ClassMethods))
+	r := make([]*Result, len(defs))
 	for i, d := range defs {
 		r[i] = &Result{Name: d.Name, Source: d.Location}
 	}
@@ -98,10 +82,11 @@ func FindMacros(lib *crystal.Type, symbol string) []*Result {
 		return nil
 	}
 
-	defs := (definitions)(lib.Macros)
-	sort.Sort(defs)
+	defs := levenshtein.SortBy(symbol, lib.Macros, func(d *crystal.Definition) string {
+		return d.Name
+	})
 
-	r := make([]*Result, len(lib.Macros))
+	r := make([]*Result, len(defs))
 	for i, m := range defs {
 		r[i] = &Result{Name: m.Name, Source: m.Location}
 	}
@@ -118,11 +103,12 @@ func FindTypes(lib *crystal.Type, symbol string) []*Result {
 		return nil
 	}
 
-	defs := (types)(lib.Types)
-	sort.Sort(defs)
+	types := levenshtein.SortBy(symbol, lib.Types, func(t *crystal.Type) string {
+		return t.FullName
+	})
 
-	r := make([]*Result, len(lib.Types))
-	for i, t := range defs {
+	r := make([]*Result, len(types))
+	for i, t := range types {
 		r[i] = &Result{Name: t.FullName, Source: t.Locations[0]}
 	}
 
