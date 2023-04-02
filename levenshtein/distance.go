@@ -54,7 +54,7 @@ type entry struct {
 	dist  int
 }
 
-func Find(target string, subjects ...string) string {
+func Find(target string, subjects []string) string {
 	t := int(len(target) / 5)
 	var best *entry
 
