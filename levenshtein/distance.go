@@ -54,30 +54,6 @@ type entry[T any] struct {
 	dist  int
 }
 
-func Find(target string, subjects []string) string {
-	t := int(len(target) / 5)
-	var best *entry[string]
-
-	for _, s := range subjects {
-		d := Distance(target, s)
-		if d <= t {
-			if best != nil {
-				if d < best.dist {
-					best = &entry[string]{value: s, dist: d}
-				}
-			} else {
-				best = &entry[string]{value: s, dist: d}
-			}
-		}
-	}
-
-	if best == nil {
-		return ""
-	}
-
-	return best.value
-}
-
 func SortBy[T any](target string, subjects []T, fn func(T) string) []T {
 	t := int(len(target) / 5)
 	var best *entry[T]
