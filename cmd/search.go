@@ -57,7 +57,7 @@ var searchCommand = &cobra.Command{
 		builder := strings.Builder{}
 
 		if len(consts) != 0 {
-			builder.WriteString("Constants:")
+			builder.WriteString("Constants:\n")
 			for _, c := range consts {
 				s := "unknown"
 				if c.Source != nil {
@@ -69,7 +69,7 @@ var searchCommand = &cobra.Command{
 		}
 
 		if len(constructors) != 0 {
-			builder.WriteString("Constructors:")
+			builder.WriteString("Constructors:\n")
 			for _, c := range constructors {
 				s := "unknown"
 				if c.Source != nil {
@@ -81,7 +81,7 @@ var searchCommand = &cobra.Command{
 		}
 
 		if len(methods) != 0 {
-			builder.WriteString("Methods:")
+			builder.WriteString("Methods:\n")
 			for _, m := range methods {
 				s := "unknown"
 				if m.Source != nil {
@@ -93,7 +93,7 @@ var searchCommand = &cobra.Command{
 		}
 
 		if len(macros) != 0 {
-			builder.WriteString("Macros:")
+			builder.WriteString("Macros:\n")
 			for _, m := range macros {
 				s := "unknown"
 				if m.Source != nil {
@@ -105,7 +105,7 @@ var searchCommand = &cobra.Command{
 		}
 
 		if len(types) != 0 {
-			builder.WriteString("Other Types:")
+			builder.WriteString("Other Types:\n")
 			for _, t := range types {
 				s := "unknown"
 				if t.Source != nil {
