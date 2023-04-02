@@ -43,25 +43,25 @@ var searchCommand = &cobra.Command{
 				return
 			}
 
-			r := levenshtein.Find(symbol, lib.Program.ConstantNames()...)
+			r := levenshtein.Find(symbol, lib.ConstantNames()...)
 			if r != "" {
 				fmt.Printf("constant: %s\n", r)
 				return
 			}
 
-			r = levenshtein.Find(symbol, lib.Program.ConstructorNames()...)
+			r = levenshtein.Find(symbol, lib.ConstructorNames()...)
 			if r != "" {
 				fmt.Printf("constructor: %s\n", r)
 				return
 			}
 
-			r = levenshtein.Find(symbol, lib.Program.ClassMethodNames()...)
+			r = levenshtein.Find(symbol, lib.ClassMethodNames()...)
 			if r != "" {
 				fmt.Printf("method: %s\n", r)
 				return
 			}
 
-			r = levenshtein.Find(symbol, lib.Program.MacroNames()...)
+			r = levenshtein.Find(symbol, lib.MacroNames()...)
 			if r != "" {
 				fmt.Printf("macro: %s\n", r)
 				return

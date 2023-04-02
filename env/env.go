@@ -84,7 +84,7 @@ func GetLibraryVersions(name string) ([]string, error) {
 	return versions, nil
 }
 
-func GetLibrary(name, version string) (*crystal.Tree, error) {
+func GetLibrary(name, version string) (*crystal.Type, error) {
 	path := filepath.Join(lib, name, version+".json")
 	if !exists(path) {
 		return nil, fmt.Errorf("could not find documentation for %s version %s", name, version)
@@ -95,12 +95,12 @@ func GetLibrary(name, version string) (*crystal.Tree, error) {
 		return nil, err
 	}
 
-	var tree crystal.Tree
-	if err := json.Unmarshal(buf, &tree); err != nil {
+	var top crystal.TopLevel
+	if err := json.Unmarshal(buf, &top); err != nil {
 		return nil, err
 	}
 
-	return &tree, nil
+	return &top.Program, nil
 }
 
 func CreateLibrary(name, version string, data []byte) (string, error) {
