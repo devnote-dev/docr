@@ -49,24 +49,24 @@ func Distance(first, second string) int {
 	return int(last)
 }
 
-type entry struct {
-	value string
+type entry[T any] struct {
+	value T
 	dist  int
 }
 
 func Find(target string, subjects []string) string {
 	t := int(len(target) / 5)
-	var best *entry
+	var best *entry[string]
 
 	for _, s := range subjects {
 		d := Distance(target, s)
 		if d <= t {
 			if best != nil {
 				if d < best.dist {
-					best = &entry{value: s, dist: d}
+					best = &entry[string]{value: s, dist: d}
 				}
 			} else {
-				best = &entry{value: s, dist: d}
+				best = &entry[string]{value: s, dist: d}
 			}
 		}
 	}
@@ -76,4 +76,36 @@ func Find(target string, subjects []string) string {
 	}
 
 	return best.value
+}
+
+func SortBy[T any](target string, subjects []T, fn func(T) string) []T {
+	t := int(len(target) / 5)
+	var best *entry[T]
+	var res []*entry[T]
+
+	for _, s := range subjects {
+		d := Distance(target, fn(s))
+		if d <= t {
+			if best != nil {
+				if d < best.dist {
+					res = append(res, best)
+					best = &entry[T]{value: s, dist: d}
+				}
+			} else {
+				best = &entry[T]{value: s, dist: d}
+				res = []*entry[T]{best}
+			}
+		}
+	}
+
+	if best == nil {
+		return []T{}
+	}
+
+	v := make([]T, len(res))
+	for i, r := range res {
+		v[i] = r.value
+	}
+
+	return v
 }
