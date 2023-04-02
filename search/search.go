@@ -11,10 +11,6 @@ type Result struct {
 }
 
 func FindConstants(lib *crystal.Type, symbol string) []*Result {
-	if lib.Constants == nil {
-		return nil
-	}
-
 	if len(lib.Constants) == 0 {
 		return nil
 	}
@@ -32,10 +28,6 @@ func FindConstants(lib *crystal.Type, symbol string) []*Result {
 }
 
 func FindConstructors(lib *crystal.Type, symbol string) []*Result {
-	if lib.Constructors == nil {
-		return nil
-	}
-
 	if len(lib.Constructors) == 0 {
 		return nil
 	}
@@ -53,10 +45,6 @@ func FindConstructors(lib *crystal.Type, symbol string) []*Result {
 }
 
 func FindMethods(lib *crystal.Type, symbol string) []*Result {
-	if lib.ClassMethods == nil {
-		return nil
-	}
-
 	if len(lib.ClassMethods) == 0 {
 		return nil
 	}
@@ -74,10 +62,6 @@ func FindMethods(lib *crystal.Type, symbol string) []*Result {
 }
 
 func FindMacros(lib *crystal.Type, symbol string) []*Result {
-	if lib.Macros == nil {
-		return nil
-	}
-
 	if len(lib.Macros) == 0 {
 		return nil
 	}
@@ -95,10 +79,6 @@ func FindMacros(lib *crystal.Type, symbol string) []*Result {
 }
 
 func FindTypes(lib *crystal.Type, symbol string) []*Result {
-	if lib.Types == nil {
-		return nil
-	}
-
 	if len(lib.Types) == 0 {
 		return nil
 	}
