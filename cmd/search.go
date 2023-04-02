@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/devnote-dev/docr/env"
+	"github.com/devnote-dev/docr/levenshtein"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +43,31 @@ var searchCommand = &cobra.Command{
 				return
 			}
 
-			fmt.Printf("%v\n", lib)
+			r := levenshtein.Find(symbol, lib.Program.ConstantNames()...)
+			if r != "" {
+				fmt.Printf("constant: %s\n", r)
+				return
+			}
+
+			r = levenshtein.Find(symbol, lib.Program.ConstructorNames()...)
+			if r != "" {
+				fmt.Printf("constructor: %s\n", r)
+				return
+			}
+
+			r = levenshtein.Find(symbol, lib.Program.ClassMethodNames()...)
+			if r != "" {
+				fmt.Printf("method: %s\n", r)
+				return
+			}
+
+			r = levenshtein.Find(symbol, lib.Program.MacroNames()...)
+			if r != "" {
+				fmt.Printf("macro: %s\n", r)
+				return
+			}
+
+			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
 		}
 	},
 }
