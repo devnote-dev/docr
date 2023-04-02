@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/devnote-dev/docr/crystal"
 	"github.com/devnote-dev/docr/env"
 	"github.com/devnote-dev/docr/levenshtein"
 	"github.com/spf13/cobra"
@@ -43,31 +44,102 @@ var searchCommand = &cobra.Command{
 				return
 			}
 
-			r := levenshtein.Find(symbol, lib.ConstantNames()...)
-			if r != "" {
-				fmt.Printf("constant: %s\n", r)
+			c := findConstant(lib, symbol)
+			if c != nil {
+				fmt.Printf("%v\n", c)
 				return
 			}
 
-			r = levenshtein.Find(symbol, lib.ConstructorNames()...)
-			if r != "" {
-				fmt.Printf("constructor: %s\n", r)
+			x := findConstructor(lib, symbol)
+			if x != nil {
+				fmt.Printf("%v\n", x)
 				return
 			}
 
-			r = levenshtein.Find(symbol, lib.ClassMethodNames()...)
-			if r != "" {
-				fmt.Printf("method: %s\n", r)
+			m := findMethod(lib, symbol)
+			if m != nil {
+				fmt.Printf("%v\n", m)
 				return
 			}
 
-			r = levenshtein.Find(symbol, lib.MacroNames()...)
-			if r != "" {
-				fmt.Printf("macro: %s\n", r)
+			m = findMacro(lib, symbol)
+			if m != nil {
+				fmt.Printf("%v\n", m)
+				return
+			}
+
+			d := findType(lib, symbol)
+			if d != nil {
+				fmt.Printf("%v\n", d)
 				return
 			}
 
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
 		}
 	},
+}
+
+func findConstant(lib *crystal.Type, symbol string) *crystal.Constant {
+	r := levenshtein.Find(symbol, lib.ConstantNames()...)
+	if r != "" {
+		for _, c := range lib.Constants {
+			if r == c.Name {
+				return c
+			}
+		}
+	}
+
+	return nil
+}
+
+func findConstructor(lib *crystal.Type, symbol string) *crystal.Definition {
+	r := levenshtein.Find(symbol, lib.ConstructorNames()...)
+	if r != "" {
+		for _, c := range lib.Constructors {
+			if r == c.Name {
+				return c
+			}
+		}
+	}
+
+	return nil
+}
+
+func findMethod(lib *crystal.Type, symbol string) *crystal.Definition {
+	r := levenshtein.Find(symbol, lib.ClassMethodNames()...)
+	if r != "" {
+		for _, m := range lib.ClassMethods {
+			if r == m.Name {
+				return m
+			}
+		}
+	}
+
+	return nil
+}
+
+func findMacro(lib *crystal.Type, symbol string) *crystal.Definition {
+	r := levenshtein.Find(symbol, lib.MacroNames()...)
+	if r != "" {
+		for _, m := range lib.Macros {
+			if r == m.Name {
+				return m
+			}
+		}
+	}
+
+	return nil
+}
+
+func findType(lib *crystal.Type, symbol string) *crystal.Type {
+	r := levenshtein.Find(symbol, lib.MacroNames()...)
+	if r != "" {
+		for _, t := range lib.Types {
+			if r == t.Name || r == t.FullName {
+				return t
+			}
+		}
+	}
+
+	return nil
 }
