@@ -27,46 +27,6 @@ type Type struct {
 	Types        []*Type       `json:"types,omitempty"`
 }
 
-func (t *Type) ConstantNames() []string {
-	names := make([]string, len(t.Constants))
-	for _, c := range t.Constants {
-		names = append(names, c.Name)
-	}
-	return names
-}
-
-func (t *Type) ConstructorNames() []string {
-	names := make([]string, len(t.Constructors))
-	for _, c := range t.Constructors {
-		names = append(names, c.Name)
-	}
-	return names
-}
-
-func (t *Type) ClassMethodNames() []string {
-	names := make([]string, len(t.ClassMethods))
-	for _, m := range t.ClassMethods {
-		names = append(names, m.Name)
-	}
-	return names
-}
-
-func (t *Type) MacroNames() []string {
-	names := make([]string, len(t.Macros))
-	for _, m := range t.Macros {
-		names = append(names, m.Name)
-	}
-	return names
-}
-
-func (t *Type) TypeNames() []string {
-	names := make([]string, len(t.Types))
-	for _, d := range t.Types {
-		names = append(names, d.Name)
-	}
-	return names
-}
-
 type Location struct {
 	File string `json:"filename"`
 	Line int    `json:"line_number"`
