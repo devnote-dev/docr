@@ -63,7 +63,7 @@ var searchCommand = &cobra.Command{
 				if c.Source != nil {
 					s = c.Source.File
 				}
-				fmt.Fprintf(&builder, "\n  %s (%s)", c.Name, s)
+				fmt.Fprintf(&builder, "%s (%s)", c.Name, s)
 			}
 			builder.WriteRune('\n')
 		}
@@ -75,7 +75,7 @@ var searchCommand = &cobra.Command{
 				if c.Source != nil {
 					s = c.Source.File
 				}
-				fmt.Fprintf(&builder, "\n  %s (%s)", c.Name, s)
+				fmt.Fprintf(&builder, "%s (%s)", c.Name, s)
 			}
 			builder.WriteRune('\n')
 		}
@@ -87,7 +87,7 @@ var searchCommand = &cobra.Command{
 				if m.Source != nil {
 					s = m.Source.File
 				}
-				fmt.Fprintf(&builder, "\n  %s (%s)", m.Name, s)
+				fmt.Fprintf(&builder, "%s (%s)", m.Name, s)
 			}
 			builder.WriteRune('\n')
 		}
@@ -99,7 +99,7 @@ var searchCommand = &cobra.Command{
 				if m.Source != nil {
 					s = m.Source.File
 				}
-				fmt.Fprintf(&builder, "\n  %s (%s)", m.Name, s)
+				fmt.Fprintf(&builder, "%s (%s)", m.Name, s)
 			}
 			builder.WriteRune('\n')
 		}
@@ -111,11 +111,11 @@ var searchCommand = &cobra.Command{
 				if t.Source != nil {
 					s = t.Source.File
 				}
-				fmt.Fprintf(&builder, "\n  %s (%s)", t.Name, s)
+				fmt.Fprintf(&builder, "%s (%s)", t.Name, s)
 			}
 			builder.WriteRune('\n')
 		}
 
-		fmt.Print(builder.String())
+		fmt.Println(builder.String())
 	},
 }
