@@ -10,7 +10,7 @@ type Result struct {
 	Source *crystal.Location
 }
 
-func FindConstants(lib *crystal.Type, symbol string) []*Result {
+func FilterConstants(lib *crystal.Type, symbol string) []*Result {
 	if len(lib.Constants) == 0 {
 		return nil
 	}
@@ -27,7 +27,7 @@ func FindConstants(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FindConstructors(lib *crystal.Type, symbol string) []*Result {
+func FilterConstructors(lib *crystal.Type, symbol string) []*Result {
 	if len(lib.Constructors) == 0 {
 		return nil
 	}
@@ -44,7 +44,7 @@ func FindConstructors(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FindMethods(lib *crystal.Type, symbol string) []*Result {
+func FilterMethods(lib *crystal.Type, symbol string) []*Result {
 	if len(lib.ClassMethods) == 0 {
 		return nil
 	}
@@ -61,7 +61,7 @@ func FindMethods(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FindMacros(lib *crystal.Type, symbol string) []*Result {
+func FilterMacros(lib *crystal.Type, symbol string) []*Result {
 	if len(lib.Macros) == 0 {
 		return nil
 	}
@@ -78,7 +78,7 @@ func FindMacros(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FindTypes(lib *crystal.Type, symbol string) []*Result {
+func FilterTypes(lib *crystal.Type, symbol string) []*Result {
 	if len(lib.Types) == 0 {
 		return nil
 	}

@@ -42,11 +42,11 @@ var searchCommand = &cobra.Command{
 			return
 		}
 
-		consts := search.FindConstants(lib, q.Symbol)
-		constructors := search.FindConstructors(lib, q.Symbol)
-		methods := search.FindMethods(lib, q.Symbol)
-		macros := search.FindMacros(lib, q.Symbol)
-		types := search.FindTypes(lib, q.Symbol)
+		consts := search.FilterConstants(lib, q.Symbol)
+		constructors := search.FilterConstructors(lib, q.Symbol)
+		methods := search.FilterMethods(lib, q.Symbol)
+		macros := search.FilterMacros(lib, q.Symbol)
+		types := search.FilterTypes(lib, q.Symbol)
 
 		if consts == nil && constructors == nil && methods == nil && macros == nil && types == nil {
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
