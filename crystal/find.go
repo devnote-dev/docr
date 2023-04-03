@@ -1,9 +1,7 @@
-package search
+package crystal
 
-import "github.com/devnote-dev/docr/crystal"
-
-func FindType(lib *crystal.Type, symbol string) any {
-	types := []*crystal.Type{lib}
+func FindType(lib *Type, symbol string) any {
+	types := []*Type{lib}
 	if len(lib.Types) != 0 {
 		types = append(types, lib.Types...)
 	}
@@ -11,8 +9,8 @@ func FindType(lib *crystal.Type, symbol string) any {
 	return findType(types, symbol)
 }
 
-func findType(types []*crystal.Type, symbol string) any {
-	var overflow []*crystal.Type
+func findType(types []*Type, symbol string) any {
+	var overflow []*Type
 
 	for _, t := range types {
 		if t.Name == symbol || t.FullName == symbol {

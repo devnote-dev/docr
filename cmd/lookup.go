@@ -6,14 +6,13 @@ import (
 
 	"github.com/devnote-dev/docr/crystal"
 	"github.com/devnote-dev/docr/env"
-	"github.com/devnote-dev/docr/search"
 	"github.com/spf13/cobra"
 )
 
 var lookupCommand = &cobra.Command{
 	Use: "lookup symbol [symbol]",
 	Run: func(cmd *cobra.Command, args []string) {
-		q, err := search.ParseQuery(args)
+		q, err := crystal.ParseQuery(args)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
@@ -37,7 +36,7 @@ var lookupCommand = &cobra.Command{
 			return
 		}
 
-		t := search.FindType(lib, q.Symbol)
+		t := crystal.FindType(lib, q.Symbol)
 		if t == nil {
 			fmt.Fprintf(os.Stderr, "documentation for %s not found\n", q.Symbol)
 			return

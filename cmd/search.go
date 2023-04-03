@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/devnote-dev/docr/crystal"
 	"github.com/devnote-dev/docr/env"
-	"github.com/devnote-dev/docr/search"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +18,7 @@ var searchCommand = &cobra.Command{
 			return
 		}
 
-		q, err := search.ParseQuery(args)
+		q, err := crystal.ParseQuery(args)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
@@ -42,12 +42,12 @@ var searchCommand = &cobra.Command{
 			return
 		}
 
-		consts := search.FilterConstants(lib, q.Symbol)
-		constructors := search.FilterConstructors(lib, q.Symbol)
-		class := search.FilterClassMethods(lib, q.Symbol)
-		instance := search.FilterInstanceMethods(lib, q.Symbol)
-		macros := search.FilterMacros(lib, q.Symbol)
-		types := search.FilterTypes(lib, q.Symbol)
+		consts := crystal.FilterConstants(lib, q.Symbol)
+		constructors := crystal.FilterConstructors(lib, q.Symbol)
+		class := crystal.FilterClassMethods(lib, q.Symbol)
+		instance := crystal.FilterInstanceMethods(lib, q.Symbol)
+		macros := crystal.FilterMacros(lib, q.Symbol)
+		types := crystal.FilterTypes(lib, q.Symbol)
 
 		if consts == nil && constructors == nil && class == nil && instance == nil && macros == nil && types == nil {
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")

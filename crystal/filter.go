@@ -1,21 +1,18 @@
-package search
+package crystal
 
-import (
-	"github.com/devnote-dev/docr/crystal"
-	"github.com/devnote-dev/docr/levenshtein"
-)
+import "github.com/devnote-dev/docr/levenshtein"
 
 type Result struct {
 	Name   string
-	Source *crystal.Location
+	Source *Location
 }
 
-func FilterConstants(lib *crystal.Type, symbol string) []*Result {
+func FilterConstants(lib *Type, symbol string) []*Result {
 	if len(lib.Constants) == 0 {
 		return nil
 	}
 
-	consts := levenshtein.SortBy(symbol, lib.Constants, func(c *crystal.Constant) string {
+	consts := levenshtein.SortBy(symbol, lib.Constants, func(c *Constant) string {
 		return c.Name
 	})
 
@@ -27,12 +24,12 @@ func FilterConstants(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FilterConstructors(lib *crystal.Type, symbol string) []*Result {
+func FilterConstructors(lib *Type, symbol string) []*Result {
 	if len(lib.Constructors) == 0 {
 		return nil
 	}
 
-	consts := levenshtein.SortBy(symbol, lib.Constructors, func(d *crystal.Definition) string {
+	consts := levenshtein.SortBy(symbol, lib.Constructors, func(d *Definition) string {
 		return d.Name
 	})
 
@@ -44,12 +41,12 @@ func FilterConstructors(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FilterClassMethods(lib *crystal.Type, symbol string) []*Result {
+func FilterClassMethods(lib *Type, symbol string) []*Result {
 	if len(lib.ClassMethods) == 0 {
 		return nil
 	}
 
-	defs := levenshtein.SortBy(symbol, lib.ClassMethods, func(d *crystal.Definition) string {
+	defs := levenshtein.SortBy(symbol, lib.ClassMethods, func(d *Definition) string {
 		return d.Name
 	})
 
@@ -61,12 +58,12 @@ func FilterClassMethods(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FilterInstanceMethods(lib *crystal.Type, symbol string) []*Result {
+func FilterInstanceMethods(lib *Type, symbol string) []*Result {
 	if len(lib.InstanceMethods) == 0 {
 		return nil
 	}
 
-	defs := levenshtein.SortBy(symbol, lib.InstanceMethods, func(d *crystal.Definition) string {
+	defs := levenshtein.SortBy(symbol, lib.InstanceMethods, func(d *Definition) string {
 		return d.Name
 	})
 
@@ -78,12 +75,12 @@ func FilterInstanceMethods(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FilterMacros(lib *crystal.Type, symbol string) []*Result {
+func FilterMacros(lib *Type, symbol string) []*Result {
 	if len(lib.Macros) == 0 {
 		return nil
 	}
 
-	defs := levenshtein.SortBy(symbol, lib.Macros, func(d *crystal.Definition) string {
+	defs := levenshtein.SortBy(symbol, lib.Macros, func(d *Definition) string {
 		return d.Name
 	})
 
@@ -95,12 +92,12 @@ func FilterMacros(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FilterTypes(lib *crystal.Type, symbol string) []*Result {
+func FilterTypes(lib *Type, symbol string) []*Result {
 	if len(lib.Types) == 0 {
 		return nil
 	}
 
-	types := levenshtein.SortBy(symbol, lib.Types, func(t *crystal.Type) string {
+	types := levenshtein.SortBy(symbol, lib.Types, func(t *Type) string {
 		return t.FullName
 	})
 
