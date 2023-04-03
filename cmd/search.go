@@ -18,36 +18,35 @@ var searchCommand = &cobra.Command{
 			return
 		}
 
-		module := "crystal"
-		symbol := args[0]
-		if len(args) > 1 {
-			module = symbol
-			symbol = args[1]
+		q, err := search.ParseQuery(args)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
 		}
 
-		versions, err := env.GetLibraryVersions(module)
+		versions, err := env.GetLibraryVersions(q.Library)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
 		if len(versions) == 0 {
-			fmt.Fprintf(os.Stderr, "latest %s documentation is not available\n", module)
+			fmt.Fprintf(os.Stderr, "latest %s documentation is not available\n", q.Library)
 			return
 		}
 
 		latest := versions[len(versions)-1]
-		lib, err := env.GetLibrary(module, latest)
+		lib, err := env.GetLibrary(q.Library, latest)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
-		consts := search.FindConstants(lib, symbol)
-		constructors := search.FindConstructors(lib, symbol)
-		methods := search.FindMethods(lib, symbol)
-		macros := search.FindMacros(lib, symbol)
-		types := search.FindTypes(lib, symbol)
+		consts := search.FindConstants(lib, q.Symbol)
+		constructors := search.FindConstructors(lib, q.Symbol)
+		methods := search.FindMethods(lib, q.Symbol)
+		macros := search.FindMacros(lib, q.Symbol)
+		types := search.FindTypes(lib, q.Symbol)
 
 		if consts == nil && constructors == nil && methods == nil && macros == nil && types == nil {
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
