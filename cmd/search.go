@@ -57,73 +57,73 @@ var searchCommand = &cobra.Command{
 		builder := strings.Builder{}
 
 		if len(consts) != 0 {
-			builder.WriteString("Constants:\n")
+			builder.WriteString("Constants:")
 			for _, c := range consts {
 				s := "unknown"
 				if c.Source != nil {
 					s = c.Source.File
 				}
-				fmt.Fprintf(&builder, "%s (%s)", c.Name, s)
+				fmt.Fprintf(&builder, "\n%s (%s)", c.Name, s)
 			}
-			builder.WriteRune('\n')
+			builder.WriteString("\n\n")
 		}
 
 		if len(constructors) != 0 {
-			builder.WriteString("Constructors:\n")
+			builder.WriteString("Constructors:")
 			for _, c := range constructors {
 				s := "unknown"
 				if c.Source != nil {
 					s = c.Source.File
 				}
-				fmt.Fprintf(&builder, "%s (%s)", c.Name, s)
+				fmt.Fprintf(&builder, "\n%s (%s)", c.Name, s)
 			}
-			builder.WriteRune('\n')
+			builder.WriteString("\n\n")
 		}
 
 		if len(class) != 0 {
-			builder.WriteString("Class Methods:\n")
+			builder.WriteString("Class Methods:")
 			for _, m := range class {
 				s := "unknown"
 				if m.Source != nil {
 					s = m.Source.File
 				}
-				fmt.Fprintf(&builder, "%s (%s)", m.Name, s)
+				fmt.Fprintf(&builder, "\n%s (%s)", m.Name, s)
 			}
-			builder.WriteRune('\n')
+			builder.WriteString("\n\n")
 		}
 
 		if len(instance) != 0 {
-			builder.WriteString("Instace Methods:\n")
+			builder.WriteString("Instace Methods:")
 			for _, m := range instance {
 				s := "unknown"
 				if m.Source != nil {
 					s = m.Source.File
 				}
-				fmt.Fprintf(&builder, "%s (%s)", m.Name, s)
+				fmt.Fprintf(&builder, "\n%s (%s)", m.Name, s)
 			}
-			builder.WriteRune('\n')
+			builder.WriteString("\n\n")
 		}
 
 		if len(macros) != 0 {
-			builder.WriteString("Macros:\n")
+			builder.WriteString("Macros:")
 			for _, m := range macros {
 				s := "unknown"
 				if m.Source != nil {
 					s = m.Source.File
 				}
-				fmt.Fprintf(&builder, "%s (%s)", m.Name, s)
+				fmt.Fprintf(&builder, "\n%s (%s)", m.Name, s)
 			}
-			builder.WriteRune('\n')
+			builder.WriteString("\n\n")
 		}
 
 		if len(types) != 0 {
-			builder.WriteString("Other Types:\n")
+			builder.WriteString("Other Types:")
 			for _, t := range types {
 				s := "unknown"
 				if t.Source != nil {
 					s = t.Source.File
 				}
-				fmt.Fprintf(&builder, "%s (%s)", t.Name, s)
+				fmt.Fprintf(&builder, "\n%s (%s)", t.Name, s)
 			}
 		}
 
