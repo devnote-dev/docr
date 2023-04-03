@@ -112,7 +112,6 @@ var searchCommand = &cobra.Command{
 				}
 				fmt.Fprintf(&builder, "%s (%s)", t.Name, s)
 			}
-			builder.WriteRune('\n')
 		}
 
 		fmt.Println(builder.String())
