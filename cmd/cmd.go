@@ -11,6 +11,7 @@ func init() {
 	mainCommand.AddCommand(envCommand)
 	mainCommand.AddCommand(indexCommand)
 	mainCommand.AddCommand(searchCommand)
+	mainCommand.AddCommand(lookupCommand)
 }
 
 func Execute() {
