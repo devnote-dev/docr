@@ -5,26 +5,27 @@ type TopLevel struct {
 }
 
 type Type struct {
-	Name         string        `json:"name"`
-	FullName     string        `json:"full_name"`
-	Summary      string        `json:"summary"`
-	Doc          string        `json:"doc"`
-	Kind         string        `json:"kind"`
-	Abstract     bool          `json:"abstract"`
-	Program      bool          `json:"program"`
-	Enum         bool          `json:"enum"`
-	Alias        bool          `json:"alias"`
-	Const        bool          `json:"const"`
-	Locations    []*Location   `json:"locations"`
-	SuperClass   *SuperClass   `json:"superclass,omitempty"`
-	Constants    []*Constant   `json:"constants,omitempty"`
-	Ancestors    []*SuperClass `json:"ancestors,omitempty"`
-	Included     []*SuperClass `json:"included_modules,omitempty"`
-	Extended     []*SuperClass `json:"extended_modules,omitempty"`
-	Constructors []*Definition `json:"constructors,omitempty"`
-	ClassMethods []*Definition `json:"class_methods,omitempty"`
-	Macros       []*Definition `json:"macros,omitempty"`
-	Types        []*Type       `json:"types,omitempty"`
+	Name            string        `json:"name"`
+	FullName        string        `json:"full_name"`
+	Summary         string        `json:"summary"`
+	Doc             string        `json:"doc"`
+	Kind            string        `json:"kind"`
+	Abstract        bool          `json:"abstract"`
+	Program         bool          `json:"program"`
+	Enum            bool          `json:"enum"`
+	Alias           bool          `json:"alias"`
+	Const           bool          `json:"const"`
+	Locations       []*Location   `json:"locations"`
+	SuperClass      *SuperClass   `json:"superclass,omitempty"`
+	Constants       []*Constant   `json:"constants,omitempty"`
+	Ancestors       []*SuperClass `json:"ancestors,omitempty"`
+	Included        []*SuperClass `json:"included_modules,omitempty"`
+	Extended        []*SuperClass `json:"extended_modules,omitempty"`
+	Constructors    []*Definition `json:"constructors,omitempty"`
+	ClassMethods    []*Definition `json:"class_methods,omitempty"`
+	InstanceMethods []*Definition `json:"instance_methods,omitempty"`
+	Macros          []*Definition `json:"macros,omitempty"`
+	Types           []*Type       `json:"types,omitempty"`
 }
 
 type Location struct {

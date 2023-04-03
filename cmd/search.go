@@ -44,11 +44,12 @@ var searchCommand = &cobra.Command{
 
 		consts := search.FilterConstants(lib, q.Symbol)
 		constructors := search.FilterConstructors(lib, q.Symbol)
-		methods := search.FilterMethods(lib, q.Symbol)
+		class := search.FilterClassMethods(lib, q.Symbol)
+		instance := search.FilterInstanceMethods(lib, q.Symbol)
 		macros := search.FilterMacros(lib, q.Symbol)
 		types := search.FilterTypes(lib, q.Symbol)
 
-		if consts == nil && constructors == nil && methods == nil && macros == nil && types == nil {
+		if consts == nil && constructors == nil && class == nil && instance == nil && macros == nil && types == nil {
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
 			return
 		}
@@ -79,9 +80,21 @@ var searchCommand = &cobra.Command{
 			builder.WriteRune('\n')
 		}
 
-		if len(methods) != 0 {
-			builder.WriteString("Methods:\n")
-			for _, m := range methods {
+		if len(class) != 0 {
+			builder.WriteString("Class Methods:\n")
+			for _, m := range class {
+				s := "unknown"
+				if m.Source != nil {
+					s = m.Source.File
+				}
+				fmt.Fprintf(&builder, "%s (%s)", m.Name, s)
+			}
+			builder.WriteRune('\n')
+		}
+
+		if len(instance) != 0 {
+			builder.WriteString("Instace Methods:\n")
+			for _, m := range instance {
 				s := "unknown"
 				if m.Source != nil {
 					s = m.Source.File

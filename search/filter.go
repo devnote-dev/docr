@@ -44,12 +44,29 @@ func FilterConstructors(lib *crystal.Type, symbol string) []*Result {
 	return r
 }
 
-func FilterMethods(lib *crystal.Type, symbol string) []*Result {
+func FilterClassMethods(lib *crystal.Type, symbol string) []*Result {
 	if len(lib.ClassMethods) == 0 {
 		return nil
 	}
 
 	defs := levenshtein.SortBy(symbol, lib.ClassMethods, func(d *crystal.Definition) string {
+		return d.Name
+	})
+
+	r := make([]*Result, len(defs))
+	for i, d := range defs {
+		r[i] = &Result{Name: d.Name, Source: d.Location}
+	}
+
+	return r
+}
+
+func FilterInstanceMethods(lib *crystal.Type, symbol string) []*Result {
+	if len(lib.InstanceMethods) == 0 {
+		return nil
+	}
+
+	defs := levenshtein.SortBy(symbol, lib.InstanceMethods, func(d *crystal.Definition) string {
 		return d.Name
 	})
 

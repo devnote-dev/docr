@@ -37,6 +37,12 @@ func findType(types []*crystal.Type, symbol string) any {
 			}
 		}
 
+		for _, m := range t.InstanceMethods {
+			if m.Name == symbol {
+				return m
+			}
+		}
+
 		for _, m := range t.Macros {
 			if m.Name == symbol {
 				return m
