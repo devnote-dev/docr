@@ -93,18 +93,33 @@ func FilterMacros(lib *Type, symbol string) []*Result {
 }
 
 func FilterTypes(lib *Type, symbol string) []*Result {
-	if len(lib.Types) == 0 {
-		return nil
+	var res []*Result
+
+	if r := FilterConstants(lib, symbol); r != nil {
+		res = append(res, r...)
 	}
 
-	types := levenshtein.SortBy(symbol, lib.Types, func(t *Type) string {
-		return t.FullName
-	})
-
-	r := make([]*Result, len(types))
-	for i, t := range types {
-		r[i] = &Result{Name: t.FullName, Source: t.Locations[0]}
+	if r := FilterConstructors(lib, symbol); r != nil {
+		res = append(res, r...)
 	}
 
-	return r
+	if r := FilterClassMethods(lib, symbol); r != nil {
+		res = append(res, r...)
+	}
+
+	if r := FilterInstanceMethods(lib, symbol); r != nil {
+		res = append(res, r...)
+	}
+
+	if r := FilterMacros(lib, symbol); r != nil {
+		res = append(res, r...)
+	}
+
+	if len(lib.Types) != 0 {
+		for _, t := range lib.Types {
+			res = append(res, FilterTypes(t, symbol)...)
+		}
+	}
+
+	return res
 }
