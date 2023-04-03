@@ -37,7 +37,11 @@ func ParseQuery(args []string) (*Query, error) {
 	} else {
 		types = strings.Split(args[0], "::")
 		symbol = types[len(types)-1]
-		types = types[:1]
+		if len(types) == 1 {
+			types = []string{}
+		} else {
+			types = types[:1]
+		}
 	}
 
 	if err != nil {
