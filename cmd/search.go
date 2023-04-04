@@ -124,6 +124,6 @@ var searchCommand = &cobra.Command{
 			}
 		}
 
-		fmt.Println(builder.String())
+		fmt.Print(strings.TrimSuffix(builder.String(), "\n"))
 	},
 }
