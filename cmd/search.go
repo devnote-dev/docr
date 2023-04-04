@@ -60,17 +60,14 @@ var searchCommand = &cobra.Command{
 		builder := strings.Builder{}
 
 		for k, v := range types {
-			builder.WriteString(k + ":")
-			builder.WriteRune('\n')
-
 			switch k {
-			case "Constants":
+			case crystal.KConstant:
 				for _, c := range v {
 					blue(&builder, c.Value[0])
 				}
-			case "Constructors":
+			case crystal.KConstructor:
 				fallthrough
-			case "Class Methods":
+			case crystal.KCMethod:
 				for _, m := range v {
 					if m.Source != nil {
 						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
@@ -84,7 +81,7 @@ var searchCommand = &cobra.Command{
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
 				}
-			case "Instance Methods":
+			case crystal.KIMethod:
 				for _, m := range v {
 					if m.Source != nil {
 						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
@@ -98,7 +95,7 @@ var searchCommand = &cobra.Command{
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
 				}
-			case "Macros":
+			case crystal.KMacro:
 				for _, m := range v {
 					if m.Source != nil {
 						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
@@ -114,7 +111,7 @@ var searchCommand = &cobra.Command{
 				}
 			}
 
-			builder.WriteString("\n\n")
+			builder.WriteString("\n")
 		}
 
 		fmt.Println(builder.String())

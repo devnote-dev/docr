@@ -7,7 +7,56 @@ type Result struct {
 	Source *Location
 }
 
-func FilterConstants(lib *Type, symbol string) []*Result {
+type CrType int
+
+const (
+	KConstant CrType = iota
+	KConstructor
+	KCMethod
+	KIMethod
+	KMacro
+)
+
+func FilterTypes(lib *Type, symbol string) map[CrType][]*Result {
+	res := map[CrType][]*Result{}
+
+	if r := filterConstants(lib, symbol); r != nil {
+		res[KConstant] = r
+	}
+
+	if r := filterConstructors(lib, symbol); r != nil {
+		res[KConstructor] = r
+	}
+
+	if r := filterClassMethods(lib, symbol); r != nil {
+		res[KCMethod] = r
+	}
+
+	if r := filterInstanceMethods(lib, symbol); r != nil {
+		res[KIMethod] = r
+	}
+
+	if r := filterMacros(lib, symbol); r != nil {
+		res[KMacro] = r
+	}
+
+	if len(lib.Types) != 0 {
+		for _, t := range lib.Types {
+			for k, v := range FilterTypes(t, symbol) {
+				if r, ok := res[k]; ok {
+					r = append(r, v...)
+					res[k] = r
+				} else {
+					res[k] = r
+				}
+			}
+		}
+	}
+
+	return res
+}
+
+func filterConstants(lib *Type, symbol string) []*Result {
 	if len(lib.Constants) == 0 {
 		return nil
 	}
@@ -27,7 +76,7 @@ func FilterConstants(lib *Type, symbol string) []*Result {
 	return r
 }
 
-func FilterConstructors(lib *Type, symbol string) []*Result {
+func filterConstructors(lib *Type, symbol string) []*Result {
 	if len(lib.Constructors) == 0 {
 		return nil
 	}
@@ -47,7 +96,7 @@ func FilterConstructors(lib *Type, symbol string) []*Result {
 	return r
 }
 
-func FilterClassMethods(lib *Type, symbol string) []*Result {
+func filterClassMethods(lib *Type, symbol string) []*Result {
 	if len(lib.ClassMethods) == 0 {
 		return nil
 	}
@@ -67,7 +116,7 @@ func FilterClassMethods(lib *Type, symbol string) []*Result {
 	return r
 }
 
-func FilterInstanceMethods(lib *Type, symbol string) []*Result {
+func filterInstanceMethods(lib *Type, symbol string) []*Result {
 	if len(lib.InstanceMethods) == 0 {
 		return nil
 	}
@@ -87,7 +136,7 @@ func FilterInstanceMethods(lib *Type, symbol string) []*Result {
 	return r
 }
 
-func FilterMacros(lib *Type, symbol string) []*Result {
+func filterMacros(lib *Type, symbol string) []*Result {
 	if len(lib.Macros) == 0 {
 		return nil
 	}
@@ -105,43 +154,4 @@ func FilterMacros(lib *Type, symbol string) []*Result {
 	}
 
 	return r
-}
-
-func FilterTypes(lib *Type, symbol string) map[string][]*Result {
-	res := map[string][]*Result{}
-
-	if r := FilterConstants(lib, symbol); r != nil {
-		res["Constants"] = r
-	}
-
-	if r := FilterConstructors(lib, symbol); r != nil {
-		res["Constructors"] = r
-	}
-
-	if r := FilterClassMethods(lib, symbol); r != nil {
-		res["Class Methods"] = r
-	}
-
-	if r := FilterInstanceMethods(lib, symbol); r != nil {
-		res["Instance Methods"] = r
-	}
-
-	if r := FilterMacros(lib, symbol); r != nil {
-		res["Macros"] = r
-	}
-
-	if len(lib.Types) != 0 {
-		for _, t := range lib.Types {
-			for k, v := range FilterTypes(t, symbol) {
-				if r, ok := res[k]; ok {
-					r = append(r, v...)
-					res[k] = r
-				} else {
-					res[k] = r
-				}
-			}
-		}
-	}
-
-	return res
 }
