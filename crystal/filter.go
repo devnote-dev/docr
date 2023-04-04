@@ -20,23 +20,23 @@ const (
 func FilterTypes(lib *Type, symbol string) map[CrType][]*Result {
 	res := map[CrType][]*Result{}
 
-	if r := filterConstants(lib, symbol); r != nil {
+	if r := filterConstants(lib, symbol); len(r) != 0 {
 		res[KConstant] = r
 	}
 
-	if r := filterConstructors(lib, symbol); r != nil {
+	if r := filterConstructors(lib, symbol); len(r) != 0 {
 		res[KConstructor] = r
 	}
 
-	if r := filterClassMethods(lib, symbol); r != nil {
+	if r := filterClassMethods(lib, symbol); len(r) != 0 {
 		res[KCMethod] = r
 	}
 
-	if r := filterInstanceMethods(lib, symbol); r != nil {
+	if r := filterInstanceMethods(lib, symbol); len(r) != 0 {
 		res[KIMethod] = r
 	}
 
-	if r := filterMacros(lib, symbol); r != nil {
+	if r := filterMacros(lib, symbol); len(r) != 0 {
 		res[KMacro] = r
 	}
 
