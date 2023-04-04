@@ -85,7 +85,7 @@ var searchCommand = &cobra.Command{
 					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
-					builder.WriteRune('\n')
+					builder.WriteString("\n\n")
 				}
 			case crystal.KIMethod:
 				for _, m := range v {
@@ -102,7 +102,7 @@ var searchCommand = &cobra.Command{
 					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
-					builder.WriteRune('\n')
+					builder.WriteString("\n\n")
 				}
 			case crystal.KMacro:
 				for _, m := range v {
@@ -119,7 +119,7 @@ var searchCommand = &cobra.Command{
 					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
-					builder.WriteRune('\n')
+					builder.WriteString("\n\n")
 				}
 			}
 		}

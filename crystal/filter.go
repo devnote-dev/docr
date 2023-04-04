@@ -7,18 +7,18 @@ type Result struct {
 	Source *Location
 }
 
-type CrType int
+type KType int
 
 const (
-	KConstant CrType = iota
+	KConstant KType = iota
 	KConstructor
 	KCMethod
 	KIMethod
 	KMacro
 )
 
-func FilterTypes(lib *Type, symbol string) map[CrType][]*Result {
-	res := map[CrType][]*Result{}
+func FilterTypes(lib *Type, symbol string) map[KType][]*Result {
+	res := map[KType][]*Result{}
 
 	if r := filterConstants(lib, symbol); len(r) != 0 {
 		res[KConstant] = r
