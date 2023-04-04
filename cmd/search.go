@@ -7,7 +7,16 @@ import (
 
 	"github.com/devnote-dev/docr/crystal"
 	"github.com/devnote-dev/docr/env"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+)
+
+var (
+	red     = color.New(color.FgRed).FprintFunc()
+	blue    = color.New(color.FgBlue).FprintFunc()
+	magenta = color.New(color.FgMagenta).FprintFunc()
+	white   = color.New(color.FgWhite).FprintFunc()
+	reset   = color.New(color.Reset).FprintFunc()
 )
 
 var searchCommand = &cobra.Command{
@@ -42,89 +51,70 @@ var searchCommand = &cobra.Command{
 			return
 		}
 
-		consts := crystal.FilterConstants(lib, q.Symbol)
-		constructors := crystal.FilterConstructors(lib, q.Symbol)
-		class := crystal.FilterClassMethods(lib, q.Symbol)
-		instance := crystal.FilterInstanceMethods(lib, q.Symbol)
-		macros := crystal.FilterMacros(lib, q.Symbol)
 		types := crystal.FilterTypes(lib, q.Symbol)
-
-		if consts == nil && constructors == nil && class == nil && instance == nil && macros == nil && types == nil {
+		if len(types) == 0 {
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
 			return
 		}
 
 		builder := strings.Builder{}
 
-		if len(consts) != 0 {
-			builder.WriteString("Constants:")
-			for _, c := range consts {
-				s := "unknown"
-				if c.Source != nil {
-					s = c.Source.File
-				}
-				fmt.Fprintf(&builder, "\n%s (%s)", c.Name, s)
-			}
-			builder.WriteString("\n\n")
-		}
+		for k, v := range types {
+			builder.WriteString(k + ":")
+			builder.WriteRune('\n')
 
-		if len(constructors) != 0 {
-			builder.WriteString("Constructors:")
-			for _, c := range constructors {
-				s := "unknown"
-				if c.Source != nil {
-					s = c.Source.File
+			switch k {
+			case "Constants":
+				for _, c := range v {
+					blue(&builder, c.Value[0])
 				}
-				fmt.Fprintf(&builder, "\n%s (%s)", c.Name, s)
-			}
-			builder.WriteString("\n\n")
-		}
+			case "Constructors":
+				fallthrough
+			case "Class Methods":
+				for _, m := range v {
+					if m.Source != nil {
+						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
+					} else {
+						white(&builder, "unknown source\n")
+					}
 
-		if len(class) != 0 {
-			builder.WriteString("Class Methods:")
-			for _, m := range class {
-				s := "unknown"
-				if m.Source != nil {
-					s = m.Source.File
+					red(&builder, "def ")
+					blue(&builder, m.Value[0])
+					reset(&builder, ".")
+					magenta(&builder, m.Value[1])
+					reset(&builder, m.Value[2])
 				}
-				fmt.Fprintf(&builder, "\n%s (%s)", m.Name, s)
-			}
-			builder.WriteString("\n\n")
-		}
+			case "Instance Methods":
+				for _, m := range v {
+					if m.Source != nil {
+						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
+					} else {
+						white(&builder, "unknown source\n")
+					}
 
-		if len(instance) != 0 {
-			builder.WriteString("Instace Methods:")
-			for _, m := range instance {
-				s := "unknown"
-				if m.Source != nil {
-					s = m.Source.File
+					red(&builder, "def ")
+					blue(&builder, m.Value[0])
+					reset(&builder, "#")
+					magenta(&builder, m.Value[1])
+					reset(&builder, m.Value[2])
 				}
-				fmt.Fprintf(&builder, "\n%s (%s)", m.Name, s)
-			}
-			builder.WriteString("\n\n")
-		}
+			case "Macros":
+				for _, m := range v {
+					if m.Source != nil {
+						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
+					} else {
+						white(&builder, "unknown source\n")
+					}
 
-		if len(macros) != 0 {
-			builder.WriteString("Macros:")
-			for _, m := range macros {
-				s := "unknown"
-				if m.Source != nil {
-					s = m.Source.File
+					red(&builder, "macro ")
+					blue(&builder, m.Value[0])
+					reset(&builder, "#")
+					magenta(&builder, m.Value[1])
+					reset(&builder, m.Value[2])
 				}
-				fmt.Fprintf(&builder, "\n%s (%s)", m.Name, s)
 			}
-			builder.WriteString("\n\n")
-		}
 
-		if len(types) != 0 {
-			builder.WriteString("Other Types:")
-			for _, t := range types {
-				s := "unknown"
-				if t.Source != nil {
-					s = t.Source.File
-				}
-				fmt.Fprintf(&builder, "\n%s (%s)", t.Name, s)
-			}
+			builder.WriteString("\n\n")
 		}
 
 		fmt.Println(builder.String())
