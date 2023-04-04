@@ -56,6 +56,7 @@ var searchCommand = &cobra.Command{
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
 			return
 		}
+		fmt.Print("Search Results:\n\n")
 
 		builder := strings.Builder{}
 
@@ -65,6 +66,7 @@ var searchCommand = &cobra.Command{
 				for _, c := range v {
 					blue(&builder, c.Value[0])
 					white(&builder, " (top level)")
+					builder.WriteRune('\n')
 				}
 			case crystal.KConstructor:
 				fallthrough
@@ -83,6 +85,7 @@ var searchCommand = &cobra.Command{
 					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
+					builder.WriteRune('\n')
 				}
 			case crystal.KIMethod:
 				for _, m := range v {
@@ -99,6 +102,7 @@ var searchCommand = &cobra.Command{
 					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
+					builder.WriteRune('\n')
 				}
 			case crystal.KMacro:
 				for _, m := range v {
@@ -115,10 +119,9 @@ var searchCommand = &cobra.Command{
 					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
+					builder.WriteRune('\n')
 				}
 			}
-
-			builder.WriteString("\n")
 		}
 
 		fmt.Println(builder.String())
