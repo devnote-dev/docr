@@ -64,6 +64,7 @@ var searchCommand = &cobra.Command{
 			case crystal.KConstant:
 				for _, c := range v {
 					blue(&builder, c.Value[0])
+					white(&builder, " (top level)")
 				}
 			case crystal.KConstructor:
 				fallthrough
@@ -76,8 +77,10 @@ var searchCommand = &cobra.Command{
 					}
 
 					red(&builder, "def ")
-					blue(&builder, m.Value[0])
-					reset(&builder, ".")
+					if m.Value[0] != "" {
+						blue(&builder, m.Value[0])
+						reset(&builder, ".")
+					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
 				}
@@ -90,8 +93,10 @@ var searchCommand = &cobra.Command{
 					}
 
 					red(&builder, "def ")
-					blue(&builder, m.Value[0])
-					reset(&builder, "#")
+					if m.Value[0] != "" {
+						blue(&builder, m.Value[0])
+						reset(&builder, "#")
+					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
 				}
@@ -104,8 +109,10 @@ var searchCommand = &cobra.Command{
 					}
 
 					red(&builder, "macro ")
-					blue(&builder, m.Value[0])
-					reset(&builder, "#")
+					if m.Value[0] != "" {
+						blue(&builder, m.Value[0])
+						reset(&builder, "#")
+					}
 					magenta(&builder, m.Value[1])
 					reset(&builder, m.Value[2])
 				}

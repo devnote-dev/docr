@@ -90,7 +90,7 @@ func filterConstructors(lib *Type, symbol string) []*Result {
 
 	r := make([]*Result, len(consts))
 	for i, c := range consts {
-		r[i] = &Result{Value: []string{lib.Name, c.Name, c.Args}}
+		r[i] = &Result{Value: []string{fixName(lib.Name), c.Name, c.Args}}
 	}
 
 	return r
@@ -110,7 +110,7 @@ func filterClassMethods(lib *Type, symbol string) []*Result {
 
 	r := make([]*Result, len(defs))
 	for i, d := range defs {
-		r[i] = &Result{Value: []string{lib.Name, d.Name, d.Args}, Source: d.Location}
+		r[i] = &Result{Value: []string{fixName(lib.Name), d.Name, d.Args}, Source: d.Location}
 	}
 
 	return r
@@ -130,7 +130,7 @@ func filterInstanceMethods(lib *Type, symbol string) []*Result {
 
 	r := make([]*Result, len(defs))
 	for i, d := range defs {
-		r[i] = &Result{Value: []string{lib.Name, d.Name, d.Args}, Source: d.Location}
+		r[i] = &Result{Value: []string{fixName(lib.Name), d.Name, d.Args}, Source: d.Location}
 	}
 
 	return r
@@ -150,8 +150,16 @@ func filterMacros(lib *Type, symbol string) []*Result {
 
 	r := make([]*Result, len(defs))
 	for i, m := range defs {
-		r[i] = &Result{Value: []string{lib.Name, m.Name, m.Args}, Source: m.Location}
+		r[i] = &Result{Value: []string{fixName(lib.Name), m.Name, m.Args}, Source: m.Location}
 	}
 
 	return r
+}
+
+func fixName(s string) string {
+	if s == "Top Level Namespace" {
+		return ""
+	}
+
+	return s
 }
