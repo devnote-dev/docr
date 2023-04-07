@@ -81,7 +81,7 @@ var lookupCommand = &cobra.Command{
 			if c.Doc == "" {
 				white(&builder, "\n(no information available)")
 			} else {
-				out, err := glamour.Render(policy.Sanitize(c.Doc), "dark")
+				out, err := glamour.Render(c.Doc, "dark")
 				if err != nil {
 					white(&builder, "\n(error rendering documentation)")
 				} else {
@@ -114,7 +114,7 @@ var lookupCommand = &cobra.Command{
 			if d.Doc == "" {
 				white(&builder, "\n(no information available)")
 			} else {
-				out, err := glamour.Render(policy.Sanitize(d.Doc), "dark")
+				out, err := glamour.Render(d.Doc, "dark")
 				if err != nil {
 					white(&builder, "\n(error rendering documentation)")
 				} else {
@@ -159,7 +159,7 @@ var lookupCommand = &cobra.Command{
 			if t.Doc == "" {
 				white(&builder, "\n(no information available)")
 			} else {
-				out, err := glamour.Render(policy.Sanitize(t.Doc), "dark")
+				out, err := glamour.Render(t.Doc, "dark")
 				if err != nil {
 					white(&builder, "\n(error rendering documentation)")
 				} else {
