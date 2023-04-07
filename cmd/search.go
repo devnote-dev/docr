@@ -54,6 +54,14 @@ var searchCommand = &cobra.Command{
 			return
 		}
 
+		if len(q.Types) != 0 {
+			lib = crystal.ResolveType(lib, q.Types)
+		}
+		if lib == nil {
+			fmt.Fprintln(os.Stderr, "symbol not found")
+			return
+		}
+
 		types := crystal.FilterTypes(lib, q.Symbol)
 		if len(types) == 0 {
 			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
@@ -80,6 +88,92 @@ var searchCommand = &cobra.Command{
 					}
 					builder.WriteRune('\n')
 				}
+				builder.WriteRune('\n')
+			case crystal.KModule:
+				for _, c := range v {
+					red(&builder, "module ")
+					blue(&builder, c.Value[0])
+					if len(c.Value) == 2 {
+						reset(&builder, "::")
+						blue(&builder, c.Value[1])
+					}
+
+					if c.Source != nil {
+						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+					} else {
+						white(&builder, " (top level)")
+					}
+					builder.WriteRune('\n')
+				}
+				builder.WriteRune('\n')
+			case crystal.KClass:
+				for _, c := range v {
+					red(&builder, "class ")
+					blue(&builder, c.Value[0])
+					if len(c.Value) == 2 {
+						reset(&builder, "::")
+						blue(&builder, c.Value[1])
+					}
+
+					if c.Source != nil {
+						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+					} else {
+						white(&builder, " (top level)")
+					}
+					builder.WriteRune('\n')
+				}
+				builder.WriteRune('\n')
+			case crystal.KStruct:
+				for _, c := range v {
+					red(&builder, "struct ")
+					blue(&builder, c.Value[0])
+					if len(c.Value) == 2 {
+						reset(&builder, "::")
+						blue(&builder, c.Value[1])
+					}
+
+					if c.Source != nil {
+						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+					} else {
+						white(&builder, " (top level)")
+					}
+					builder.WriteRune('\n')
+				}
+				builder.WriteRune('\n')
+			case crystal.KEnum:
+				for _, c := range v {
+					red(&builder, "enum ")
+					blue(&builder, c.Value[0])
+					if len(c.Value) == 2 {
+						reset(&builder, "::")
+						blue(&builder, c.Value[1])
+					}
+
+					if c.Source != nil {
+						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+					} else {
+						white(&builder, " (top level)")
+					}
+					builder.WriteRune('\n')
+				}
+				builder.WriteRune('\n')
+			case crystal.KAlias:
+				for _, c := range v {
+					red(&builder, "alias ")
+					blue(&builder, c.Value[0])
+					if len(c.Value) == 2 {
+						reset(&builder, "::")
+						blue(&builder, c.Value[1])
+					}
+
+					if c.Source != nil {
+						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+					} else {
+						white(&builder, " (top level)")
+					}
+					builder.WriteRune('\n')
+				}
+				builder.WriteRune('\n')
 			case crystal.KConstructor:
 				fallthrough
 			case crystal.KCMethod:
