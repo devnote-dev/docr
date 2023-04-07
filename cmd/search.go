@@ -82,7 +82,7 @@ var searchCommand = &cobra.Command{
 					}
 
 					if c.Source != nil {
-						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+						white(&builder, " (", c.Source.File, ":", c.Source.Line, ")")
 					} else {
 						white(&builder, " (top level)")
 					}
@@ -99,7 +99,7 @@ var searchCommand = &cobra.Command{
 					}
 
 					if c.Source != nil {
-						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+						white(&builder, " (", c.Source.File, ":", c.Source.Line, ")")
 					} else {
 						white(&builder, " (top level)")
 					}
@@ -116,7 +116,7 @@ var searchCommand = &cobra.Command{
 					}
 
 					if c.Source != nil {
-						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+						white(&builder, " (", c.Source.File, ":", c.Source.Line, ")")
 					} else {
 						white(&builder, " (top level)")
 					}
@@ -133,7 +133,7 @@ var searchCommand = &cobra.Command{
 					}
 
 					if c.Source != nil {
-						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+						white(&builder, " (", c.Source.File, ":", c.Source.Line, ")")
 					} else {
 						white(&builder, " (top level)")
 					}
@@ -150,7 +150,7 @@ var searchCommand = &cobra.Command{
 					}
 
 					if c.Source != nil {
-						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+						white(&builder, " (", c.Source.File, ":", c.Source.Line, ")")
 					} else {
 						white(&builder, " (top level)")
 					}
@@ -167,7 +167,7 @@ var searchCommand = &cobra.Command{
 					}
 
 					if c.Source != nil {
-						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+						white(&builder, " (", c.Source.File, ":", c.Source.Line, ")")
 					} else {
 						white(&builder, " (top level)")
 					}
@@ -179,7 +179,7 @@ var searchCommand = &cobra.Command{
 			case crystal.KCMethod:
 				for _, m := range v {
 					if m.Source != nil {
-						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
+						white(&builder, m.Source.File, ":", m.Source.Line, "\n")
 					} else {
 						white(&builder, "unknown source\n")
 					}
@@ -196,7 +196,7 @@ var searchCommand = &cobra.Command{
 			case crystal.KIMethod:
 				for _, m := range v {
 					if m.Source != nil {
-						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
+						white(&builder, m.Source.File, ":", m.Source.Line, "\n")
 					} else {
 						white(&builder, "unknown source\n")
 					}
@@ -213,7 +213,7 @@ var searchCommand = &cobra.Command{
 			case crystal.KMacro:
 				for _, m := range v {
 					if m.Source != nil {
-						white(&builder, m.Source.File, "#L", m.Source.Line, "\n")
+						white(&builder, m.Source.File, ":", m.Source.Line, "\n")
 					} else {
 						white(&builder, "unknown source\n")
 					}
