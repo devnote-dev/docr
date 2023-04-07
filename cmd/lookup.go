@@ -70,8 +70,12 @@ var lookupCommand = &cobra.Command{
 			}
 
 			builder.WriteString("\nDefined:\n")
-			for _, loc := range lib.Locations {
-				fmt.Fprintf(&builder, "• %s:%d\n", loc.File, loc.Line)
+			if len(lib.Locations) == 0 {
+				white(&builder, "(cannot resolve locations)\n")
+			} else {
+				for _, loc := range lib.Locations {
+					fmt.Fprintf(&builder, "• %s:%d\n", loc.File, loc.Line)
+				}
 			}
 
 			if c.Doc == "" {
@@ -144,8 +148,12 @@ var lookupCommand = &cobra.Command{
 			}
 
 			builder.WriteString("\nDefined:\n")
-			for _, loc := range lib.Locations {
-				fmt.Fprintf(&builder, "• %s:%d\n", loc.File, loc.Line)
+			if len(lib.Locations) == 0 {
+				white(&builder, "(cannot resolve locations)\n")
+			} else {
+				for _, loc := range lib.Locations {
+					fmt.Fprintf(&builder, "• %s:%d\n", loc.File, loc.Line)
+				}
 			}
 
 			if t.Doc == "" {
