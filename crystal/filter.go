@@ -1,8 +1,6 @@
 package crystal
 
-import (
-	"github.com/devnote-dev/docr/levenshtein"
-)
+import "github.com/devnote-dev/docr/levenshtein"
 
 type Result struct {
 	Value  []string
@@ -159,7 +157,7 @@ func filterMacros(lib *Type, symbol string) []*Result {
 }
 
 func fixName(s string) string {
-	if s == "Top Level Namespace" {
+	if s == "Top Level Namespace" || s == "Macros" {
 		return ""
 	}
 

@@ -23,8 +23,11 @@ var searchCommand = &cobra.Command{
 	Use: "search symbol",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Fprintln(os.Stderr, "no arguments provided")
-			return
+			var input string
+
+			fmt.Print("Enter query: ")
+			fmt.Scanln(&input)
+			args = strings.Split(input, " ")
 		}
 
 		q, err := crystal.ParseQuery(args)
