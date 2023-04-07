@@ -16,6 +16,7 @@ type Type struct {
 	Alias           bool          `json:"alias"`
 	Const           bool          `json:"const"`
 	Locations       []*Location   `json:"locations"`
+	Aliased         string        `json:"aliased,omitempty"`
 	SuperClass      *SuperClass   `json:"superclass,omitempty"`
 	Constants       []*Constant   `json:"constants,omitempty"`
 	Ancestors       []*SuperClass `json:"ancestors,omitempty"`
