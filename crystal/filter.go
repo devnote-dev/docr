@@ -68,9 +68,14 @@ func filterConstants(lib *Type, symbol string) []*Result {
 		return nil
 	}
 
+	var loc *Location
+	if lib.Name != "Top Level Namespace" && len(lib.Locations) != 0 {
+		loc = lib.Locations[0]
+	}
+
 	r := make([]*Result, len(consts))
 	for i, c := range consts {
-		r[i] = &Result{Value: []string{c.Name}}
+		r[i] = &Result{Value: []string{fixName(lib.Name), c.Name}, Source: loc}
 	}
 
 	return r

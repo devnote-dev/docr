@@ -68,7 +68,16 @@ var searchCommand = &cobra.Command{
 			case crystal.KConstant:
 				for _, c := range v {
 					blue(&builder, c.Value[0])
-					white(&builder, " (top level)")
+					if len(c.Value) == 2 {
+						reset(&builder, "::")
+						blue(&builder, c.Value[1])
+					}
+
+					if c.Source != nil {
+						white(&builder, " (", c.Source.File, "#L", c.Source.Line, ")")
+					} else {
+						white(&builder, " (top level)")
+					}
 					builder.WriteRune('\n')
 				}
 			case crystal.KConstructor:
