@@ -104,7 +104,7 @@ func filterConstants(lib *Type, symbol string) []*Result {
 
 	r := make([]*Result, len(consts))
 	for i, c := range consts {
-		r[i] = &Result{Value: []string{fixName(lib.Name), c.Name}, Source: loc}
+		r[i] = &Result{Value: []string{fixName(lib.FullName), c.Name}, Source: loc}
 	}
 
 	return r
