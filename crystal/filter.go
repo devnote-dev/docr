@@ -11,6 +11,11 @@ type KType int
 
 const (
 	KConstant KType = iota
+	KModule
+	KClass
+	KStruct
+	KEnum
+	KAlias
 	KConstructor
 	KCMethod
 	KIMethod
@@ -42,6 +47,30 @@ func FilterTypes(lib *Type, symbol string) map[KType][]*Result {
 
 	if len(lib.Types) != 0 {
 		for _, t := range lib.Types {
+			if t.Name == symbol || t.FullName == symbol {
+				var kt KType
+				switch t.Kind {
+				case "module":
+					kt = KModule
+				case "class":
+					kt = KClass
+				case "struct":
+					kt = KStruct
+				case "enum":
+					kt = KEnum
+				case "alias":
+					kt = KAlias
+				}
+
+				// res[kt] = []*Result{{Value: []string{fixName(lib.Name), t.Name}, Source: t.Locations[0]}}
+				val := make([]*Result, len(t.Locations))
+				for i, loc := range t.Locations {
+					val[i] = &Result{Value: []string{fixName(lib.Name), t.Name}, Source: loc}
+				}
+				res[kt] = val
+				continue
+			}
+
 			for k, v := range FilterTypes(t, symbol) {
 				if r, ok := res[k]; ok {
 					r = append(r, v...)
@@ -167,4 +196,18 @@ func fixName(s string) string {
 	}
 
 	return s
+}
+
+func ResolveType(lib *Type, names []string) *Type {
+	for _, t := range lib.Types {
+		if t.Name == names[0] || t.FullName == names[0] {
+			if len(names)-1 != 0 {
+				return ResolveType(t, names[1:])
+			}
+
+			return t
+		}
+	}
+
+	return nil
 }
