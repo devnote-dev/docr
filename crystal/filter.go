@@ -1,6 +1,8 @@
 package crystal
 
-import "github.com/devnote-dev/docr/levenshtein"
+import (
+	"github.com/devnote-dev/docr/levenshtein"
+)
 
 type Result struct {
 	Value  []string
@@ -47,7 +49,7 @@ func FilterTypes(lib *Type, symbol string) map[KType][]*Result {
 					r = append(r, v...)
 					res[k] = r
 				} else {
-					res[k] = r
+					res[k] = v
 				}
 			}
 		}
