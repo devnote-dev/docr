@@ -6,7 +6,11 @@ import (
 	"strings"
 )
 
-var libRule = regexp.MustCompile(`\A[a-z0-9_-]+\z`)
+var (
+	libRule  = regexp.MustCompile(`\A[a-z0-9_-]+\z`)
+	pathRule = regexp.MustCompile(`\A(?:[\w:]+)(?:(?:\.|#|\s)(?:\w+))?\z`)
+	modRule  = regexp.MustCompile(`\A\w+\z`)
+)
 
 type Query struct {
 	Library string
@@ -17,13 +21,10 @@ type Query struct {
 // 1: library Symbol
 // 2: library Type Symbol
 // 1: library Type.Symbol
+// 1: library Type#Symbol
 // 1: library Type::Symbol
 // 2: library Type::Symbol Symbol
 func ParseQuery(args []string) (*Query, error) {
-	var err error
-	var types []string
-	var symbol string
-
 	lib := "crystal"
 
 	if len(args) > 1 && libRule.MatchString(args[0]) {
@@ -31,35 +32,48 @@ func ParseQuery(args []string) (*Query, error) {
 		args = args[1:]
 	}
 
-	if len(args) == 2 {
-		types = strings.Split(args[0], "::")
-		symbol, err = extractSymbol(args[1])
-	} else {
-		types = strings.Split(args[0], "::")
-		symbol = types[len(types)-1]
-		if len(types) == 1 {
-			types = []string{}
-		} else {
-			types = types[:1]
-		}
+	str := strings.Join(args, " ")
+	if !pathRule.MatchString(str) {
+		return nil, errors.New("invalid module or type path")
 	}
 
+	s, err := parseSymbol(str)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Query{lib, types, symbol}, nil
+	t, err := parseTypes(s[0])
+	if err != nil {
+		return nil, err
+	}
+
+	return &Query{Library: lib, Types: t, Symbol: s[len(s)-1]}, nil
 }
 
-func extractSymbol(str string) (string, error) {
-	parts := strings.Split(str, ".")
-	if len(parts) > 2 {
-		return "", errors.New("invalid module or type path")
+func parseSymbol(s string) ([]string, error) {
+	parts := strings.Split(s, ".")
+	if len(parts) == 1 {
+		parts = strings.Split(parts[0], "#")
 	}
 
 	if len(parts) == 1 {
-		return str, nil
+		parts = strings.Split(parts[0], " ")
 	}
 
-	return parts[1], nil
+	if len(parts) > 2 {
+		return nil, errors.New("invalid symbol path")
+	}
+
+	return parts, nil
+}
+
+func parseTypes(s string) ([]string, error) {
+	parts := strings.Split(s, "::")
+	for _, p := range parts {
+		if !modRule.MatchString(p) {
+			return nil, errors.New("invalid module or type path")
+		}
+	}
+
+	return parts, nil
 }
