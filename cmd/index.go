@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/devnote-dev/docr/env"
@@ -49,6 +50,34 @@ var indexListCommand = &cobra.Command{
 	},
 }
 
+var indexGetCommand = &cobra.Command{
+	Use: "get source",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			return
+		}
+
+		src := args[0]
+		cwd, _ := os.Getwd()
+
+		if src == "." {
+			if _, err := os.Stat(filepath.Join(cwd, "shard.yml")); err != nil {
+				fmt.Fprintln(os.Stderr, "shard.yml file not found")
+				// TODO:
+				// load shard.yml
+				// build docs
+			}
+		}
+
+		// TODO:
+		// attempt to request shard source
+		// load shard.yml
+		// build docs
+		// extract and cache
+	},
+}
+
 func init() {
 	indexCommand.AddCommand(indexListCommand)
+	indexCommand.AddCommand(indexGetCommand)
 }
