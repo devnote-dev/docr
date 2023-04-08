@@ -42,9 +42,12 @@ func ParseQuery(args []string) (*Query, error) {
 		return nil, err
 	}
 
-	t, err := parseTypes(s[0])
-	if err != nil {
-		return nil, err
+	var t []string
+	if len(s) == 2 {
+		t, err = parseTypes(s[0])
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Query{Library: lib, Types: t, Symbol: s[len(s)-1]}, nil
