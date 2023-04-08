@@ -52,6 +52,7 @@ type Definition struct {
 	Args     string    `json:"args_string,omitempty"`
 	Summary  string    `json:"summary,omitempty"`
 	Doc      string    `json:"doc,omitempty"`
+	HTMLID   string    `json:"html_id"`
 	Abstract bool      `json:"abstract"`
 	Alias    bool      `json:"alias"`
 	Aliased  string    `json:"aliased,omitempty"`

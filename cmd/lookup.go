@@ -105,7 +105,11 @@ var lookupCommand = &cobra.Command{
 				red(&builder, "abstract ")
 			}
 
-			red(&builder, "def ")
+			if strings.Contains(d.HTMLID, "macro") {
+				red(&builder, "macro ")
+			} else {
+				red(&builder, "def ")
+			}
 			magenta(&builder, d.Name)
 			reset(&builder, d.Args, "\n")
 
@@ -119,11 +123,10 @@ var lookupCommand = &cobra.Command{
 			if d.Doc == "" {
 				white(&builder, "\n(no information available)")
 			} else {
-				out, err := glamour.Render(d.Doc, "dark")
-				if err != nil {
-					white(&builder, "\n(error rendering documentation)")
-				} else {
+				if out, err := term.Render(d.Doc); err == nil {
 					builder.WriteString(out)
+				} else {
+					white(&builder, "\n(error rendering documentation)")
 				}
 			}
 		}
