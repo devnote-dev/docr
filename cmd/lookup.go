@@ -13,7 +13,8 @@ import (
 )
 
 var lookupCommand = &cobra.Command{
-	Use: "lookup symbol [symbol]",
+	Use:     "lookup symbol [symbol]",
+	Aliases: []string{"info", "i"},
 	Run: func(cmd *cobra.Command, args []string) {
 		q, err := crystal.ParseQuery(args)
 		if err != nil {
@@ -54,7 +55,10 @@ var lookupCommand = &cobra.Command{
 		}
 
 		builder := strings.Builder{}
-		policy := bluemonday.StrictPolicy()
+		policy := bluemonday.StrictPolicy().AllowElements("a", "code")
+		term, _ := glamour.NewTermRenderer(
+			glamour.WithAutoStyle(),
+		)
 
 		if c, ok := v.(*crystal.Constant); ok {
 			if lib.Name != "Top Level Namespace" && lib.Name != "Macros" {
@@ -65,8 +69,9 @@ var lookupCommand = &cobra.Command{
 			reset(&builder, " = ", c.Value, "\n")
 
 			if c.Summary != "" {
-				builder.WriteString(policy.Sanitize(c.Summary))
-				builder.WriteRune('\n')
+				if out, err := term.Render(policy.Sanitize(c.Summary)); err == nil {
+					builder.WriteString(strings.TrimSuffix(out, "\n"))
+				}
 			}
 
 			builder.WriteString("\nDefined:\n")
@@ -81,11 +86,10 @@ var lookupCommand = &cobra.Command{
 			if c.Doc == "" {
 				white(&builder, "\n(no information available)")
 			} else {
-				out, err := glamour.Render(c.Doc, "dark")
-				if err != nil {
-					white(&builder, "\n(error rendering documentation)")
-				} else {
+				if out, err := term.Render(c.Doc); err == nil {
 					builder.WriteString(out)
+				} else {
+					white(&builder, "\n(error rendering documentation)")
 				}
 			}
 		}
@@ -106,8 +110,9 @@ var lookupCommand = &cobra.Command{
 			reset(&builder, d.Args, "\n")
 
 			if d.Summary != "" {
-				builder.WriteString(policy.Sanitize(d.Summary))
-				builder.WriteRune('\n')
+				if out, err := term.Render(policy.Sanitize(d.Summary)); err == nil {
+					builder.WriteString(strings.TrimSuffix(out, "\n"))
+				}
 			}
 			fmt.Fprintf(&builder, "\nDefined:\n• %s:%d\n", d.Location.File, d.Location.Line)
 
@@ -143,8 +148,9 @@ var lookupCommand = &cobra.Command{
 			}
 
 			if t.Summary != "" {
-				builder.WriteString(policy.Sanitize(t.Summary))
-				builder.WriteRune('\n')
+				if out, err := term.Render(policy.Sanitize(t.Summary)); err == nil {
+					builder.WriteString(strings.TrimSuffix(out, "\n"))
+				}
 			}
 
 			builder.WriteString("\nDefined:\n")
@@ -159,11 +165,10 @@ var lookupCommand = &cobra.Command{
 			if t.Doc == "" {
 				white(&builder, "\n(no information available)")
 			} else {
-				out, err := glamour.Render(t.Doc, "dark")
-				if err != nil {
-					white(&builder, "\n(error rendering documentation)")
-				} else {
+				if out, err := term.Render(t.Doc); err == nil {
 					builder.WriteString(out)
+				} else {
+					white(&builder, "\n(error rendering documentation)")
 				}
 			}
 		}
