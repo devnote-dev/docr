@@ -76,7 +76,7 @@ var lookupCommand = &cobra.Command{
 
 			builder.WriteString("\nDefined:\n")
 			if len(lib.Locations) == 0 {
-				white(&builder, "(cannot resolve locations)\n")
+				white(&builder, "  (cannot resolve locations)\n")
 			} else {
 				for _, loc := range lib.Locations {
 					fmt.Fprintf(&builder, "• %s:%d\n", loc.File, loc.Line)
@@ -84,12 +84,12 @@ var lookupCommand = &cobra.Command{
 			}
 
 			if c.Doc == "" {
-				white(&builder, "\n(no information available)")
+				white(&builder, "\n  (no information available)")
 			} else {
 				if out, err := term.Render(c.Doc); err == nil {
 					builder.WriteString(out)
 				} else {
-					white(&builder, "\n(error rendering documentation)")
+					white(&builder, "\n  (error rendering documentation)")
 				}
 			}
 		}
@@ -121,17 +121,20 @@ var lookupCommand = &cobra.Command{
 			fmt.Fprintf(&builder, "\nDefined:\n• %s:%d\n", d.Location.File, d.Location.Line)
 
 			if d.Doc == "" {
-				white(&builder, "\n(no information available)")
+				white(&builder, "\n  (no information available)")
 			} else {
 				if out, err := term.Render(d.Doc); err == nil {
 					builder.WriteString(out)
 				} else {
-					white(&builder, "\n(error rendering documentation)")
+					white(&builder, "\n  (error rendering documentation)")
 				}
 			}
 		}
 
 		if t, ok := v.(*crystal.Type); ok {
+			if t.Abstract {
+				red(&builder, "abstract ")
+			}
 			red(&builder, t.Kind, " ")
 			blue(&builder, t.FullName)
 
@@ -147,6 +150,17 @@ var lookupCommand = &cobra.Command{
 				}
 				red(&builder, "\nend\n")
 			} else {
+				if anc := t.Ancestors; len(anc) > 2 {
+					anc = anc[:2]
+					reset(&builder, " < ")
+					blue(&builder, anc[0].FullName)
+					if len(anc) > 1 {
+						for _, a := range anc[1:] {
+							reset(&builder, ", ")
+							blue(&builder, a.FullName)
+						}
+					}
+				}
 				builder.WriteRune('\n')
 			}
 
@@ -158,20 +172,36 @@ var lookupCommand = &cobra.Command{
 
 			builder.WriteString("\nDefined:\n")
 			if len(lib.Locations) == 0 {
-				white(&builder, "(cannot resolve locations)\n")
+				white(&builder, "  (cannot resolve locations)\n")
 			} else {
 				for _, loc := range lib.Locations {
 					fmt.Fprintf(&builder, "• %s:%d\n", loc.File, loc.Line)
 				}
 			}
 
+			if len(t.Constructors) != 0 {
+				builder.WriteString("\nConstructors:\n")
+				for _, c := range t.Constructors {
+					red(&builder, "  def ")
+					magenta(&builder, c.Name)
+					reset(&builder, c.Args, "\n")
+				}
+			}
+
+			if s := len(t.ClassMethods); s != 0 {
+				fmt.Fprintf(&builder, "\nClass methods: %d\n", s)
+			}
+			if s := len(t.InstanceMethods); s != 0 {
+				fmt.Fprintf(&builder, "\nInstance methods: %d\n", s)
+			}
+
 			if t.Doc == "" {
-				white(&builder, "\n(no information available)")
+				white(&builder, "\n  (no information available)")
 			} else {
 				if out, err := term.Render(t.Doc); err == nil {
 					builder.WriteString(out)
 				} else {
-					white(&builder, "\n(error rendering documentation)")
+					white(&builder, "\n  (error rendering documentation)")
 				}
 			}
 		}
