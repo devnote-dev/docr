@@ -14,7 +14,7 @@ import (
 
 var lookupCommand = &cobra.Command{
 	Use:     "lookup symbol [symbol]",
-	Aliases: []string{"info", "i"},
+	Aliases: []string{"info"},
 	Run: func(cmd *cobra.Command, args []string) {
 		q, err := crystal.ParseQuery(args)
 		if err != nil {

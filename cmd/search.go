@@ -20,8 +20,7 @@ var (
 )
 
 var searchCommand = &cobra.Command{
-	Use:     "search symbol",
-	Aliases: []string{"s"},
+	Use: "search symbol",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			var input string
