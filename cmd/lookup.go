@@ -116,6 +116,11 @@ var lookupCommand = &cobra.Command{
 			} else {
 				red(&builder, "def ")
 			}
+
+			if lib.Name != "Top Level Namespace" && lib.Name != "Macros" {
+				blue(&builder, lib.Name)
+				reset(&builder, ".") // TODO: distinguish instance methods
+			}
 			magenta(&builder, d.Name)
 			reset(&builder, d.Args, "\n")
 
