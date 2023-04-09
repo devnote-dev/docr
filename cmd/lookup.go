@@ -161,16 +161,9 @@ var lookupCommand = &cobra.Command{
 				}
 				red(&builder, "\nend\n")
 			} else {
-				if anc := t.Ancestors; len(anc) > 2 {
-					anc = anc[:2]
+				if t.SuperClass != nil && t.SuperClass.FullName != "Reference" && t.SuperClass.FullName != "Value" {
 					reset(&builder, " < ")
-					blue(&builder, anc[0].FullName)
-					if len(anc) > 1 {
-						for _, a := range anc[1:] {
-							reset(&builder, ", ")
-							blue(&builder, a.FullName)
-						}
-					}
+					blue(&builder, t.SuperClass.FullName)
 				}
 				builder.WriteRune('\n')
 			}
@@ -182,10 +175,10 @@ var lookupCommand = &cobra.Command{
 			}
 
 			builder.WriteString("\nDefined:\n")
-			if len(lib.Locations) == 0 {
+			if len(t.Locations) == 0 {
 				white(&builder, "  (cannot resolve locations)\n")
 			} else {
-				for _, loc := range lib.Locations {
+				for _, loc := range t.Locations {
 					fmt.Fprintf(&builder, "• %s:%d\n", loc.File, loc.Line)
 				}
 			}
