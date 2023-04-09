@@ -55,11 +55,17 @@ var searchCommand = &cobra.Command{
 		}
 
 		if len(q.Types) != 0 {
-			lib = crystal.ResolveType(lib, q.Types)
-		}
-		if lib == nil {
-			fmt.Fprintln(os.Stderr, "symbol not found")
-			return
+			res := crystal.ResolveType(lib, q.Types)
+			if res == nil && q.Library != "crystal" {
+				res = crystal.ResolveType(lib.Types[0], q.Types)
+			}
+
+			if res == nil {
+				fmt.Fprintln(os.Stderr, "symbol not found")
+				return
+			}
+
+			lib = res
 		}
 
 		types := crystal.FilterTypes(lib, q.Symbol)
