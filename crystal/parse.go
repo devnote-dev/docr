@@ -8,7 +8,7 @@ import (
 
 var (
 	libRule  = regexp.MustCompile(`\A[a-z0-9_-]+\z`)
-	pathRule = regexp.MustCompile(`\A(?:[\w:]+)(?:(?:\.|#|\s)(?:\w+))?\z`)
+	pathRule = regexp.MustCompile(`\A(?:[\w:!?<>+\-*/^=~%$&\x60\[|\]]+)(?:(?:\.|#|\s)(?:[\w!?<>+\-*/^=~%$&\x60\[|\]]+))?\z`)
 	modRule  = regexp.MustCompile(`\A\w+\z`)
 )
 
