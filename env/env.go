@@ -116,6 +116,34 @@ func GetLibrary(name, version string) (*crystal.Type, error) {
 	return &top.Program, nil
 }
 
+func RemoveLibrary(name string) error {
+	path := filepath.Join(lib, name)
+	if exists(path) {
+		return os.RemoveAll(path)
+	}
+
+	return fmt.Errorf("library %s does not exist", name)
+}
+
+func RemoveLibraryVersion(name, version string) error {
+	path := filepath.Join(lib, name, version)
+	if exists(path) {
+		if err := os.RemoveAll(path); err != nil {
+			return err
+		}
+
+		path = filepath.Dir(path)
+		dir, err := os.ReadDir(path)
+		if err != nil || len(dir) != 0 {
+			return nil
+		}
+
+		return os.RemoveAll(path)
+	}
+
+	return fmt.Errorf("library %s version %s does not exist", name, version)
+}
+
 func exists(p string) bool {
 	if _, err := os.Stat(p); err != nil {
 		return false

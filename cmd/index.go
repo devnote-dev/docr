@@ -140,9 +140,36 @@ var indexGetCommand = &cobra.Command{
 	},
 }
 
+var indexRemoveCommand = &cobra.Command{
+	Use: "remove name [version]",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			return
+		}
+
+		var err error
+		name := args[0]
+		version := ""
+		if len(args) > 1 {
+			version = args[1]
+		}
+
+		if version == "" {
+			err = env.RemoveLibrary(name)
+		} else {
+			err = env.RemoveLibraryVersion(name, version)
+		}
+
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+	},
+}
+
 func init() {
 	indexCommand.AddCommand(indexListCommand)
 	indexCommand.AddCommand(indexGetCommand)
+	indexCommand.AddCommand(indexRemoveCommand)
 }
 
 func clone(source, version, dest string) error {
