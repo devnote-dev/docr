@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/devnote-dev/docr/crystal"
 )
@@ -65,9 +64,10 @@ func GetLibraries() (map[string][]string, error) {
 
 		var versions []string
 		for _, i := range inner {
-			if strings.HasSuffix(i.Name(), ".json") && i.Type().IsRegular() {
-				versions = append(versions, i.Name())
+			if !i.IsDir() {
+				continue
 			}
+			versions = append(versions, i.Name())
 		}
 
 		libraries[e.Name()] = versions
@@ -88,16 +88,17 @@ func GetLibraryVersions(name string) ([]string, error) {
 
 	var versions []string
 	for _, e := range entries {
-		if strings.HasSuffix(e.Name(), ".json") && e.Type().IsRegular() {
-			versions = append(versions, strings.TrimSuffix(e.Name(), ".json"))
+		if !e.IsDir() {
+			continue
 		}
+		versions = append(versions, e.Name())
 	}
 
 	return versions, nil
 }
 
 func GetLibrary(name, version string) (*crystal.Type, error) {
-	path := filepath.Join(lib, name, version+".json")
+	path := filepath.Join(lib, name, version, "index.json")
 	if !exists(path) {
 		return nil, fmt.Errorf("could not find documentation for %s version %s", name, version)
 	}

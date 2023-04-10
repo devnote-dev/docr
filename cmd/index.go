@@ -38,15 +38,11 @@ var indexListCommand = &cobra.Command{
 
 			if len(versions) > 1 {
 				for _, v := range versions[:1] {
-					builder.WriteString("|———— v")
-					builder.WriteString(strings.TrimSuffix(v, ".json"))
-					builder.WriteRune('\n')
+					fmt.Fprintf(&builder, "|———— v%s\n", v)
 				}
 			}
 
-			builder.WriteString("'———— v")
-			builder.WriteString(strings.TrimSuffix(versions[len(versions)-1], ".json"))
-			builder.WriteRune('\n')
+			fmt.Fprintf(&builder, "'———— v%s\n", versions[len(versions)-1])
 		}
 
 		fmt.Println(builder.String())
