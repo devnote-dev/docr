@@ -16,6 +16,8 @@ var (
 	lib   string
 )
 
+const defaultPerms = fs.FileMode(os.O_CREATE | os.O_RDWR | os.O_TRUNC)
+
 func init() {
 	root, err := os.UserHomeDir()
 	if err != nil {
@@ -32,6 +34,16 @@ func CacheDir() string {
 
 func LibDir() string {
 	return lib
+}
+
+func EnsureDirectory(path string) error {
+	if exists(path) {
+		if err := os.RemoveAll(path); err != nil {
+			return err
+		}
+	}
+
+	return os.MkdirAll(path, defaultPerms)
 }
 
 func GetLibraries() (map[string][]string, error) {
@@ -101,36 +113,6 @@ func GetLibrary(name, version string) (*crystal.Type, error) {
 	}
 
 	return &top.Program, nil
-}
-
-func CreateLibrary(name, version string, data []byte) (string, error) {
-	if _, err := GetLibrary(name, version); err != nil {
-		return "", fmt.Errorf("documentation for %s version %s already exists", name, version)
-	}
-
-	path := filepath.Join(lib, name)
-	if err := os.MkdirAll(path, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
-		return "", err
-	}
-
-	path = filepath.Join(path, version+".json")
-	file, err := os.Create(path)
-	if err != nil {
-		return "", err
-	}
-
-	defer file.Close()
-	file.Write(data)
-
-	return path, nil
-}
-
-func RemoveLibrary(name, version string) error {
-	if _, err := GetLibrary(name, version); err != nil {
-		return fmt.Errorf("documentation does not exist for %s version %s", name, version)
-	}
-
-	return os.Remove(filepath.Join(lib, name, version+".json"))
 }
 
 func exists(p string) bool {
