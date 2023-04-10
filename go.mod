@@ -7,6 +7,7 @@ require (
 	github.com/fatih/color v1.15.0
 	github.com/microcosm-cc/bluemonday v1.0.23
 	github.com/spf13/cobra v1.7.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
