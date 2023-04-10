@@ -49,8 +49,8 @@ var indexListCommand = &cobra.Command{
 	},
 }
 
-var indexGetCommand = &cobra.Command{
-	Use: "get name source [version]",
+var indexImportCommand = &cobra.Command{
+	Use: "import name source [version]",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 2 {
 			return
@@ -135,7 +135,6 @@ var indexGetCommand = &cobra.Command{
 		out, err = proc.Output()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to build docs:\n%s\n", out)
-			return
 		}
 	},
 }
@@ -168,7 +167,7 @@ var indexRemoveCommand = &cobra.Command{
 
 func init() {
 	indexCommand.AddCommand(indexListCommand)
-	indexCommand.AddCommand(indexGetCommand)
+	indexCommand.AddCommand(indexImportCommand)
 	indexCommand.AddCommand(indexRemoveCommand)
 }
 
