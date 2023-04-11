@@ -15,7 +15,6 @@ import (
 
 var libraryCommand = &cobra.Command{
 	Use: "library command [arguments] [options]",
-	Run: func(*cobra.Command, []string) {},
 }
 
 var libraryListCommand = &cobra.Command{
@@ -83,10 +82,14 @@ var libraryAddCommand = &cobra.Command{
 			}
 		}
 
-		u, err := url.ParseRequestURI(src)
+		u, err := url.Parse(src)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
+		}
+
+		if u.Scheme == "" {
+			u.Scheme = "https"
 		}
 
 		cache := filepath.Join(env.CacheDir(), name)
@@ -183,9 +186,11 @@ func clone(source, version, dest string) error {
 		return nil
 	}
 
-	if version != "" {
-		args[2] = "--tag"
+	if version == "" {
+		return fmt.Errorf("cannot clone repo: %s", source)
 	}
+
+	args[2] = "--tag"
 	err = exec.Command("git", args...).Run()
 	if err == nil {
 		return nil
