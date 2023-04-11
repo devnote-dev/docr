@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/devnote-dev/docr/env"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -45,6 +46,52 @@ var libraryListCommand = &cobra.Command{
 		}
 
 		fmt.Println(builder.String())
+	},
+}
+
+var libraryAboutCommand = &cobra.Command{
+	Use: "about name [version]",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			return
+		}
+
+		name := args[0]
+		var version string
+		if len(args) > 1 {
+			version = args[1]
+		} else {
+			ver, err := env.GetLibraryVersions(name)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				return
+			}
+
+			version = ver[len(ver)-1]
+		}
+
+		buf, err := os.ReadFile(filepath.Join(env.LibDir(), name, version, "README.md"))
+		if err != nil {
+			if os.IsNotExist(err) {
+				fmt.Fprintf(os.Stderr, "shard %s version %s has no README\n", name, version)
+			} else {
+				fmt.Fprintln(os.Stderr, err)
+			}
+			return
+		}
+
+		// policy := bluemonday.StrictPolicy().AllowElements("a", "code")
+		term, _ := glamour.NewTermRenderer(
+			glamour.WithAutoStyle(),
+		)
+
+		out, err := term.Render(string(buf))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "failed to render index.html file")
+			return
+		}
+
+		fmt.Print(out)
 	},
 }
 
@@ -144,6 +191,12 @@ var libraryAddCommand = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "failed to build docs:\n%s\n", out)
 		}
+
+		read := filepath.Join(env.CacheDir(), name, "README.md")
+		if exists(read) {
+			_ = os.Rename(read, filepath.Join(env.LibDir(), name, version, "README.md"))
+		}
+
 	},
 }
 
@@ -175,6 +228,7 @@ var libraryRemoveCommand = &cobra.Command{
 
 func init() {
 	libraryCommand.AddCommand(libraryListCommand)
+	libraryCommand.AddCommand(libraryAboutCommand)
 	libraryCommand.AddCommand(libraryAddCommand)
 	libraryCommand.AddCommand(libraryRemoveCommand)
 }
