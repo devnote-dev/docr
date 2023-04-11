@@ -132,6 +132,11 @@ var libraryAddCommand = &cobra.Command{
 			}
 		}
 
+		if _, err := env.GetLibrary(name, version); err == nil {
+			fmt.Fprintf(os.Stderr, "shard %s version %s is already imported\n", name, version)
+			return
+		}
+
 		lib := filepath.Join(env.LibDir(), name, version)
 		proc = exec.Command("crystal", "docs", "-o", lib)
 		proc.Dir = cache
