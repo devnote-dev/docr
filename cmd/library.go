@@ -13,12 +13,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var indexCommand = &cobra.Command{
-	Use: "index command [arguments] [options]",
+var libraryCommand = &cobra.Command{
+	Use: "library command [arguments] [options]",
 	Run: func(*cobra.Command, []string) {},
 }
 
-var indexListCommand = &cobra.Command{
+var libraryListCommand = &cobra.Command{
 	Use: "list [options]",
 	Run: func(*cobra.Command, []string) {
 		libraries, err := env.GetLibraries()
@@ -49,8 +49,8 @@ var indexListCommand = &cobra.Command{
 	},
 }
 
-var indexImportCommand = &cobra.Command{
-	Use: "import name source [version]",
+var libraryAddCommand = &cobra.Command{
+	Use: "add name source [version]",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 2 {
 			return
@@ -139,7 +139,7 @@ var indexImportCommand = &cobra.Command{
 	},
 }
 
-var indexRemoveCommand = &cobra.Command{
+var libraryRemoveCommand = &cobra.Command{
 	Use: "remove name [version]",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
@@ -166,9 +166,9 @@ var indexRemoveCommand = &cobra.Command{
 }
 
 func init() {
-	indexCommand.AddCommand(indexListCommand)
-	indexCommand.AddCommand(indexImportCommand)
-	indexCommand.AddCommand(indexRemoveCommand)
+	libraryCommand.AddCommand(libraryListCommand)
+	libraryCommand.AddCommand(libraryAddCommand)
+	libraryCommand.AddCommand(libraryRemoveCommand)
 }
 
 func clone(source, version, dest string) error {

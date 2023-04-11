@@ -8,7 +8,7 @@ var mainCommand = &cobra.Command{
 
 func init() {
 	mainCommand.AddCommand(envCommand)
-	mainCommand.AddCommand(indexCommand)
+	mainCommand.AddCommand(libraryCommand)
 	mainCommand.AddCommand(searchCommand)
 	mainCommand.AddCommand(lookupCommand)
 }
