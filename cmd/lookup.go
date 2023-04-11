@@ -168,6 +168,27 @@ var lookupCommand = &cobra.Command{
 				builder.WriteRune('\n')
 			}
 
+			if len(t.Included) != 0 || len(t.Constants) != 0 {
+				if len(t.Included) != 0 {
+					for _, i := range t.Included {
+						red(&builder, "  include ")
+						blue(&builder, i.FullName, "\n")
+					}
+					if len(t.Constants) != 0 {
+						builder.WriteRune('\n')
+					}
+				}
+
+				if len(t.Constants) != 0 {
+					for _, c := range t.Constants {
+						blue(&builder, "  ", c.Name)
+						reset(&builder, " = ", c.Value, "\n")
+					}
+				}
+
+				red(&builder, "end\n")
+			}
+
 			if t.Summary != "" {
 				if out, err := term.Render(policy.Sanitize(t.Summary)); err == nil {
 					builder.WriteString(strings.TrimSuffix(out, "\n"))
