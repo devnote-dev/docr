@@ -2,11 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/devnote-dev/docr/crystal"
 	"github.com/devnote-dev/docr/env"
+	"github.com/devnote-dev/docr/log"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -29,28 +29,31 @@ var searchCommand = &cobra.Command{
 			fmt.Scanln(&input)
 			args = strings.Split(input, " ")
 		}
+		log.Configure(cmd)
 
 		q, err := crystal.ParseQuery(args)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("failed to parse query:")
+			log.Error(err)
 			return
 		}
 
 		versions, err := env.GetLibraryVersions(q.Library)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("failed to get library versions:")
+			log.Error(err)
 			return
 		}
 
 		if len(versions) == 0 {
-			fmt.Fprintf(os.Stderr, "latest %s documentation is not available\n", q.Library)
+			log.Error("no documentation is available for this library")
 			return
 		}
 
 		latest := versions[len(versions)-1]
 		lib, err := env.GetLibrary(q.Library, latest)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Errorf("latest documentation for library %s is not available", q.Library)
 			return
 		}
 
@@ -61,7 +64,7 @@ var searchCommand = &cobra.Command{
 			}
 
 			if res == nil {
-				fmt.Fprintln(os.Stderr, "symbol not found")
+				log.Error("could not resolve types or namespaces for that symbol")
 				return
 			}
 
@@ -70,7 +73,7 @@ var searchCommand = &cobra.Command{
 
 		types := crystal.FilterTypes(lib, q.Symbol)
 		if len(types) == 0 {
-			fmt.Fprintln(os.Stderr, "no documentation found for symbol")
+			log.Errorf("no documentation found for symbol '%s'", q.Symbol)
 			return
 		}
 		fmt.Print("Search Results:\n\n")

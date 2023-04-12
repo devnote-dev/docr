@@ -10,6 +10,7 @@ import (
 
 	"github.com/charmbracelet/glamour"
 	"github.com/devnote-dev/docr/env"
+	"github.com/devnote-dev/docr/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -20,14 +21,17 @@ var libraryCommand = &cobra.Command{
 
 var libraryListCommand = &cobra.Command{
 	Use: "list [options]",
-	Run: func(*cobra.Command, []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
+		log.Configure(cmd)
 		libraries, err := env.GetLibraries()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("failed to get libraries:")
+			log.Error(err)
 			return
 		}
 
 		if len(libraries) == 0 {
+			log.Error("no libraries have been installed")
 			return
 		}
 
@@ -55,6 +59,7 @@ var libraryAboutCommand = &cobra.Command{
 		if len(args) == 0 {
 			return
 		}
+		log.Configure(cmd)
 
 		name := args[0]
 		var version string
@@ -63,7 +68,8 @@ var libraryAboutCommand = &cobra.Command{
 		} else {
 			ver, err := env.GetLibraryVersions(name)
 			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
+				log.Error("failed to get library versions:")
+				log.Error(err)
 				return
 			}
 
@@ -73,9 +79,9 @@ var libraryAboutCommand = &cobra.Command{
 		buf, err := os.ReadFile(filepath.Join(env.LibDir(), name, version, "README.md"))
 		if err != nil {
 			if os.IsNotExist(err) {
-				fmt.Fprintf(os.Stderr, "shard %s version %s has no README\n", name, version)
+				log.Errorf("library %s version %s has no README", name, version)
 			} else {
-				fmt.Fprintln(os.Stderr, err)
+				log.Error(err)
 			}
 			return
 		}
@@ -87,7 +93,8 @@ var libraryAboutCommand = &cobra.Command{
 
 		out, err := term.Render(string(buf))
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "failed to render index.html file")
+			log.Errorf("failed to render library %s README:", name)
+			log.Error(err)
 			return
 		}
 
@@ -101,6 +108,7 @@ var libraryAddCommand = &cobra.Command{
 		if len(args) != 2 {
 			return
 		}
+		log.Configure(cmd)
 
 		name := args[0]
 		src := args[1]
@@ -113,13 +121,13 @@ var libraryAddCommand = &cobra.Command{
 			if version != "" {
 				ver, err := env.GetLibraryVersions("crystal")
 				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
+					// fmt.Fprintln(os.Stderr, err)
 					return
 				}
 
 				for _, v := range ver {
 					if v == version {
-						fmt.Fprintf(os.Stderr, "crystal version %s is already downloaded\n", v)
+						// fmt.Fprintf(os.Stderr, "crystal version %s is already downloaded\n", v)
 						// did you mean to run 'docr index update crystal'?
 						return
 					}
@@ -131,42 +139,51 @@ var libraryAddCommand = &cobra.Command{
 
 		u, err := url.Parse(src)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error(err)
 			return
 		}
 
 		if u.Scheme == "" {
 			u.Scheme = "https"
 		}
+		log.Debugf("url: %s", u.String())
 
 		cache := filepath.Join(env.CacheDir(), name)
 		if err := env.EnsureDirectory(cache); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error(err)
 			return
 		}
-		defer os.RemoveAll(cache)
+
+		defer func() {
+			log.Debugf("clearing: %s", cache)
+			_ = os.RemoveAll(cache)
+		}()
 
 		if err := clone(u.String(), version, cache); err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error(err)
 			return
 		}
 
+		log.Debug("exec: shards install --without-development")
 		proc := exec.Command("shards", "install", "--without-development")
 		proc.Dir = cache
 		out, err := proc.Output()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to install dependencies:\n%s\n", out)
+			log.Errorf("failed to install library %s dependencies:", name)
+			log.Error(out)
 			return
 		}
 
 		shard, err := extractShard(cache)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("failed to extract shard information:")
+			log.Error(err)
 			return
 		}
 
 		if shard.Name != name {
-			fmt.Fprintln(os.Stderr, "shard name does not match")
+			log.Error("cannot verify shard: names do not match")
+			log.Errorf("expected %s; got %s", name, shard.Name)
 			return
 		}
 
@@ -174,25 +191,30 @@ var libraryAddCommand = &cobra.Command{
 			version = shard.Version
 		} else {
 			if shard.Version != version {
-				fmt.Fprintln(os.Stderr, "shard version does not match")
+				log.Error("cannot verify shard: versions do not match")
+				log.Errorf("expected %s; got %s", version, shard.Version)
 				return
 			}
 		}
 
 		if _, err := env.GetLibrary(name, version); err == nil {
-			fmt.Fprintf(os.Stderr, "shard %s version %s is already imported\n", name, version)
+			log.Errorf("library %s version %s is already imported", name, version)
 			return
 		}
 
 		lib := filepath.Join(env.LibDir(), name, version)
+		log.Debugf("exec: crystal docs -o %s", lib)
+
 		proc = exec.Command("crystal", "docs", "-o", lib)
 		proc.Dir = cache
 		out, err = proc.Output()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to build docs:\n%s\n", out)
+			log.Error("failed to build docs:")
+			log.Error(string(out))
 		}
 
 		read := filepath.Join(env.CacheDir(), name, "README.md")
+		log.Debugf("read: %s", read)
 		if exists(read) {
 			_ = os.Rename(read, filepath.Join(env.LibDir(), name, version, "README.md"))
 		}
@@ -206,6 +228,7 @@ var libraryRemoveCommand = &cobra.Command{
 		if len(args) == 0 {
 			return
 		}
+		log.Configure(cmd)
 
 		var err error
 		name := args[0]
@@ -221,7 +244,8 @@ var libraryRemoveCommand = &cobra.Command{
 		}
 
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("failed to remove library:")
+			log.Error(err)
 		}
 	},
 }
@@ -240,22 +264,25 @@ func clone(source, version, dest string) error {
 	}
 	args = append(args, dest)
 
+	log.Debugf("exec: %v", args)
 	err := exec.Command("git", args...).Run()
 	if err == nil {
 		return nil
 	}
 
 	if version == "" {
-		return fmt.Errorf("cannot clone repo: %s", source)
+		return fmt.Errorf("failed to clone %s", source)
 	}
 
 	args[2] = "--tag"
+	log.Debugf("exec: %v", args)
 	err = exec.Command("git", args...).Run()
 	if err == nil {
 		return nil
 	}
 
 	args = append(args[:2], dest)
+	log.Debugf("exec: %v", args)
 	return exec.Command("git", args...).Run()
 }
 
@@ -266,6 +293,8 @@ type shardDef struct {
 
 func extractShard(p string) (*shardDef, error) {
 	p = filepath.Join(p, "shard.yml")
+	log.Debugf("shard path: %s", p)
+
 	buf, err := os.ReadFile(p)
 	if err != nil {
 		return nil, err

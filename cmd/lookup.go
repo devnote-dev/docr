@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/charmbracelet/glamour"
 	"github.com/devnote-dev/docr/crystal"
 	"github.com/devnote-dev/docr/env"
+	"github.com/devnote-dev/docr/log"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/spf13/cobra"
 )
@@ -16,27 +16,30 @@ var lookupCommand = &cobra.Command{
 	Use:     "lookup symbol [symbol]",
 	Aliases: []string{"info"},
 	Run: func(cmd *cobra.Command, args []string) {
+		log.Configure(cmd)
 		q, err := crystal.ParseQuery(args)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("failed to parse query:")
+			log.Error(err)
 			return
 		}
 
 		versions, err := env.GetLibraryVersions(q.Library)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Error("failed to get library versions:")
+			log.Error(err)
 			return
 		}
 
 		if len(versions) == 0 {
-			fmt.Fprintf(os.Stderr, "latest %s documentation is not available\n", q.Library)
+			log.Errorf("documentation for %s is not available", q.Library)
 			return
 		}
 
 		latest := versions[len(versions)-1]
 		lib, err := env.GetLibrary(q.Library, latest)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			log.Errorf("latest documentation for library %s is not available", q.Library)
 			return
 		}
 
@@ -47,7 +50,7 @@ var lookupCommand = &cobra.Command{
 			}
 
 			if res == nil {
-				fmt.Fprintln(os.Stderr, "symbol not found")
+				log.Error("could not resolve types or namespaces for that symbol")
 				return
 			}
 
@@ -56,7 +59,7 @@ var lookupCommand = &cobra.Command{
 
 		v := crystal.FindType(lib, q.Symbol)
 		if v == nil {
-			fmt.Fprintf(os.Stderr, "documentation for %s not found\n", q.Symbol)
+			log.Errorf("no documentation found for symbol '%s'", q.Symbol)
 			return
 		}
 

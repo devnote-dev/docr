@@ -7,25 +7,31 @@ import (
 	"strings"
 
 	"github.com/devnote-dev/docr/env"
+	"github.com/devnote-dev/docr/log"
 	"github.com/spf13/cobra"
 )
 
 var envCommand = &cobra.Command{
 	Use: "env [name] [options]",
 	Run: func(cmd *cobra.Command, args []string) {
+		log.Configure(cmd)
+
 		init, _ := cmd.Flags().GetBool("init")
 		cache := env.CacheDir()
 		lib := env.LibDir()
 
 		if init {
 			if !exists(cache) {
-				if os.MkdirAll(cache, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)) != nil {
-					fmt.Fprintln(os.Stderr, "failed to create cache directory")
+				if err := os.MkdirAll(cache, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
+					log.Error("failed to create cache directory")
+					log.DebugError(err)
 				}
 			}
+
 			if !exists(lib) {
-				if os.MkdirAll(lib, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)) != nil {
-					fmt.Fprintln(os.Stderr, "failed to create library directory")
+				if err := os.MkdirAll(lib, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
+					log.Error("failed to create library directory")
+					log.DebugError(err)
 				}
 			}
 		}
