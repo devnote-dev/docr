@@ -105,13 +105,23 @@ var libraryAboutCommand = &cobra.Command{
 var libraryAddCommand = &cobra.Command{
 	Use: "add name source [version]",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 2 {
+		if len(args) == 0 {
 			return
 		}
 		log.Configure(cmd)
 
 		name := args[0]
-		src := args[1]
+		var src string
+
+		if name != "crystal" {
+			if len(args) > 1 {
+				src = args[1]
+			} else {
+				log.Error("missing source argument for command")
+				return
+			}
+		}
+
 		version := ""
 		if len(args) > 2 {
 			version = args[2]
@@ -121,20 +131,46 @@ var libraryAddCommand = &cobra.Command{
 			if version != "" {
 				ver, err := env.GetLibraryVersions("crystal")
 				if err != nil {
-					// fmt.Fprintln(os.Stderr, err)
+					log.Error("failed to get crystal library versions:")
+					log.Error(err)
 					return
 				}
 
 				for _, v := range ver {
 					if v == version {
-						// fmt.Fprintf(os.Stderr, "crystal version %s is already downloaded\n", v)
-						// did you mean to run 'docr index update crystal'?
+						log.Errorf("crystal version %s is already imported", v)
+						log.Error("did you mean to run 'docr library update'?")
 						return
 					}
 				}
-
-				// TODO
 			}
+
+			vers, err := env.GetCrystalVersions()
+			if err != nil {
+				log.Error("failed to get available crystal versions:")
+				log.Error(err)
+				return
+			}
+
+			if version == "" {
+				version = vers[1].Name
+				log.Debugf("using latest crystal: %s", version)
+			}
+
+			for _, v := range vers {
+				if v.Name == version {
+					goto fetch
+				}
+			}
+
+			log.Errorf("crystal version %s not found", version)
+
+		fetch:
+			if err := env.ImportCrystalVersion(version); err != nil {
+				log.Errorf("failed to import documentation for crystal:")
+				log.Error(err)
+			}
+			return
 		}
 
 		u, err := url.Parse(src)
