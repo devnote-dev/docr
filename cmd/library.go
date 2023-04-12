@@ -105,157 +105,152 @@ var libraryAboutCommand = &cobra.Command{
 var libraryAddCommand = &cobra.Command{
 	Use: "add name source [version]",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
+		if len(args) < 2 {
+			cmd.Help()
 			return
 		}
 		log.Configure(cmd)
 
-		name := args[0]
-		var src string
-
-		if name != "crystal" {
-			if len(args) > 1 {
-				src = args[1]
-			} else {
-				log.Error("missing source argument for command")
-				return
-			}
-		}
-
-		version := ""
-		if len(args) > 2 {
-			version = args[2]
-		}
-
-		if name == "crystal" {
-			if version != "" {
-				ver, err := env.GetLibraryVersions("crystal")
-				if err != nil {
-					log.Error("failed to get crystal library versions:")
-					log.Error(err)
-					return
-				}
-
-				for _, v := range ver {
-					if v == version {
-						log.Errorf("crystal version %s is already imported", v)
-						log.Error("did you mean to run 'docr library update'?")
-						return
-					}
-				}
-			}
-
-			vers, err := env.GetCrystalVersions()
-			if err != nil {
-				log.Error("failed to get available crystal versions:")
-				log.Error(err)
-				return
-			}
-
-			if version == "" {
-				version = vers[1].Name
-				log.Debugf("using latest crystal: %s", version)
-			}
-
-			for _, v := range vers {
-				if v.Name == version {
-					goto fetch
-				}
-			}
-
-			log.Errorf("crystal version %s not found", version)
-
-		fetch:
-			if err := env.ImportCrystalVersion(version); err != nil {
-				log.Errorf("failed to import documentation for crystal:")
-				log.Error(err)
-			}
-			return
-		}
-
-		u, err := url.Parse(src)
-		if err != nil {
-			log.Error(err)
-			return
-		}
-
-		if u.Scheme == "" {
-			u.Scheme = "https"
-		}
-		log.Debugf("url: %s", u.String())
-
-		cache := filepath.Join(env.CacheDir(), name)
-		if err := env.EnsureDirectory(cache); err != nil {
-			log.Error(err)
-			return
-		}
-
-		defer func() {
-			log.Debugf("clearing: %s", cache)
-			_ = os.RemoveAll(cache)
-		}()
-
-		if err := clone(u.String(), version, cache); err != nil {
-			log.Error(err)
-			return
-		}
-
-		log.Debug("exec: shards install --without-development")
-		proc := exec.Command("shards", "install", "--without-development")
-		proc.Dir = cache
-		out, err := proc.Output()
-		if err != nil {
-			log.Errorf("failed to install library %s dependencies:", name)
-			log.Error(out)
-			return
-		}
-
-		shard, err := extractShard(cache)
-		if err != nil {
-			log.Error("failed to extract shard information:")
-			log.Error(err)
-			return
-		}
-
-		if shard.Name != name {
-			log.Error("cannot verify shard: names do not match")
-			log.Errorf("expected %s; got %s", name, shard.Name)
-			return
-		}
-
-		if version == "" {
-			version = shard.Version
+		if args[0] == "crystal" {
+			addCrystalLibrary(args[1])
 		} else {
-			if shard.Version != version {
-				log.Error("cannot verify shard: versions do not match")
-				log.Errorf("expected %s; got %s", version, shard.Version)
-				return
+			ver := ""
+			if len(args) > 2 {
+				ver = args[2]
 			}
+			addExternalLibrary(args[0], args[1], ver)
 		}
+	},
+}
 
-		if _, err := env.GetLibrary(name, version); err == nil {
-			log.Errorf("library %s version %s is already imported", name, version)
+func addCrystalLibrary(version string) {
+	if version != "" {
+		ver, err := env.GetLibraryVersions("crystal")
+		if err != nil {
+			log.Error("failed to get crystal library versions:")
+			log.Error(err)
 			return
 		}
 
-		lib := filepath.Join(env.LibDir(), name, version)
-		log.Debugf("exec: crystal docs -o %s", lib)
-
-		proc = exec.Command("crystal", "docs", "-o", lib)
-		proc.Dir = cache
-		out, err = proc.Output()
-		if err != nil {
-			log.Error("failed to build docs:")
-			log.Error(string(out))
+		for _, v := range ver {
+			if v == version {
+				log.Errorf("crystal version %s is already imported", v)
+				log.Error("did you mean to run 'docr library update'?")
+				return
+			}
 		}
+	}
 
-		read := filepath.Join(env.CacheDir(), name, "README.md")
-		log.Debugf("read: %s", read)
-		if exists(read) {
-			_ = os.Rename(read, filepath.Join(env.LibDir(), name, version, "README.md"))
+	vers, err := env.GetCrystalVersions()
+	if err != nil {
+		log.Error("failed to get available crystal versions:")
+		log.Error(err)
+		return
+	}
+
+	if version == "latest" {
+		version = vers[1].Name
+		log.Debugf("using latest crystal: %s", version)
+	}
+
+	for _, v := range vers {
+		if v.Name == version {
+			goto fetch
 		}
+	}
 
-	},
+	log.Errorf("crystal version %s not found", version)
+
+fetch:
+	if err := env.ImportCrystalVersion(version); err != nil {
+		log.Errorf("failed to import documentation for crystal:")
+		log.Error(err)
+	}
+}
+
+func addExternalLibrary(name, version, source string) {
+	u, err := url.Parse(source)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	if u.Scheme == "" {
+		u.Scheme = "https"
+	}
+	log.Debugf("url: %s", u.String())
+
+	cache := filepath.Join(env.CacheDir(), name)
+	if err := env.EnsureDirectory(cache); err != nil {
+		log.Error(err)
+		return
+	}
+
+	defer func() {
+		log.Debugf("clearing: %s", cache)
+		_ = os.RemoveAll(cache)
+	}()
+
+	if err := clone(u.String(), version, cache); err != nil {
+		log.Error(err)
+		return
+	}
+
+	log.Debug("exec: shards install --without-development")
+	proc := exec.Command("shards", "install", "--without-development")
+	proc.Dir = cache
+	out, err := proc.Output()
+	if err != nil {
+		log.Errorf("failed to install library %s dependencies:", name)
+		log.Error(out)
+		return
+	}
+
+	shard, err := extractShard(cache)
+	if err != nil {
+		log.Error("failed to extract shard information:")
+		log.Error(err)
+		return
+	}
+
+	if shard.Name != name {
+		log.Error("cannot verify shard: names do not match")
+		log.Errorf("expected %s; got %s", name, shard.Name)
+		return
+	}
+
+	if version == "" {
+		version = shard.Version
+	} else {
+		if shard.Version != version {
+			log.Error("cannot verify shard: versions do not match")
+			log.Errorf("expected %s; got %s", version, shard.Version)
+			return
+		}
+	}
+
+	if _, err := env.GetLibrary(name, version); err == nil {
+		log.Errorf("library %s version %s is already imported", name, version)
+		return
+	}
+
+	lib := filepath.Join(env.LibDir(), name, version)
+	log.Debugf("exec: crystal docs -o %s", lib)
+
+	proc = exec.Command("crystal", "docs", "-o", lib)
+	proc.Dir = cache
+	out, err = proc.Output()
+	if err != nil {
+		log.Error("failed to build docs:")
+		log.Error(string(out))
+		return
+	}
+
+	read := filepath.Join(env.CacheDir(), name, "README.md")
+	log.Debugf("read: %s", read)
+	if exists(read) {
+		_ = os.Rename(read, filepath.Join(env.LibDir(), name, version, "README.md"))
+	}
 }
 
 var libraryRemoveCommand = &cobra.Command{
