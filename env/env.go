@@ -80,7 +80,7 @@ func GetLibraryVersions(name string) ([]string, error) {
 	entries, err := os.ReadDir(filepath.Join(lib, name))
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("documentation not available for %s", name)
+			return []string{}, nil
 		}
 
 		return nil, err

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/devnote-dev/docr/log"
 )
 
 type Version struct {
@@ -39,6 +41,8 @@ func GetCrystalVersions() ([]*Version, error) {
 }
 
 func ImportCrystalVersions() error {
+	log.Debug("GET https://crystal-lang.org/api/versions.json")
+
 	req, _ := http.NewRequest("GET", "https://crystal-lang.org/api/versions.json", nil)
 	req.Header.Set("Accept", "application/json")
 	res, err := http.DefaultClient.Do(req)
@@ -46,11 +50,21 @@ func ImportCrystalVersions() error {
 		return err
 	}
 
+	log.Debugf("status: %d", res.StatusCode)
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("received non-ok http status: %d", res.StatusCode)
 	}
 
-	path := filepath.Join(lib, "crystal", "versions.json")
+	path := filepath.Join(lib, "crystal")
+	log.Debugf("path: %s", path)
+	if !exists(path) {
+		if err := os.MkdirAll(path, defaultPerms); err != nil {
+			return err
+		}
+	}
+
+	path = filepath.Join(path, "versions.json")
+	log.Debugf("path: %s", path)
 	dest, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o666)
 	if err != nil {
 		return err
@@ -82,18 +96,29 @@ func ImportCrystalVersion(s string) error {
 	}
 
 	req, _ := http.NewRequest("GET", fmt.Sprintf("https://crystal-lang.org%sindex.json", t.URL), nil)
+	log.Debugf("GET %s", req.URL.String())
 	req.Header.Set("Accept", "application/json")
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
 
+	log.Debugf("status: %d", res.StatusCode)
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("received non-ok http status: %d", res.StatusCode)
 	}
 
-	path := filepath.Join(lib, "crystal", t.Name, "index.json")
-	dest, err := os.Open(path)
+	path := filepath.Join(lib, "crystal", t.Name)
+	log.Debugf("path: %s", path)
+	if !exists(path) {
+		if err := os.MkdirAll(path, defaultPerms); err != nil {
+			return err
+		}
+	}
+
+	path = filepath.Join(path, "index.json")
+	log.Debugf("path: %s", path)
+	dest, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o666)
 	if err != nil {
 		return err
 	}
