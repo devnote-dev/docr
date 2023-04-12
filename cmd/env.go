@@ -18,7 +18,7 @@ var envCommand = &cobra.Command{
 
 		init, _ := cmd.Flags().GetBool("init")
 		cache := env.CacheDir()
-		lib := env.LibDir()
+		lib := env.LibraryDir()
 
 		if init {
 			if !exists(cache) {

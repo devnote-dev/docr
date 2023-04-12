@@ -76,7 +76,7 @@ var libraryAboutCommand = &cobra.Command{
 			version = ver[len(ver)-1]
 		}
 
-		buf, err := os.ReadFile(filepath.Join(env.LibDir(), name, version, "README.md"))
+		buf, err := os.ReadFile(filepath.Join(env.LibraryDir(), name, version, "README.md"))
 		if err != nil {
 			if os.IsNotExist(err) {
 				log.Errorf("library %s version %s has no README", name, version)
@@ -234,7 +234,7 @@ func addExternalLibrary(name, version, source string) {
 		return
 	}
 
-	lib := filepath.Join(env.LibDir(), name, version)
+	lib := filepath.Join(env.LibraryDir(), name, version)
 	log.Debugf("exec: crystal docs -o %s", lib)
 
 	proc = exec.Command("crystal", "docs", "-o", lib)
@@ -249,7 +249,7 @@ func addExternalLibrary(name, version, source string) {
 	read := filepath.Join(env.CacheDir(), name, "README.md")
 	log.Debugf("read: %s", read)
 	if exists(read) {
-		_ = os.Rename(read, filepath.Join(env.LibDir(), name, version, "README.md"))
+		_ = os.Rename(read, filepath.Join(env.LibraryDir(), name, version, "README.md"))
 	}
 }
 

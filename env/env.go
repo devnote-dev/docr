@@ -10,30 +10,7 @@ import (
 	"github.com/devnote-dev/docr/crystal"
 )
 
-var (
-	cache string
-	lib   string
-)
-
 const defaultPerms = fs.FileMode(os.O_CREATE | os.O_RDWR | os.O_TRUNC)
-
-func init() {
-	root, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	cache = filepath.Join(root, "docr", "cache")
-	lib = filepath.Join(root, "docr", "libraries")
-}
-
-func CacheDir() string {
-	return cache
-}
-
-func LibDir() string {
-	return lib
-}
 
 func EnsureDirectory(path string) error {
 	if exists(path) {
@@ -46,6 +23,7 @@ func EnsureDirectory(path string) error {
 }
 
 func GetLibraries() (map[string][]string, error) {
+	lib := LibraryDir()
 	entries, err := os.ReadDir(lib)
 	if err != nil {
 		return nil, err
@@ -77,7 +55,7 @@ func GetLibraries() (map[string][]string, error) {
 }
 
 func GetLibraryVersions(name string) ([]string, error) {
-	entries, err := os.ReadDir(filepath.Join(lib, name))
+	entries, err := os.ReadDir(filepath.Join(LibraryDir(), name))
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []string{}, nil
@@ -98,7 +76,7 @@ func GetLibraryVersions(name string) ([]string, error) {
 }
 
 func GetLibrary(name, version string) (*crystal.Type, error) {
-	path := filepath.Join(lib, name, version, "index.json")
+	path := filepath.Join(LibraryDir(), name, version, "index.json")
 	if !exists(path) {
 		return nil, fmt.Errorf("could not find documentation for %s version %s", name, version)
 	}
@@ -117,7 +95,7 @@ func GetLibrary(name, version string) (*crystal.Type, error) {
 }
 
 func RemoveLibrary(name string) error {
-	path := filepath.Join(lib, name)
+	path := filepath.Join(LibraryDir(), name)
 	if exists(path) {
 		return os.RemoveAll(path)
 	}
@@ -126,7 +104,7 @@ func RemoveLibrary(name string) error {
 }
 
 func RemoveLibraryVersion(name, version string) error {
-	path := filepath.Join(lib, name, version)
+	path := filepath.Join(LibraryDir(), name, version)
 	if exists(path) {
 		if err := os.RemoveAll(path); err != nil {
 			return err
