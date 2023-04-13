@@ -11,7 +11,10 @@ func init() {
 	mainCommand.PersistentFlags().Bool("debug", false, "output debug information")
 
 	mainCommand.AddCommand(envCommand)
-	mainCommand.AddCommand(libraryCommand)
+	mainCommand.AddCommand(listCommand)
+	mainCommand.AddCommand(aboutCommand)
+	mainCommand.AddCommand(addCommand)
+	mainCommand.AddCommand(removeCommand)
 	mainCommand.AddCommand(searchCommand)
 	mainCommand.AddCommand(lookupCommand)
 }

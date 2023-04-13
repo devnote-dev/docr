@@ -6,103 +6,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
-	"github.com/charmbracelet/glamour"
 	"github.com/devnote-dev/docr/env"
 	"github.com/devnote-dev/docr/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
-var libraryCommand = &cobra.Command{
-	Use: "library command [arguments] [options]",
-}
-
-var libraryListCommand = &cobra.Command{
-	Use: "list [options]",
-	Run: func(cmd *cobra.Command, _ []string) {
-		log.Configure(cmd)
-		libraries, err := env.GetLibraries()
-		if err != nil {
-			log.Error("failed to get libraries:")
-			log.Error(err)
-			return
-		}
-
-		if len(libraries) == 0 {
-			log.Error("no libraries have been installed")
-			return
-		}
-
-		builder := strings.Builder{}
-		for name, versions := range libraries {
-			builder.WriteString(name)
-			builder.WriteString("\n|\n")
-
-			if len(versions) > 1 {
-				for _, v := range versions[:1] {
-					fmt.Fprintf(&builder, "|———— v%s\n", v)
-				}
-			}
-
-			fmt.Fprintf(&builder, "'———— v%s\n", versions[len(versions)-1])
-		}
-
-		fmt.Println(builder.String())
-	},
-}
-
-var libraryAboutCommand = &cobra.Command{
-	Use: "about name [version]",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			return
-		}
-		log.Configure(cmd)
-
-		name := args[0]
-		var version string
-		if len(args) > 1 {
-			version = args[1]
-		} else {
-			ver, err := env.GetLibraryVersions(name)
-			if err != nil {
-				log.Error("failed to get library versions:")
-				log.Error(err)
-				return
-			}
-
-			version = ver[len(ver)-1]
-		}
-
-		buf, err := os.ReadFile(filepath.Join(env.LibraryDir(), name, version, "README.md"))
-		if err != nil {
-			if os.IsNotExist(err) {
-				log.Errorf("library %s version %s has no README", name, version)
-			} else {
-				log.Error(err)
-			}
-			return
-		}
-
-		// policy := bluemonday.StrictPolicy().AllowElements("a", "code")
-		term, _ := glamour.NewTermRenderer(
-			glamour.WithAutoStyle(),
-		)
-
-		out, err := term.Render(string(buf))
-		if err != nil {
-			log.Errorf("failed to render library %s README:", name)
-			log.Error(err)
-			return
-		}
-
-		fmt.Print(out)
-	},
-}
-
-var libraryAddCommand = &cobra.Command{
+var addCommand = &cobra.Command{
 	Use: "add name source [version]",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
@@ -324,39 +235,4 @@ func extractShard(p string) (*shardDef, error) {
 	}
 
 	return &s, nil
-}
-
-var libraryRemoveCommand = &cobra.Command{
-	Use: "remove name [version]",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			return
-		}
-		log.Configure(cmd)
-
-		var err error
-		name := args[0]
-		version := ""
-		if len(args) > 1 {
-			version = args[1]
-		}
-
-		if version == "" {
-			err = env.RemoveLibrary(name)
-		} else {
-			err = env.RemoveLibraryVersion(name, version)
-		}
-
-		if err != nil {
-			log.Error("failed to remove library:")
-			log.Error(err)
-		}
-	},
-}
-
-func init() {
-	libraryCommand.AddCommand(libraryListCommand)
-	libraryCommand.AddCommand(libraryAboutCommand)
-	libraryCommand.AddCommand(libraryAddCommand)
-	libraryCommand.AddCommand(libraryRemoveCommand)
 }
