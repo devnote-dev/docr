@@ -275,41 +275,6 @@ func addExternalLibrary(name, version, source string) {
 	log.Info("imported %s version %s", name, version)
 }
 
-var libraryRemoveCommand = &cobra.Command{
-	Use: "remove name [version]",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			return
-		}
-		log.Configure(cmd)
-
-		var err error
-		name := args[0]
-		version := ""
-		if len(args) > 1 {
-			version = args[1]
-		}
-
-		if version == "" {
-			err = env.RemoveLibrary(name)
-		} else {
-			err = env.RemoveLibraryVersion(name, version)
-		}
-
-		if err != nil {
-			log.Error("failed to remove library:")
-			log.Error(err)
-		}
-	},
-}
-
-func init() {
-	libraryCommand.AddCommand(libraryListCommand)
-	libraryCommand.AddCommand(libraryAboutCommand)
-	libraryCommand.AddCommand(libraryAddCommand)
-	libraryCommand.AddCommand(libraryRemoveCommand)
-}
-
 func clone(source, version, dest string) error {
 	args := []string{"clone", source}
 	if version != "" {
@@ -359,4 +324,39 @@ func extractShard(p string) (*shardDef, error) {
 	}
 
 	return &s, nil
+}
+
+var libraryRemoveCommand = &cobra.Command{
+	Use: "remove name [version]",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			return
+		}
+		log.Configure(cmd)
+
+		var err error
+		name := args[0]
+		version := ""
+		if len(args) > 1 {
+			version = args[1]
+		}
+
+		if version == "" {
+			err = env.RemoveLibrary(name)
+		} else {
+			err = env.RemoveLibraryVersion(name, version)
+		}
+
+		if err != nil {
+			log.Error("failed to remove library:")
+			log.Error(err)
+		}
+	},
+}
+
+func init() {
+	libraryCommand.AddCommand(libraryListCommand)
+	libraryCommand.AddCommand(libraryAboutCommand)
+	libraryCommand.AddCommand(libraryAddCommand)
+	libraryCommand.AddCommand(libraryRemoveCommand)
 }
