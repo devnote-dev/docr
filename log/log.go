@@ -43,9 +43,9 @@ func DebugError(e error) {
 
 func Info(v string, a ...any) {
 	if withColor {
-		fmt.Print("\033[34mInfo\033[0m: ")
+		fmt.Print("\033[34m(i)\033[0m ")
 	} else {
-		fmt.Print("Info: ")
+		fmt.Print("(i) ")
 	}
 	if len(a) == 0 {
 		fmt.Println(v)
@@ -56,18 +56,18 @@ func Info(v string, a ...any) {
 
 func Error(v any) {
 	if withColor {
-		fmt.Print("\033[31mError\033[0m: ")
+		fmt.Print("\033[31m(!)\033[0m ")
 	} else {
-		fmt.Print("Error: ")
+		fmt.Print("(!) ")
 	}
 	fmt.Fprintln(os.Stderr, v)
 }
 
 func Errorf(v string, a ...any) {
 	if withColor {
-		fmt.Print("\033[31mError\033[0m: ")
+		fmt.Print("\033[31m(!)\033[0m ")
 	} else {
-		fmt.Print("Error: ")
+		fmt.Print("(!) ")
 	}
 	fmt.Fprintf(os.Stderr, "%s\n", fmt.Sprintf(v, a...))
 }
