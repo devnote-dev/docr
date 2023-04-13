@@ -41,23 +41,6 @@ func addCrystalLibrary(version string) {
 		log.Info("importing crystal version %s", version)
 	}
 
-	if version != "" {
-		ver, err := env.GetLibraryVersions("crystal")
-		if err != nil {
-			log.Error("failed to get crystal library versions:")
-			log.Error(err)
-			return
-		}
-
-		for _, v := range ver {
-			if v == version {
-				log.Errorf("crystal version %s is already imported", v)
-				log.Error("did you mean to run 'docr update'?")
-				return
-			}
-		}
-	}
-
 	log.Info("fetching available versions...")
 	vers, err := env.GetCrystalVersions()
 	if err != nil {
@@ -69,6 +52,21 @@ func addCrystalLibrary(version string) {
 	if version == "latest" {
 		version = vers[1].Name
 		log.Info("using latest crystal: %s", version)
+	}
+
+	set, err := env.GetLibraryVersions("crystal")
+	if err != nil {
+		log.Error("failed to get crystal library versions:")
+		log.Error(err)
+		return
+	}
+
+	for _, v := range set {
+		if v == version {
+			log.Errorf("crystal version %s is already imported", v)
+			log.Error("did you mean to run 'docr update'?")
+			return
+		}
 	}
 
 	for _, v := range vers {
