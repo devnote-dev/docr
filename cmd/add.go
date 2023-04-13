@@ -52,7 +52,7 @@ func addCrystalLibrary(version string) {
 		for _, v := range ver {
 			if v == version {
 				log.Errorf("crystal version %s is already imported", v)
-				log.Error("did you mean to run 'docr library update'?")
+				log.Error("did you mean to run 'docr update'?")
 				return
 			}
 		}

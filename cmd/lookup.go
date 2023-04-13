@@ -33,7 +33,7 @@ var lookupCommand = &cobra.Command{
 
 		if len(versions) == 0 {
 			log.Errorf("documentation for %s is not available", q.Library)
-			log.Errorf("did you mean to run 'docr library add %s'?", q.Library)
+			log.Errorf("did you mean to run 'docr add %s'?", q.Library)
 			return
 		}
 
