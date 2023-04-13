@@ -54,6 +54,19 @@ func Info(v string, a ...any) {
 	}
 }
 
+func Warn(v string, a ...any) {
+	if withColor {
+		fmt.Print("\033[33m(!)\033[0m ")
+	} else {
+		fmt.Print("(!) ")
+	}
+	if len(a) == 0 {
+		fmt.Println(v)
+	} else {
+		fmt.Printf("%s\n", fmt.Sprintf(v, a...))
+	}
+}
+
 func Error(v any) {
 	if withColor {
 		fmt.Print("\033[31m(!)\033[0m ")

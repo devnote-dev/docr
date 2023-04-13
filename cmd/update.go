@@ -36,7 +36,7 @@ var updateCommand = &cobra.Command{
 
 			out, err := exec.Command("crystal", "version").Output()
 			if err != nil {
-				log.Error("could not find crystal executable (crystal version failed)")
+				log.Warn("could not find crystal executable (crystal version failed)")
 				log.Info("importing latest crystal version docs")
 			} else {
 				s := strings.SplitN(string(out), " ", 3)
@@ -67,7 +67,7 @@ func updateCrystal(version string) {
 		}
 	}
 
-	log.Info("crystal version %s is not available", version)
+	log.Warn("docs for crystal version %s is not available", version)
 	version = ""
 
 fetch:
