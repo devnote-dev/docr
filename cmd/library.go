@@ -114,16 +114,22 @@ var libraryAddCommand = &cobra.Command{
 		if args[0] == "crystal" {
 			addCrystalLibrary(args[1])
 		} else {
-			ver := ""
+			ver := "latest"
 			if len(args) > 2 {
 				ver = args[2]
 			}
-			addExternalLibrary(args[0], args[1], ver)
+			addExternalLibrary(args[0], ver, args[1])
 		}
 	},
 }
 
 func addCrystalLibrary(version string) {
+	if version == "latest" || version == "nightly" {
+		log.Info("importing %s crystal version", version)
+	} else {
+		log.Info("importing crystal version %s", version)
+	}
+
 	if version != "" {
 		ver, err := env.GetLibraryVersions("crystal")
 		if err != nil {
@@ -141,6 +147,7 @@ func addCrystalLibrary(version string) {
 		}
 	}
 
+	log.Info("fetching available versions...")
 	vers, err := env.GetCrystalVersions()
 	if err != nil {
 		log.Error("failed to get available crystal versions:")
@@ -150,7 +157,7 @@ func addCrystalLibrary(version string) {
 
 	if version == "latest" {
 		version = vers[1].Name
-		log.Debugf("using latest crystal: %s", version)
+		log.Info("using latest crystal: %s", version)
 	}
 
 	for _, v := range vers {
@@ -166,9 +173,16 @@ fetch:
 		log.Errorf("failed to import documentation for crystal:")
 		log.Error(err)
 	}
+	log.Info("imported crystal version %s", version)
 }
 
 func addExternalLibrary(name, version, source string) {
+	if version == "latest" {
+		log.Info("importing latest %s version", name)
+	} else {
+		log.Info("importing %s version %s", name, version)
+	}
+
 	u, err := url.Parse(source)
 	if err != nil {
 		log.Error(err)
@@ -191,12 +205,15 @@ func addExternalLibrary(name, version, source string) {
 		_ = os.RemoveAll(cache)
 	}()
 
+	log.Info("cloning into %s...", u.String())
 	if err := clone(u.String(), version, cache); err != nil {
 		log.Error(err)
 		return
 	}
 
+	log.Info("installing dependencies...")
 	log.Debug("exec: shards install --without-development")
+
 	proc := exec.Command("shards", "install", "--without-development")
 	proc.Dir = cache
 	out, err := proc.Output()
@@ -206,6 +223,7 @@ func addExternalLibrary(name, version, source string) {
 		return
 	}
 
+	log.Info("getting shard information...")
 	shard, err := extractShard(cache)
 	if err != nil {
 		log.Error("failed to extract shard information:")
@@ -219,7 +237,7 @@ func addExternalLibrary(name, version, source string) {
 		return
 	}
 
-	if version == "" {
+	if version == "latest" {
 		version = shard.Version
 	} else {
 		if shard.Version != version {
@@ -235,6 +253,7 @@ func addExternalLibrary(name, version, source string) {
 	}
 
 	lib := filepath.Join(env.LibraryDir(), name, version)
+	log.Info("building documentation...")
 	log.Debugf("exec: crystal docs -o %s", lib)
 
 	proc = exec.Command("crystal", "docs", "-o", lib)
@@ -247,10 +266,13 @@ func addExternalLibrary(name, version, source string) {
 	}
 
 	read := filepath.Join(env.CacheDir(), name, "README.md")
+	log.Info("finalizing...")
 	log.Debugf("read: %s", read)
 	if exists(read) {
 		_ = os.Rename(read, filepath.Join(env.LibraryDir(), name, version, "README.md"))
 	}
+
+	log.Info("imported %s version %s", name, version)
 }
 
 var libraryRemoveCommand = &cobra.Command{

@@ -41,13 +41,17 @@ func DebugError(e error) {
 	}
 }
 
-func Info(v string) {
+func Info(v string, a ...any) {
 	if withColor {
 		fmt.Print("\033[34mInfo\033[0m: ")
 	} else {
 		fmt.Print("Info: ")
 	}
-	fmt.Println(v)
+	if len(a) == 0 {
+		fmt.Println(v)
+	} else {
+		fmt.Printf("%s\n", fmt.Sprintf(v, a...))
+	}
 }
 
 func Error(v any) {
