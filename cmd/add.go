@@ -77,7 +77,9 @@ func addCrystalLibrary(version string) {
 		}
 	}
 
-	log.Errorf("crystal version %s not found", version)
+	log.Errorf("crystal version %s is not available", version)
+	log.Error("run 'docr check' to see available versions of imported libraries")
+	return
 
 fetch:
 	if err := env.ImportCrystalVersion(version); err != nil {
