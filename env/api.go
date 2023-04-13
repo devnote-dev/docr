@@ -17,7 +17,7 @@ type Version struct {
 }
 
 func GetCrystalVersions() ([]*Version, error) {
-	path := filepath.Join(LibraryDir(), "crystal", "versions.json")
+	path := filepath.Join(CacheDir(), "versions.json")
 	if !exists(path) {
 		if err := ImportCrystalVersions(); err != nil {
 			return nil, err
@@ -55,15 +55,7 @@ func ImportCrystalVersions() error {
 		return fmt.Errorf("received non-ok http status: %d", res.StatusCode)
 	}
 
-	path := filepath.Join(LibraryDir(), "crystal")
-	log.Debugf("path: %s", path)
-	if !exists(path) {
-		if err := os.MkdirAll(path, defaultPerms); err != nil {
-			return err
-		}
-	}
-
-	path = filepath.Join(path, "versions.json")
+	path := filepath.Join(CacheDir(), "versions.json")
 	log.Debugf("path: %s", path)
 	dest, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o666)
 	if err != nil {
