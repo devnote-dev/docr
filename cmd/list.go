@@ -28,17 +28,16 @@ var listCommand = &cobra.Command{
 		builder := strings.Builder{}
 		for name, versions := range libraries {
 			builder.WriteString(name)
-			builder.WriteString("\n|\n")
-
-			if len(versions) > 1 {
-				for _, v := range versions[:1] {
-					fmt.Fprintf(&builder, "|———— v%s\n", v)
+			for _, v := range versions {
+				builder.WriteString("\n• ")
+				if c := v[0]; c >= '0' && c <= '9' {
+					builder.WriteRune('v')
 				}
+				builder.WriteString(v)
 			}
-
-			fmt.Fprintf(&builder, "'———— v%s\n", versions[len(versions)-1])
+			builder.WriteString("\n\n")
 		}
 
-		fmt.Println(builder.String())
+		fmt.Println(strings.TrimSuffix(builder.String(), "\n\n"))
 	},
 }
