@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.19.7"
+
+      - name: Build Binaries
+        run: |
+          GOARCH=amd64 GOOS=linux go build -ldflags "-X github.com/devnote-dev/docr/cmd.Build=${{ github.sha }}" -o build/docr_linux_amd64
+          GOARCH=arm64 GOOS=linux go build -ldflags "-X github.com/devnote-dev/docr/cmd.Build=${{ github.sha }}" -o build/docr_linux_arm64
+          GOARCH=amd64 GOOS=windows go build -ldflags "-X github.com/devnote-dev/docr/cmd.Build=${{ github.sha }}" -o build/docr_win32.exe
+
+      - name: Create Release
+        id: release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+
+      - name: Upload Linux AMD64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: build/docr_linux_amd64
+          asset_name: docr_linux_amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux ARM64 Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: build/docr_linux_arm64
+          asset_name: docr_linux_arm64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows Binary
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: build/docr_win32.exe
+          asset_name: docr_win32.exe
+          asset_content_type: application/octet-stream
