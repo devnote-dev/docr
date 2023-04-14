@@ -43,10 +43,14 @@ var lookupCommand = &cobra.Command{
 			return
 		}
 
-		latest := versions[len(versions)-1]
-		lib, err := env.GetLibrary(q.Library, latest)
+		ver, _ := cmd.Flags().GetString("version")
+		if ver == "" {
+			ver = versions[len(versions)-1]
+		}
+
+		lib, err := env.GetLibrary(q.Library, ver)
 		if err != nil {
-			log.Errorf("latest documentation for library %s is not available", q.Library)
+			log.Errorf("documentation for library %s version %s is not available", q.Library, ver)
 			return
 		}
 
@@ -243,4 +247,8 @@ var lookupCommand = &cobra.Command{
 
 		fmt.Print(strings.TrimSuffix(builder.String(), "\n"))
 	},
+}
+
+func init() {
+	lookupCommand.Flags().String("version", "", "the version to install")
 }
