@@ -31,11 +31,25 @@ After importing the libraries you want, you can simply lookup or search whatever
 
 ![demo_4](/assets/demo_4.png)
 
-Both the `info` and `search` commands support Crystal path syntax for queries, so `docr info JSON::Any.as_s` is a perfectly valid query, as is `docr info JSON::Any as_s`, but _not_ `docr info JSON Any as_s`. This is because the first argument is parsed as the type path, and the second argument (if specified) is parsed as the symbol to search for. You can also use `#` in place of `.` for type-symbol names.
+Both the `info` and `search` commands support Crystal path syntax for queries, meaning the following commands are valid:
+
+* `docr info JSON::Any.as_s`
+* `docr info JSON::Any#as_s`
+* `docr info JSON::Any as_s`
+
+However, the following commands _are not_ valid:
+
+* `docr info JSON Any as_s`
+* `docr info JSON Any.as_s`
+* `docr info JSON Any#as_s`
+
+This is because the first argument is parsed as the base type or namespace to look in, and the second argument is parsed as the symbol to look for. In the first example, `JSON::Any` is the namespace and `as_s` the symbol, whereas in the second example, `JSON` is the namespace and `Any as_s` is the symbol, which is invalid. This doesn't mean you have to specify the namespace of a symbol, Docr can determine whether an argument is a type/namespace or symbol and handle it accordingly.
+
+<!-- TODO: add "Updating" section with update command -->
 
 ## Contributing
 
-1. Fork it (https://github.com/devnote-dev/fork)
+1. Fork it (https://github.com/devnote-dev/docr/fork)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
