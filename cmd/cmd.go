@@ -1,9 +1,20 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
 
 var mainCommand = &cobra.Command{
 	Use: "docr command [options] arguments",
+}
+
+var versionCommand = &cobra.Command{
+	Use: "version",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Docr %s (%s)\n", Version, Build)
+	},
 }
 
 func init() {
@@ -11,6 +22,7 @@ func init() {
 	mainCommand.PersistentFlags().Bool("debug", false, "output debug information")
 	mainCommand.CompletionOptions.DisableDefaultCmd = true
 
+	mainCommand.AddCommand(versionCommand)
 	mainCommand.AddCommand(envCommand)
 	mainCommand.AddCommand(listCommand)
 	mainCommand.AddCommand(aboutCommand)
