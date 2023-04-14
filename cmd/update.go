@@ -10,9 +10,14 @@ import (
 )
 
 var updateCommand = &cobra.Command{
-	Use: "update [options]",
+	Use: "update",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
+		if err := noArgs(args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
+			return
+		}
 
 		if err := exec.Command("git", "version").Run(); err != nil {
 			log.Error("could not find git executable (git version failed)")

@@ -12,9 +12,14 @@ import (
 )
 
 var envCommand = &cobra.Command{
-	Use: "env [name] [options]",
+	Use: "env [name]",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
+		if err := exactArgs(1, args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
+			return
+		}
 
 		init, _ := cmd.Flags().GetBool("init")
 		cache := env.CacheDir()

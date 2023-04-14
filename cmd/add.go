@@ -16,11 +16,12 @@ import (
 var addCommand = &cobra.Command{
 	Use: "add name source [version]",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 2 {
-			cmd.Help()
+		log.Configure(cmd)
+		if err := rangeArgs(2, 3, args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
 			return
 		}
-		log.Configure(cmd)
 
 		if args[0] == "crystal" {
 			addCrystalLibrary(args[1])

@@ -17,6 +17,12 @@ var lookupCommand = &cobra.Command{
 	Aliases: []string{"info"},
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
+		if err := rangeArgs(1, 3, args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
+			return
+		}
+
 		q, err := crystal.ParseQuery(args)
 		if err != nil {
 			log.Error("failed to parse query:")

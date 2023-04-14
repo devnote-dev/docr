@@ -10,9 +10,15 @@ import (
 )
 
 var listCommand = &cobra.Command{
-	Use: "list [options]",
-	Run: func(cmd *cobra.Command, _ []string) {
+	Use: "list",
+	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
+		if err := noArgs(args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
+			return
+		}
+
 		libraries, err := env.GetLibraries()
 		if err != nil {
 			log.Error("failed to get libraries:")

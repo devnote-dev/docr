@@ -22,14 +22,12 @@ var (
 var searchCommand = &cobra.Command{
 	Use: "search symbol",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			var input string
-
-			fmt.Print("Enter query: ")
-			fmt.Scanln(&input)
-			args = strings.Split(input, " ")
-		}
 		log.Configure(cmd)
+		if err := rangeArgs(1, 3, args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
+			return
+		}
 
 		q, err := crystal.ParseQuery(args)
 		if err != nil {

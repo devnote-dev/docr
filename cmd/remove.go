@@ -9,10 +9,12 @@ import (
 var removeCommand = &cobra.Command{
 	Use: "remove name [version]",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
+		log.Configure(cmd)
+		if err := rangeArgs(1, 2, args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
 			return
 		}
-		log.Configure(cmd)
 
 		var err error
 		name := args[0]
