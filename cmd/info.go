@@ -12,9 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var lookupCommand = &cobra.Command{
-	Use:     "lookup symbol [symbol]",
-	Aliases: []string{"info"},
+var infoCommand = &cobra.Command{
+	Use: "info symbol [symbol]",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := rangeArgs(1, 3, args); err != nil {
@@ -250,5 +249,5 @@ var lookupCommand = &cobra.Command{
 }
 
 func init() {
-	lookupCommand.Flags().String("version", "", "the version to install")
+	infoCommand.Flags().String("version", "", "the version to install")
 }

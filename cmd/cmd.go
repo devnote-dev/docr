@@ -19,7 +19,7 @@ func init() {
 	mainCommand.AddCommand(updateCommand)
 	mainCommand.AddCommand(removeCommand)
 	mainCommand.AddCommand(searchCommand)
-	mainCommand.AddCommand(lookupCommand)
+	mainCommand.AddCommand(infoCommand)
 }
 
 func Execute() {
