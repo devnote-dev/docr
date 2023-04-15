@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Binaries
         run: |
-          BUILD_HASH=$(${{ github.sha }} | head -c8)
+          BUILD_HASH=$(echo "${{ github.sha }}" | head -c8)
           LDFLAGS="-X github.com/devnote-dev/docr/cmd.Build=$BUILD_HASH -X github.com/devnote-dev/docr/cmd.Date=$(date +%F)"
           GOARCH=amd64 GOOS=linux go build -ldflags $LDFLAGS -o build/docr_linux_amd64
           GOARCH=arm64 GOOS=linux go build -ldflags $LDFLAGS -o build/docr_linux_arm64
