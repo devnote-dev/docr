@@ -7,13 +7,6 @@ import (
 
 var ansiEncode = strings.NewReplacer("$B", "\033[34m", "$R", "\033[0m", "$S", "\033[1m")
 
-func exactArgs(n int, args []string) error {
-	if len(args) != n {
-		return fmt.Errorf("expected %d argument(s); got %d", n, len(args))
-	}
-	return nil
-}
-
 func noArgs(args []string) error {
 	if len(args) != 0 {
 		return fmt.Errorf("expected no arguments but was given %d", len(args))

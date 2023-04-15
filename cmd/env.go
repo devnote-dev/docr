@@ -18,7 +18,7 @@ var envCommand = &cobra.Command{
 		"will print that environment value to the terminal.",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
-		if err := exactArgs(1, args); err != nil {
+		if err := rangeArgs(0, 1, args); err != nil {
 			log.Error(err)
 			cmd.HelpFunc()(cmd, args)
 			return
@@ -46,14 +46,10 @@ var envCommand = &cobra.Command{
 
 		if len(args) > 0 {
 			name := args[0]
-			switch strings.ToLower(name) {
-			case "cache":
+			switch strings.ToUpper(name) {
+			case "DOCR_CACHE":
 				fmt.Println(cache)
-			case "lib":
-				fallthrough
-			case "library":
-				fallthrough
-			case "libraries":
+			case "DOCR_LIBRARY":
 				fmt.Println(lib)
 			}
 
@@ -70,7 +66,7 @@ var envCommand = &cobra.Command{
 			libWarn = " \033[33m(!)\033[0m"
 		}
 
-		fmt.Printf("Cache:   %s%s\nLibrary: %s%s\n", cache, cacheWarn, lib, libWarn)
+		fmt.Printf("DOCR_CACHE=%s%s\nDOCR_LIBRARY=%s%s\n", cache, cacheWarn, lib, libWarn)
 	},
 }
 
