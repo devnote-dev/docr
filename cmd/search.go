@@ -59,7 +59,7 @@ var searchCommand = &cobra.Command{
 
 		lib, err := env.GetLibrary(q.Library, ver)
 		if err != nil {
-			log.Errorf("documentation for library %s version %s is not available", q.Library, ver)
+			log.Error("documentation for library %s version %s is not available", q.Library, ver)
 			return
 		}
 
@@ -79,7 +79,7 @@ var searchCommand = &cobra.Command{
 
 		types := crystal.FilterTypes(lib, q.Symbol)
 		if len(types) == 0 {
-			log.Errorf("no documentation found for symbol '%s'", q.Symbol)
+			log.Error("no documentation found for symbol '%s'", q.Symbol)
 			return
 		}
 		fmt.Print("Search Results:\n\n")

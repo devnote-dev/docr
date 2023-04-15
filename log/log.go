@@ -23,15 +23,15 @@ func Configure(cmd *cobra.Command) {
 	}
 }
 
-func Debug(v string) {
+func Debug(v any, a ...any) {
 	if withDebug {
-		fmt.Println(v)
-	}
-}
-
-func Debugf(v string, a ...any) {
-	if withDebug {
-		fmt.Printf("%s\n", fmt.Sprintf(v, a...))
+		if len(a) == 0 {
+			fmt.Println(v)
+		} else if s, ok := v.(string); ok {
+			fmt.Printf("%s\n", fmt.Sprintf(s, a...))
+		} else {
+			fmt.Println(v)
+		}
 	}
 }
 
@@ -47,6 +47,7 @@ func Info(v string, a ...any) {
 	} else {
 		fmt.Print("(i) ")
 	}
+
 	if len(a) == 0 {
 		fmt.Println(v)
 	} else {
@@ -60,6 +61,7 @@ func Warn(v string, a ...any) {
 	} else {
 		fmt.Print("(!) ")
 	}
+
 	if len(a) == 0 {
 		fmt.Println(v)
 	} else {
@@ -67,20 +69,21 @@ func Warn(v string, a ...any) {
 	}
 }
 
-func Error(v any) {
+func Error(v any, a ...any) {
 	if withColor {
-		fmt.Print("\033[31m(!)\033[0m ")
+		fmt.Fprint(os.Stderr, "\033[31m(!)\033[0m ")
 	} else {
-		fmt.Print("(!) ")
+		fmt.Fprint(os.Stderr, "(!) ")
 	}
-	fmt.Fprintln(os.Stderr, v)
-}
 
-func Errorf(v string, a ...any) {
-	if withColor {
-		fmt.Print("\033[31m(!)\033[0m ")
+	// Go doesn't support this...
+	// if len(a) != 0 && s, ok := v.(string); ok {
+
+	if len(a) == 0 {
+		fmt.Fprintln(os.Stderr, v)
+	} else if s, ok := v.(string); ok {
+		fmt.Fprintf(os.Stderr, "%s\n", fmt.Sprintf(s, a...))
 	} else {
-		fmt.Print("(!) ")
+		fmt.Fprintln(os.Stderr, v)
 	}
-	fmt.Fprintf(os.Stderr, "%s\n", fmt.Sprintf(v, a...))
 }

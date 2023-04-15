@@ -28,7 +28,7 @@ instead.`,
 		if err := exec.Command("git", "version").Run(); err != nil {
 			log.Error("could not find git executable (git version failed)")
 			log.Error("git is required for this operation")
-			log.Debugf("%v", err)
+			log.Debug("%v", err)
 			return
 		}
 
@@ -88,7 +88,7 @@ fetch:
 	}
 
 	if err := env.ImportCrystalVersion(version); err != nil {
-		log.Errorf("failed to import documentation for crystal:")
+		log.Error("failed to import documentation for crystal:")
 		log.Error(err)
 	}
 	log.Info("imported crystal version %s", version)

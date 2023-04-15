@@ -70,7 +70,7 @@ func addCrystalLibrary(version string) {
 
 	for _, v := range set {
 		if v == version {
-			log.Errorf("crystal version %s is already imported", v)
+			log.Error("crystal version %s is already imported", v)
 			log.Error("did you mean to run 'docr update'?")
 			return
 		}
@@ -82,13 +82,13 @@ func addCrystalLibrary(version string) {
 		}
 	}
 
-	log.Errorf("crystal version %s is not available", version)
+	log.Error("crystal version %s is not available", version)
 	log.Error("run 'docr check' to see available versions of imported libraries")
 	return
 
 fetch:
 	if err := env.ImportCrystalVersion(version); err != nil {
-		log.Errorf("failed to import documentation for crystal:")
+		log.Error("failed to import documentation for crystal:")
 		log.Error(err)
 	}
 	log.Info("imported crystal version %s", version)
@@ -110,7 +110,7 @@ func addExternalLibrary(name, version, source string) {
 	if u.Scheme == "" {
 		u.Scheme = "https"
 	}
-	log.Debugf("url: %s", u.String())
+	log.Debug("url: %s", u.String())
 
 	cache := filepath.Join(env.CacheDir(), name)
 	if err := env.EnsureDirectory(cache); err != nil {
@@ -119,7 +119,7 @@ func addExternalLibrary(name, version, source string) {
 	}
 
 	defer func() {
-		log.Debugf("clearing: %s", cache)
+		log.Debug("clearing: %s", cache)
 		_ = os.RemoveAll(cache)
 	}()
 
@@ -136,7 +136,7 @@ func addExternalLibrary(name, version, source string) {
 	proc.Dir = cache
 	out, err := proc.Output()
 	if err != nil {
-		log.Errorf("failed to install library %s dependencies:", name)
+		log.Error("failed to install library %s dependencies:", name)
 		log.Error(out)
 		return
 	}
@@ -151,7 +151,7 @@ func addExternalLibrary(name, version, source string) {
 
 	if shard.Name != name {
 		log.Error("cannot verify shard: names do not match")
-		log.Errorf("expected %s; got %s", name, shard.Name)
+		log.Error("expected %s; got %s", name, shard.Name)
 		return
 	}
 
@@ -160,19 +160,19 @@ func addExternalLibrary(name, version, source string) {
 	} else {
 		if shard.Version != version {
 			log.Error("cannot verify shard: versions do not match")
-			log.Errorf("expected %s; got %s", version, shard.Version)
+			log.Error("expected %s; got %s", version, shard.Version)
 			return
 		}
 	}
 
 	if _, err := env.GetLibrary(name, version); err == nil {
-		log.Errorf("library %s version %s is already imported", name, version)
+		log.Error("library %s version %s is already imported", name, version)
 		return
 	}
 
 	lib := filepath.Join(env.LibraryDir(), name, version)
 	log.Info("building documentation...")
-	log.Debugf("exec: crystal docs -o %s", lib)
+	log.Debug("exec: crystal docs -o %s", lib)
 
 	proc = exec.Command("crystal", "docs", "-o", lib)
 	proc.Dir = cache
@@ -185,7 +185,7 @@ func addExternalLibrary(name, version, source string) {
 
 	read := filepath.Join(env.CacheDir(), name, "README.md")
 	log.Info("finalizing...")
-	log.Debugf("read: %s", read)
+	log.Debug("read: %s", read)
 	if exists(read) {
 		_ = os.Rename(read, filepath.Join(env.LibraryDir(), name, version, "README.md"))
 	}
@@ -200,7 +200,7 @@ func clone(source, version, dest string) error {
 	}
 	args = append(args, dest)
 
-	log.Debugf("exec: %v", args)
+	log.Debug("exec: %v", args)
 	err := exec.Command("git", args...).Run()
 	if err == nil {
 		return nil
@@ -211,14 +211,14 @@ func clone(source, version, dest string) error {
 	}
 
 	args[2] = "--tag"
-	log.Debugf("exec: %v", args)
+	log.Debug("exec: %v", args)
 	err = exec.Command("git", args...).Run()
 	if err == nil {
 		return nil
 	}
 
 	args = append(args[:2], dest)
-	log.Debugf("exec: %v", args)
+	log.Debug("exec: %v", args)
 	return exec.Command("git", args...).Run()
 }
 
@@ -229,7 +229,7 @@ type shardDef struct {
 
 func extractShard(p string) (*shardDef, error) {
 	p = filepath.Join(p, "shard.yml")
-	log.Debugf("shard path: %s", p)
+	log.Debug("shard path: %s", p)
 
 	buf, err := os.ReadFile(p)
 	if err != nil {

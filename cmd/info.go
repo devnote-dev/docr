@@ -58,8 +58,8 @@ it accordingly.`,
 		}
 
 		if len(versions) == 0 {
-			log.Errorf("documentation for %s is not available", q.Library)
-			log.Errorf("did you mean to run 'docr add %s'?", q.Library)
+			log.Error("documentation for %s is not available", q.Library)
+			log.Error("did you mean to run 'docr add %s'?", q.Library)
 			return
 		}
 
@@ -70,7 +70,7 @@ it accordingly.`,
 
 		lib, err := env.GetLibrary(q.Library, ver)
 		if err != nil {
-			log.Errorf("documentation for library %s version %s is not available", q.Library, ver)
+			log.Error("documentation for library %s version %s is not available", q.Library, ver)
 			return
 		}
 
@@ -90,7 +90,7 @@ it accordingly.`,
 
 		v := crystal.FindType(lib, q.Symbol)
 		if v == nil {
-			log.Errorf("no documentation found for symbol '%s'", q.Symbol)
+			log.Error("no documentation found for symbol '%s'", q.Symbol)
 			return
 		}
 

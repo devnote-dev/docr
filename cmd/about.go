@@ -42,7 +42,7 @@ var aboutCommand = &cobra.Command{
 		buf, err := os.ReadFile(filepath.Join(env.LibraryDir(), name, version, "README.md"))
 		if err != nil {
 			if os.IsNotExist(err) {
-				log.Errorf("library %s version %s has no README", name, version)
+				log.Error("library %s version %s has no README", name, version)
 			} else {
 				log.Error(err)
 			}
@@ -55,7 +55,7 @@ var aboutCommand = &cobra.Command{
 
 		out, err := term.Render(string(buf))
 		if err != nil {
-			log.Errorf("failed to render library %s README:", name)
+			log.Error("failed to render library %s README:", name)
 			log.Error(err)
 			return
 		}
