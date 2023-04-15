@@ -12,7 +12,10 @@ import (
 )
 
 var aboutCommand = &cobra.Command{
-	Use: "about name [version]",
+	Use:   "about name [version]",
+	Short: "gets information about a library",
+	Long: "Gets information about a specified library. This will use the README.md file in\n" +
+		"the library if found.",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
 			return

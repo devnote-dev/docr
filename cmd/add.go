@@ -14,7 +14,13 @@ import (
 )
 
 var addCommand = &cobra.Command{
-	Use: "add name source [version]",
+	Use:   "add name source [version]",
+	Short: "imports documentation for a library",
+	Long: `Imports documentation for the Crystal standard library or a third-party library
+(or shard). If you are importing the standard library, the 'source' argument
+should be the version to import ("latest" also works here). Otherwise, the
+'source' argument should be a URI that resolves to the library's repository
+(which is handled by git).`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := rangeArgs(2, 3, args); err != nil {

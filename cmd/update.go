@@ -10,7 +10,13 @@ import (
 )
 
 var updateCommand = &cobra.Command{
-	Use: "update",
+	Use:   "update",
+	Short: "updates imported libraries",
+	Long: `Fetches the latest versions of imported libraries. This will also import the
+Crystal standard library documentation if not imported, based on the version of
+the compiler (from "crystal version"). If the compiler is not found on the
+system or the version is unavailable, the latest available version is imported
+instead.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := noArgs(args); err != nil {

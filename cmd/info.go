@@ -13,7 +13,28 @@ import (
 )
 
 var infoCommand = &cobra.Command{
-	Use: "info symbol [symbol]",
+	Use:   "info symbol [symbol]",
+	Short: "gets information about a symbol",
+	Long: `Gets information about a specified type/namespace or symbol. This supports
+Crystal path syntax, meaning the following commands are valid:
+
+• docr info JSON::Any.as_s
+• docr info JSON::Any#as_s
+• docr info JSON::Any as_s
+
+However, the following commands are not valid:
+
+• docr info JSON Any as_s
+• docr info JSON Any.as_s
+• docr info JSON Any#as_s
+
+This is because the first argument is parsed as the base type or namespace to
+look in, and the second argument is parsed as the symbol to look for. In the
+first example, JSON::Any is the namespace and as_s the symbol, whereas in the
+second example, JSON is the namespace and Any as_s is the symbol, which is
+invalid. This doesn't mean you have to specify the namespace of a symbol, Docr
+can determine whether an argument is a type/namespace or symbol and handle
+it accordingly.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := rangeArgs(1, 3, args); err != nil {

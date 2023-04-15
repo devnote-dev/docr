@@ -20,7 +20,11 @@ var (
 )
 
 var searchCommand = &cobra.Command{
-	Use: "search symbol",
+	Use:   "search [library] symbol [symbol]",
+	Short: "searches for a symbol",
+	Long: "Searches for types/namespaces and symbols in a given library. If no library is\n" +
+		"specified, the latest version of the Crystal standard library documentation is\n" +
+		"used instead.",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := rangeArgs(1, 3, args); err != nil {

@@ -12,7 +12,10 @@ import (
 )
 
 var envCommand = &cobra.Command{
-	Use: "env [name]",
+	Use:   "env [name]",
+	Short: "docr environment management",
+	Long: "Manages the environment configuration for Docr. Specifying the 'name' argument\n" +
+		"will print that environment value to the terminal.",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := exactArgs(1, args); err != nil {

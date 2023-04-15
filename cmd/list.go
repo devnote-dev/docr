@@ -10,7 +10,9 @@ import (
 )
 
 var listCommand = &cobra.Command{
-	Use: "list",
+	Use:   "list",
+	Short: "lists imported libraries",
+	Long:  "Lists imported libraries, including their versions.",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := noArgs(args); err != nil {

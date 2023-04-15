@@ -6,8 +6,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO: should probably prompt with this and override with --yes
 var removeCommand = &cobra.Command{
-	Use: "remove name [version]",
+	Use:   "remove name [version]",
+	Short: "removes a library",
+	Long: "Removes an imported library. If the 'version' argument is not specified, all\n" +
+		"versions of the library are removed.",
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := rangeArgs(1, 2, args); err != nil {
