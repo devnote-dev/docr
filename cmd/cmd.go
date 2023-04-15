@@ -21,6 +21,24 @@ func init() {
 	mainCommand.PersistentFlags().Bool("no-color", false, "disable ansi color")
 	mainCommand.PersistentFlags().Bool("debug", false, "output debug information")
 	mainCommand.CompletionOptions.DisableDefaultCmd = true
+	mainCommand.SetHelpTemplate(ansiEncode.Replace(`{{.Short}}
+
+$BUsage$R
+• {{.UseLine}}
+{{if gt (len .Commands) 0}}
+$BCommands$R{{range .Commands}}
+• $S{{rpad .Name .NamePadding}}$R {{.Short}}{{end}}
+{{end}}
+$BOptions$R{{range .LocalFlags.FlagUsages | splitLines}}
+{{.}}{{end}}
+
+$BDescription$R
+{{.Long}}
+{{if gt (len .Commands) 0}}
+Use '$Bdocr{{if (eq .Name "docr" | not)}} {{.Name}}{{end}} --help$R' for more information about a command{{end}}
+`)) // doesn't respect colour rules...
+
+	cobra.AddTemplateFunc("splitLines", splitLines)
 
 	mainCommand.AddCommand(versionCommand)
 	mainCommand.AddCommand(envCommand)

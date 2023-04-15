@@ -1,6 +1,11 @@
 package cmd
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
+
+var ansiEncode = strings.NewReplacer("$B", "\033[34m", "$R", "\033[0m", "$S", "\033[1m")
 
 func exactArgs(n int, args []string) error {
 	if len(args) != n {
@@ -26,4 +31,15 @@ func rangeArgs(min, max int, args []string) error {
 	}
 
 	return nil
+}
+
+func splitLines(s string) []string {
+	a := strings.Split(s, "\n")
+	var r []string
+	for _, i := range a {
+		if len(i) != 0 {
+			r = append(r, i)
+		}
+	}
+	return r
 }
