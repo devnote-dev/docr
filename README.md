@@ -6,7 +6,11 @@
 
 ## Installation
 
-Currently Docr can only built from source (releases coming soon). Go 1.18 or above is required to build this application.
+See the [releases page](https://github.com/devnote-dev/docr/releases/latest) for available binaries.
+
+### From Source
+
+Go 1.19 or above is required to build Docr.
 
 ```sh
 git clone https://github.com/devnote-dev/docr
