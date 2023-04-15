@@ -27,12 +27,22 @@ var aboutCommand = &cobra.Command{
 		name := args[0]
 		var version string
 		if len(args) > 1 {
+			if _, err := env.GetLibrary(name, args[1]); err != nil {
+				log.Error(err)
+				return
+			}
 			version = args[1]
 		} else {
 			ver, err := env.GetLibraryVersions(name)
 			if err != nil {
 				log.Error("failed to get library versions:")
 				log.Error(err)
+				return
+			}
+
+			if len(ver) == 0 {
+				log.Error("documentation for %s is not available", name)
+				log.Error("did you mean to run 'docr add %s'?", name)
 				return
 			}
 
