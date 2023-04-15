@@ -19,8 +19,8 @@ var envCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Configure(cmd)
 		if err := rangeArgs(0, 1, args); err != nil {
-			log.Error(err)
-			cmd.HelpFunc()(cmd, args)
+			log.Error("%v\n", err)
+			cmd.Help()
 			return
 		}
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/devnote-dev/docr/log"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +19,12 @@ var versionCommand = &cobra.Command{
 	Short: "shows version information",
 	Long:  "Shows the version information for Docr.",
 	Run: func(cmd *cobra.Command, args []string) {
+		log.Configure(cmd)
+		if err := noArgs(args); err != nil {
+			log.Error("%v\n", err)
+			cmd.Help()
+			return
+		}
 		fmt.Printf("Docr version %s %s (%s)\n", Version, Build, Date)
 	},
 }
