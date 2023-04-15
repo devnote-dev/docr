@@ -18,7 +18,7 @@ var versionCommand = &cobra.Command{
 	Short: "shows version information",
 	Long:  "Shows the version information for Docr.",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Docr %s (%s)\n", Version, Build)
+		fmt.Printf("Docr version %s %s (%s)\n", Version, Build, Date)
 	},
 }
 
