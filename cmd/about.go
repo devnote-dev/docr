@@ -17,10 +17,12 @@ var aboutCommand = &cobra.Command{
 	Long: "Gets information about a specified library. This will use the README.md file in\n" +
 		"the library if found.",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
+		log.Configure(cmd)
+		if err := rangeArgs(1, 2, args); err != nil {
+			log.Error(err)
+			cmd.HelpFunc()(cmd, args)
 			return
 		}
-		log.Configure(cmd)
 
 		name := args[0]
 		var version string
