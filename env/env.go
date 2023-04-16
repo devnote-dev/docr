@@ -26,6 +26,9 @@ func GetLibraries() (map[string][]string, error) {
 	lib := LibraryDir()
 	entries, err := os.ReadDir(lib)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
