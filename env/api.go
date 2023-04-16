@@ -41,6 +41,11 @@ func GetCrystalVersions() ([]*Version, error) {
 }
 
 func ImportCrystalVersions() error {
+	cache := CacheDir()
+	if err := EnsureDirectory(cache); err != nil {
+		return err
+	}
+
 	log.Debug("GET https://crystal-lang.org/api/versions.json")
 
 	req, _ := http.NewRequest("GET", "https://crystal-lang.org/api/versions.json", nil)
@@ -55,7 +60,7 @@ func ImportCrystalVersions() error {
 		return fmt.Errorf("received non-ok http status: %d", res.StatusCode)
 	}
 
-	path := filepath.Join(CacheDir(), "versions.json")
+	path := filepath.Join(cache, "versions.json")
 	log.Debug("path: %s", path)
 	dest, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o666)
 	if err != nil {
