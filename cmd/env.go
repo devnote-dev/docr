@@ -12,7 +12,7 @@ import (
 )
 
 var envCommand = &cobra.Command{
-	Use:   "env [name]",
+	Use:   "env [name | init]",
 	Short: "docr environment management",
 	Long: "Manages the environment configuration for Docr. Specifying the 'name' argument\n" +
 		"will print that environment value to the terminal.",
@@ -24,25 +24,8 @@ var envCommand = &cobra.Command{
 			return
 		}
 
-		init, _ := cmd.Flags().GetBool("init")
 		cache := env.CacheDir()
 		lib := env.LibraryDir()
-
-		if init {
-			if !exists(cache) {
-				if err := os.MkdirAll(cache, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
-					log.Error("failed to create cache directory")
-					log.DebugError(err)
-				}
-			}
-
-			if !exists(lib) {
-				if err := os.MkdirAll(lib, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
-					log.Error("failed to create library directory")
-					log.DebugError(err)
-				}
-			}
-		}
 
 		if len(args) > 0 {
 			name := args[0]
@@ -70,8 +53,33 @@ var envCommand = &cobra.Command{
 	},
 }
 
+var initCommand = &cobra.Command{
+	Use:   "init",
+	Short: "initializes the environment",
+	Long:  "Creates the required files and directories for Docr to run.",
+	Run: func(cmd *cobra.Command, args []string) {
+		log.Configure(cmd)
+		cache := env.CacheDir()
+		lib := env.LibraryDir()
+
+		if !exists(cache) {
+			if err := os.MkdirAll(cache, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
+				log.Error("failed to create cache directory")
+				log.DebugError(err)
+			}
+		}
+
+		if !exists(lib) {
+			if err := os.MkdirAll(lib, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
+				log.Error("failed to create library directory")
+				log.DebugError(err)
+			}
+		}
+	},
+}
+
 func init() {
-	envCommand.Flags().Bool("init", false, "create the required directories if missing")
+	envCommand.AddCommand(initCommand)
 }
 
 func exists(p string) bool {
