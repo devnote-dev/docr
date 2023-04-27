@@ -108,7 +108,7 @@ func ImportCrystalVersion(s string) error {
 	path := filepath.Join(LibraryDir(), "crystal", t.Name)
 	log.Debug("path: %s", path)
 	if !exists(path) {
-		if err := os.MkdirAll(path, defaultPerms); err != nil {
+		if err := os.MkdirAll(path, 0o755); err != nil {
 			return err
 		}
 	}

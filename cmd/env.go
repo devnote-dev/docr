@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"strings"
 
@@ -63,14 +62,14 @@ var initCommand = &cobra.Command{
 		lib := env.LibraryDir()
 
 		if !exists(cache) {
-			if err := os.MkdirAll(cache, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
+			if err := os.MkdirAll(cache, 0o755); err != nil {
 				log.Error("failed to create cache directory")
 				log.DebugError(err)
 			}
 		}
 
 		if !exists(lib) {
-			if err := os.MkdirAll(lib, fs.FileMode(os.O_CREATE|os.O_RDWR|os.O_TRUNC)); err != nil {
+			if err := os.MkdirAll(lib, 0o755); err != nil {
 				log.Error("failed to create library directory")
 				log.DebugError(err)
 			}

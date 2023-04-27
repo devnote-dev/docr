@@ -3,14 +3,11 @@ package env
 import (
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/devnote-dev/docr/crystal"
 )
-
-const defaultPerms = fs.FileMode(os.O_CREATE | os.O_RDWR | os.O_TRUNC)
 
 func EnsureDirectory(path string) error {
 	if exists(path) {
@@ -19,7 +16,7 @@ func EnsureDirectory(path string) error {
 		}
 	}
 
-	return os.MkdirAll(path, defaultPerms)
+	return os.MkdirAll(path, 0o755)
 }
 
 func GetLibraries() (map[string][]string, error) {
