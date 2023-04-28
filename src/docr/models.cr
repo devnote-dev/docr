@@ -1,4 +1,4 @@
-module Docr
+module Docr::Models
   struct Class
     include JSON::Serializable
 
