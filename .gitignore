@@ -1,5 +1,9 @@
 # Workspace configurations
-/.vscode
+/docs/
+/lib/
+/bin/
+/.shards/
+/.vscode/
 
 # Binaries for programs and plugins
 /build
