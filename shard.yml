@@ -9,6 +9,9 @@ authors:
 repository: https://github.com/devnote-dev/docr
 
 dependencies:
+  crest:
+    github: mamantoha/crest
+
   cling:
     github: devnote-dev/cling
     branch: main

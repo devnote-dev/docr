@@ -4,3 +4,15 @@ shards:
     git: https://github.com/devnote-dev/cling.git
     version: 3.0.0+git.commit.d9d9afc076f38266387d16b7ef8ac7f02309a5a0
 
+  crest:
+    git: https://github.com/mamantoha/crest.git
+    version: 1.3.8
+
+  http-client-digest_auth:
+    git: https://github.com/mamantoha/http-client-digest_auth.git
+    version: 0.6.0
+
+  http_proxy:
+    git: https://github.com/mamantoha/http_proxy.git
+    version: 0.9.0
+
