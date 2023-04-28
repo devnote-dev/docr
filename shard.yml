@@ -1,0 +1,24 @@
+name: docr
+description: A CLI tool for searching Crystal documentation
+version: 3.0.0
+crystal: 1.8.0
+
+authors:
+  - Devonte W <https://github.com/devnote-dev>
+
+repository: https://github.com/devnote-dev/docr
+
+dependencies:
+  cling:
+    github: devnote-dev/cling
+    branch: main
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.4.0
+
+crystalline:
+  main: src/docr.cr
+
+license: MPL

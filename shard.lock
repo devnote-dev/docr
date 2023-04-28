@@ -1,0 +1,6 @@
+version: 2.0
+shards:
+  cling:
+    git: https://github.com/devnote-dev/cling.git
+    version: 3.0.0+git.commit.d9d9afc076f38266387d16b7ef8ac7f02309a5a0
+
