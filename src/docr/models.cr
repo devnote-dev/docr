@@ -39,6 +39,7 @@ module Docr::Models
     getter file : String
     @[JSON::Field(key: "line_number")]
     getter line : Int32
+    getter url : String
   end
 
   struct TopLevel
