@@ -21,13 +21,13 @@ module Docr
 
     getter name : String
     @[JSON::Field(key: "args_string")]
-    getter args : String
+    getter args : String?
     getter summary : String?
     getter doc : String?
     getter html_id : String
-    getter? abstract : Bool
-    getter? alias : Bool
-    getter? enum : Bool
+    getter? abstract : Bool = false
+    getter? alias : Bool = false
+    getter? enum : Bool = false
     getter aliased : String?
     getter location : Location?
   end
@@ -35,15 +35,16 @@ module Docr
   struct Location
     include JSON::Serializable
 
-    getter filename : String
+    @[JSON::Field(key: "filename")]
+    getter file : String
+    @[JSON::Field(key: "line_number")]
     getter line : Int32
   end
 
-  struct Toplevel
+  struct TopLevel
     include JSON::Serializable
 
-    @[JSON::Field(key: "program")]
-    getter type : Type
+    getter program : Type
   end
 
   struct Type
@@ -51,8 +52,8 @@ module Docr
 
     getter name : String
     getter full_name : String
-    getter summary : String
-    getter doc : String
+    getter summary : String?
+    getter doc : String?
     getter kind : String
     getter? abstract : Bool
     getter? program : Bool
