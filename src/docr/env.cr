@@ -25,6 +25,18 @@ module Docr::ENV
     {% end %}
   end
 
+  struct Library
+    class Error < Exception
+    end
+
+    getter name : String
+    getter version : String
+    getter data : Models::TopLevel
+
+    def initialize(@name : String, @version : String, @data : Models::TopLevel)
+    end
+  end
+
   def has_libraries? : Bool
     Dir.exists? LIBRARY_DIR
   end
@@ -51,10 +63,10 @@ module Docr::ENV
     libs
   end
 
-  def get_library(name : String, version : String? = nil) : Models::TopLevel
+  def get_library(name : String, version : String? = nil) : Library
     versions = get_versions_for name
     if version
-      raise "version #{version} not found" unless versions.includes? version
+      raise Library::Error.new "version #{version} not found" unless versions.includes? version
     end
 
     version ||= versions.sort.first
@@ -67,9 +79,9 @@ module Docr::ENV
     #   path = LIBRARY_DIR / name / version / "index.json"
     # end
 
-    File.open(path) do |file|
-      Models::TopLevel.from_json file.gets_to_end
-    end
+    data = Models::TopLevel.from_json File.read(path)
+
+    Library.new(name, version, data)
   end
 
   def get_versions_for(name : String) : Array(String)
