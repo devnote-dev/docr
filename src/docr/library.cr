@@ -52,7 +52,6 @@ module Docr
           libs["crystal"] = Dir.children(LIBRARY_DIR / "crystal")
         else
           versions = Dir.children(LIBRARY_DIR / child)
-          puts versions
           libs[child] = versions
         end
       end
