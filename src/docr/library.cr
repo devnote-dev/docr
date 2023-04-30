@@ -65,16 +65,9 @@ module Docr
         raise Library::Error.new "version #{version} not found" unless versions.includes? version
       end
 
-      version ||= versions.sort.first
-      path = LIBRARY_DIR / name / version / "index.json"
-
-      # TODO
-      # if name == "crystal"
-      #   path = LIBRARY_DIR / "crystal" / (version + ".json")
-      # else
-      #   path = LIBRARY_DIR / name / version / "index.json"
-      # end
-
+      version ||= versions.sort.last
+      path = LIBRARY_DIR / name / version
+      path /= "index.json" unless name == "crystal"
       data = Models::TopLevel.from_json File.read(path)
 
       Library.new(name, version, data)
