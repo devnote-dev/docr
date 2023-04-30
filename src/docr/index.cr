@@ -14,6 +14,11 @@ module Docr
     getter doc_ids : Hash(Int32, Bool)
     getter max_doc_id : Int32
 
+    def self.new(& : self ->) : self
+      with (this = new) yield this
+      this
+    end
+
     def initialize
       @trigrams = {} of UInt32 => Result
       @doc_ids = {} of Int32 => Bool
