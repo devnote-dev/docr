@@ -89,8 +89,7 @@ module Docr
       path = LIBRARY_DIR / @name
 
       if all_versions
-        # TODO: may require rm-rf
-        Dir.delete path
+        FileUtils.rm_rf path
       else
         path /= @version
 

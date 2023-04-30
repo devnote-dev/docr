@@ -16,11 +16,8 @@ module Docr::Resource
 
   def import_crystal_versions : Nil
     cache = Library::CACHE_DIR
-    unless Dir.empty? cache
-      # TODO: may require rm-rf
-      Dir.delete cache
-      Dir.mkdir_p cache
-    end
+    Dir.mkdir_p cache unless Dir.exists? cache
+    FileUtils.rm_rf cache unless Dir.empty? cache
 
     res = Crest.get "https://crystal-lang.org/api/versions.json"
     data = JSON.parse res.body
@@ -42,6 +39,4 @@ module Docr::Resource
 
     File.write(Library::LIBRARY_DIR / "crystal" / (version + ".json"), res.body)
   end
-
-  # private def clear_cache! : Nil
 end
