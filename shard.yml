@@ -21,6 +21,10 @@ development_dependencies:
     github: crystal-ameba/ameba
     version: ~> 1.4.0
 
+targets:
+  docr:
+    main: src/cli.cr
+
 crystalline:
   main: src/docr.cr
 
