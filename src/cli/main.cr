@@ -9,6 +9,8 @@ module Docr
         DESC
 
       add_usage "docr <command> [options] <arguments>"
+
+      add_command Commands::Version.new
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
