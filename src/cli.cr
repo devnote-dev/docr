@@ -25,6 +25,7 @@ module Docr
 
       add_usage "docr <command> [options] <arguments>"
 
+      add_command Commands::Env.new
       add_command Commands::Version.new
     end
 
