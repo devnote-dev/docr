@@ -1,5 +1,5 @@
 module Docr::Commands
-  class Version < BaseCommand
+  class Version < Base
     def setup : Nil
       @name = "version"
       @summary = "shows version information"

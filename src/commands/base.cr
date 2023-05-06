@@ -1,5 +1,5 @@
-module Docr
-  abstract class BaseCommand < Cling::Command
+module Docr::Commands
+  abstract class Base < Cling::Command
     def initialize
       super
 
@@ -97,8 +97,5 @@ module Docr
       error "see '#{command}' for more information"
       system_exit
     end
-  end
-
-  class SystemExit < Exception
   end
 end
