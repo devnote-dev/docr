@@ -49,7 +49,7 @@ module Docr
         next unless File.directory?(LIBRARY_DIR / child)
 
         if child == "crystal"
-          libs["crystal"] = Dir.children(LIBRARY_DIR / "crystal")
+          libs["crystal"] = Dir.children(LIBRARY_DIR / "crystal").map &.strip(".json")
         else
           versions = Dir.children(LIBRARY_DIR / child)
           libs[child] = versions
