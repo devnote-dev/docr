@@ -1,6 +1,8 @@
 require "cling"
 require "colorize"
+require "yaml"
 
+require "./commands/base"
 require "./commands/*"
 require "./docr"
 
