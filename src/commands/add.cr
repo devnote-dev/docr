@@ -66,15 +66,11 @@ module Docr::Commands
       cache_dir = Library::CACHE_DIR / name
       Dir.mkdir_p cache_dir
 
-      # debug "uri: #{uri}"
       info "cloning into #{uri}..."
-
       args = ["git", "clone", uri.to_s, ".", "--quiet"]
       unless version.empty?
         args << "--branch" << version
       end
-
-      # debug "run: #{args.join ' '}"
 
       if err = exec args.join(' '), cache_dir
         if version.empty?
@@ -91,8 +87,6 @@ module Docr::Commands
       end
 
       info "installing dependencies"
-      # debug "run: shards install --without-development"
-
       if err = exec "shards install --without-development", cache_dir
         error "failed to install library dependencies:"
         error err
@@ -113,6 +107,7 @@ module Docr::Commands
         unless shard["version"].as_s == version
           error "cannot verify shard: versions do not match"
           error "expected version #{version}; got #{shard["version"]}"
+          return
         end
       end
 
@@ -121,8 +116,6 @@ module Docr::Commands
       end
 
       info "building documentation..."
-      # debug "run: crystal docs -o #{cache}"
-
       lib_dir = Library::LIBRARY_DIR / name / version
       Dir.mkdir_p lib_dir
 
@@ -134,14 +127,17 @@ module Docr::Commands
 
       info "imported #{name} version #{version}"
     ensure
+      debug "clearing: #{cache_dir}"
       FileUtils.rm_rf cache_dir.as(Path)
     end
 
     private def exec(command : String, dir : Path) : String?
-      info "debug: #{command}"
+      debug "exec: #{command}"
+      debug "dir: #{dir}"
+
       err = IO::Memory.new
       res = Process.run command, chdir: dir, error: err, shell: true
-      info "debug: #{res.exit_status}"
+      debug "status: #{res.exit_status}"
 
       if !res.success? || !err.empty?
         err.to_s

@@ -4,6 +4,8 @@ module Docr::Commands
       super
 
       @inherit_options = true
+      @debug = false
+      add_option "debug", description: "print debug information"
       add_option "no-color", description: "disable ansi color codes"
       add_option 'h', "help", description: "get help information"
     end
@@ -55,6 +57,7 @@ module Docr::Commands
     end
 
     def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Bool
+      @debug = true if options.has? "debug"
       Colorize.enabled = false if options.has? "no-color"
 
       if options.has? "help"
@@ -64,6 +67,11 @@ module Docr::Commands
       else
         true
       end
+    end
+
+    def debug(data : _) : Nil
+      return unless @debug
+      stdout << "(d) ".colorize.bold << data << '\n'
     end
 
     def info(data : _) : Nil
