@@ -88,8 +88,8 @@ module Docr::Search
     return nil unless constants = type.constants
     return nil if constants.empty?
 
-    index = Index.new do |index|
-      constants.each { |c| index.add c.name }
+    index = Index.new do |idx|
+      constants.each { |c| idx.add c.name }
     end
 
     results = index.query symbol
@@ -103,8 +103,8 @@ module Docr::Search
       return nil unless methods = type.{{name.id}}
       return nil if methods.empty?
 
-      index = Index.new do |index|
-        methods.each { |m| index.add m.name }
+      index = Index.new do |idx|
+        methods.each { |m| idx.add m.name }
       end
 
       results = index.query symbol
