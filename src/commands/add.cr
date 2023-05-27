@@ -128,7 +128,7 @@ module Docr::Commands
       info "imported #{name} version #{version}"
     ensure
       debug "clearing: #{cache_dir}"
-      FileUtils.rm_rf cache_dir.as(Path)
+      FileUtils.rm_r cache_dir.as(Path)
     end
 
     private def exec(command : String, dir : Path) : String?

@@ -71,7 +71,7 @@ module Docr::Commands
 
     def debug(data : _) : Nil
       return unless @debug
-      stdout << "(d) ".colorize.bold << data << '\n'
+      stdout << "(#) ".colorize.bold << data << '\n'
     end
 
     def info(data : _) : Nil
