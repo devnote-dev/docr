@@ -75,6 +75,9 @@ module Docr
 
     def self.get_versions_for(name : String) : Array(String)
       Dir.children(LIBRARY_DIR / name)
+    rescue File::NotFoundError
+      Dir.mkdir_p(LIBRARY_DIR / name)
+      [] of String
     end
 
     def delete(all_versions : Bool) : Nil
