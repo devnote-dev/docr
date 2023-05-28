@@ -73,8 +73,13 @@ module Docr
       end
 
       version ||= versions.sort.last
-      path = LIBRARY_DIR / name / version
-      path /= "index.json" unless name == "crystal"
+      path = LIBRARY_DIR / name
+
+      if name == "crystal"
+        path /= version + ".json"
+      else
+        path = path / version / "index.json"
+      end
       data = Models::TopLevel.from_json File.read(path)
 
       Library.new(name, version, data)
