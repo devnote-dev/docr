@@ -27,7 +27,7 @@ module Docr
 
       add_usage "docr <command> [options] <arguments>"
 
-      # add_command Commands::About.new
+      add_command Commands::About.new
       add_command Commands::List.new
       # add_command Commands::Info.new
       # add_command Commands::Search.new
