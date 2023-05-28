@@ -8,8 +8,8 @@ module Docr::Commands
 
       add_usage "docr remove <name> [version]"
 
-      add_argument "name", description: "the name of the library"
-      add_argument "version", description: "the version of the library", required: false
+      add_argument "name", description: "the name of the library", required: true
+      add_argument "version", description: "the version of the library"
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil

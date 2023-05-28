@@ -14,8 +14,8 @@ module Docr::Commands
       add_usage "docr add <name> <source> [options]"
       add_usage "docr add <name> latest [options]"
 
-      add_argument "name", description: "the name of the library"
-      add_argument "source", description: "the source of the library (or latest for crystal)"
+      add_argument "name", description: "the name of the library", required: true
+      add_argument "source", description: "the source of the library (or latest for crystal)", required: true
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil

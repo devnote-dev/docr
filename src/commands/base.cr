@@ -110,9 +110,10 @@ module Docr::Commands
     end
 
     def on_missing_arguments(args : Array(String))
+      command = "docr #{self.name} --help".colorize.blue
       error "missing required argument#{"s" if args.size > 1}:"
       error " #{args.join(", ")}"
-      error "see 'docr #{self.name} --help' for more information"
+      error "see '#{command}' for more information"
       system_exit
     end
 
