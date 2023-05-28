@@ -27,8 +27,13 @@ module Docr
 
       add_usage "docr <command> [options] <arguments>"
 
+      # add_command Commands::About.new
       add_command Commands::List.new
+      # add_command Commands::Info.new
+      # add_command Commands::Search.new
       add_command Commands::Add.new
+      # add_command Commands::Check.new
+      # add_command Commands::Update.new
       add_command Commands::Remove.new
       add_command Commands::Env.new
       add_command Commands::Version.new
@@ -46,4 +51,5 @@ end
 begin
   Docr::CLI.new.execute ARGV
 rescue Docr::SystemExit
+  exit 1
 end

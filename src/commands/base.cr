@@ -91,6 +91,31 @@ module Docr::Commands
       raise SystemExit.new
     end
 
+    def on_error(ex : Exception)
+      if ex.is_a? Cling::CommandError
+        error "c" + ex.to_s[1..]
+        error "see '#{"docr --help".colorize.blue}' for more information"
+        return
+      end
+
+      error "unexpected exception:"
+      error ex
+      error "please report this on the Docr GitHub issues:"
+      error "https://github.com/devnote-dev/docr/issues"
+
+      if @debug && (stack = ex.backtrace)
+        debug "backtrace for exception:"
+        stack.each { |line| debug " " + line }
+      end
+    end
+
+    def on_missing_arguments(args : Array(String))
+      error "missing required argument#{"s" if args.size > 1}:"
+      error " #{args.join(", ")}"
+      error "see 'docr #{self.name} --help' for more information"
+      system_exit
+    end
+
     def on_unknown_arguments(args : Array(String))
       command = %(docr #{self.name == "main" ? "" : self.name + " "}--help).colorize.blue
       error "unexpected argument#{"s" if args.size > 1} for this command:"
