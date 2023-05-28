@@ -60,9 +60,11 @@ module Docr
     end
 
     def self.fetch(name : String, version : String? = nil) : Library
-      versions = get_versions_for name
+      versions = get_versions_for(name).map &.[0...-5]
+      raise Library::Error.new "no versions of #{name} imported" if versions.empty?
+
       if version
-        raise Library::Error.new "version #{version} not found" unless versions.includes? version
+        raise Library::Error.new "version #{version} of #{name} not found" unless versions.includes? version
       end
 
       version ||= versions.sort.last
