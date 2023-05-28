@@ -44,7 +44,8 @@ module Docr::Commands
           io << "--" << name
 
           if description = option.description
-            io << " " * (max_size - name.size)
+            name_size = name.size + (option.short ? 4 : 0)
+            io << " " * (max_size - name_size)
             io << description
           end
           io << '\n'
