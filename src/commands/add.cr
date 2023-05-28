@@ -111,7 +111,7 @@ module Docr::Commands
         end
       end
 
-      if Library.exists? name # , version
+      if Library.exists?(name, version)
         return error "library #{name} version #{version} is already imported"
       end
 

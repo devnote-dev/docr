@@ -8,10 +8,10 @@ module Docr::Commands
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       stdout << String.build do |io|
-        list = Library.list
-        return error "no libraries have been installed" if list.empty?
+        libs = Library.list_all
+        return error "no libraries have been installed" if libs.empty?
 
-        list.each do |name, versions|
+        libs.each do |name, versions|
           io << name << '\n'
           versions.each do |version|
             io << "• "

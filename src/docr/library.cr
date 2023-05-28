@@ -31,36 +31,41 @@ module Docr
     getter version : String
     getter data : Models::TopLevel
 
-    def initialize(@name : String, @version : String, @data : Models::TopLevel)
+    def self.exists?(name : String, version : String? = nil) : Bool
+      if version
+        if name == "crystal"
+          Dir.exists?(LIBRARY_DIR / name / (version + ".json"))
+        else
+          Dir.exists?(LIBRARY_DIR / name / version)
+        end
+      else
+        Dir.exists?(LIBRARY_DIR / name)
+      end
     end
 
-    def self.has_libraries? : Bool
-      Dir.exists? LIBRARY_DIR
-    end
-
-    def self.exists?(name : String) : Bool
-      Dir.exists? LIBRARY_DIR / name
-    end
-
-    def self.list : Hash(String, Array(String))
+    def self.list_all : Hash(String, Array(String))
       libs = {} of String => Array(String)
 
       Dir.each_child(LIBRARY_DIR) do |child|
         next unless File.directory?(LIBRARY_DIR / child)
+        versions = get_versions_for child
+        next if versions.empty?
 
-        if child == "crystal"
-          libs["crystal"] = Dir.children(LIBRARY_DIR / "crystal").map &.[0...-5]
-        else
-          versions = Dir.children(LIBRARY_DIR / child)
-          libs[child] = versions
-        end
+        libs[child] = versions
       end
 
       libs
     end
 
+    def self.get_versions_for(name : String) : Array(String)
+      Dir.children(LIBRARY_DIR / name).map &.sub(".json", "")
+    rescue File::NotFoundError
+      Dir.mkdir_p(LIBRARY_DIR / name)
+      [] of String
+    end
+
     def self.fetch(name : String, version : String? = nil) : Library
-      versions = get_versions_for(name).map &.[0...-5]
+      versions = get_versions_for name
       raise Library::Error.new "no versions of #{name} imported" if versions.empty?
 
       if version
@@ -75,11 +80,7 @@ module Docr
       Library.new(name, version, data)
     end
 
-    def self.get_versions_for(name : String) : Array(String)
-      Dir.children(LIBRARY_DIR / name)
-    rescue File::NotFoundError
-      Dir.mkdir_p(LIBRARY_DIR / name)
-      [] of String
+    def initialize(@name : String, @version : String, @data : Models::TopLevel)
     end
 
     def delete(all_versions : Bool) : Nil

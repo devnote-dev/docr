@@ -4,7 +4,7 @@ module Docr::Commands
       @name = "remove"
       @summary = "removes a library"
       @description = "Removes an imported library. If the 'version' argument is not specified, all\n" \
-        "versions of the library are removed."
+                     "versions of the library are removed."
 
       add_usage "docr remove <name> [version]"
 
