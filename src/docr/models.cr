@@ -45,6 +45,7 @@ module Docr::Models
   struct TopLevel
     include JSON::Serializable
 
+    getter body : String
     getter program : Type
   end
 
