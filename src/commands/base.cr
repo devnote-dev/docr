@@ -92,6 +92,8 @@ module Docr::Commands
     end
 
     def on_error(ex : Exception)
+      raise ex if ex.is_a? SystemExit
+
       if ex.is_a? Cling::CommandError
         error "c" + ex.to_s[1..]
         error "see '#{"docr --help".colorize.blue}' for more information"
