@@ -9,12 +9,12 @@ module Docr::Commands
         used instead.
         DESC
 
-      add_usage "docr search [library] <symbol|type> [options]"
+      add_usage "docr search [library] <type|symbol> [options]"
       add_usage "docr search [library] <type> <symbol> [options]"
 
       add_argument "library", description: "the name of the library"
-      add_argument "symbol"
       add_argument "type"
+      add_argument "symbol"
     end
 
     def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Bool
@@ -22,28 +22,28 @@ module Docr::Commands
       return on_missing_arguments(%w[symbol]) unless arguments.has?("library")
 
       library = arguments.get("library").as_s
-      symbol = arguments.get?("symbol").try &.as_s
       type = arguments.get?("type").try &.as_s
+      symbol = arguments.get?("symbol").try &.as_s
 
       if library.matches? /\A[a-z0-9_-]+\z/
-        if symbol.nil?
+        if type.nil?
           arg = Cling::Argument.new("symbol")
           arg.value = arguments.get("library")
           arguments.hash["symbol"] = arg
           arguments.hash["library"].value = nil
         end
       else
-        if symbol.nil?
-          arguments.hash["symbol"] = Cling::Argument.new("symbol")
-        end
-
         if type.nil?
-          arg = Cling::Argument.new("type")
-          arg.value = arguments.get?("symbol")
-          arguments.hash["type"] = arg
+          arguments.hash["type"] = Cling::Argument.new("type")
         end
 
-        arguments.hash["symbol"].value = arguments.get("library")
+        if symbol.nil?
+          arg = Cling::Argument.new("symbol")
+          arg.value = arguments.get?("type")
+          arguments.hash["symbol"] = arg
+        end
+
+        arguments.hash["type"].value = arguments.get("library")
         arguments.hash["library"].value = nil
       end
 
@@ -52,21 +52,21 @@ module Docr::Commands
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       library = arguments.get?("library").try &.as_s
-      symbol = arguments.get?("symbol").try &.as_s
       type = arguments.get?("type").try &.as_s
+      symbol = arguments.get?("symbol").try &.as_s
 
       debug "library: #{library.inspect}"
-      debug "symbol: #{symbol.inspect}"
       debug "type: #{type.inspect}"
+      debug "symbol: #{symbol.inspect}"
 
-      query = Query.parse [symbol, type].reject(Nil)
+      query = Query.parse [type, symbol].reject(Nil)
 
       pp query
     end
   end
 
   private struct Query
-    PATH_RULE = /\A(?:[\w:!?<>+\-*\/^=~%$&`\[|\]]+)(?:(?:\.|#|\s)(?:[\w!?<>+\-*\/^=~%$&`\[|\]]+))?\z/
+    PATH_RULE   = /\A(?:[\w:!?<>+\-*\/^=~%$&`\[|\]]+)(?:(?:\.|#|\s)(?:[\w!?<>+\-*\/^=~%$&`\[|\]]+))?\z/
     MODULE_RULE = /\A\w+\z/
 
     getter types : Array(String)
