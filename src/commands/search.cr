@@ -30,7 +30,7 @@ module Docr::Commands
           arg = Cling::Argument.new("symbol")
           arg.value = arguments.get("library")
           arguments.hash["symbol"] = arg
-          arguments.hash["library"].value = nil
+          arguments.hash["library"].value = Cling::Value.new("crystal")
         end
       else
         if type.nil?
@@ -44,24 +44,160 @@ module Docr::Commands
         end
 
         arguments.hash["type"].value = arguments.get("library")
-        arguments.hash["library"].value = nil
+        arguments.hash["library"].value = Cling::Value.new("crystal")
       end
 
       true
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
-      library = arguments.get?("library").try &.as_s
+      lib_name = arguments.get("library").as_s
       type = arguments.get?("type").try &.as_s
       symbol = arguments.get?("symbol").try &.as_s
 
-      debug "library: #{library.inspect}"
+      debug "library: #{lib_name.inspect}"
       debug "type: #{type.inspect}"
       debug "symbol: #{symbol.inspect}"
 
       query = Query.parse [type, symbol].reject(Nil)
+      versions = Library.get_versions_for lib_name
+      if versions.empty?
+        format = "docr add #{lib_name} <source>".colorize.blue
+        error "no documentation is available for this library"
+        error "to import a version of this library, run '#{format}'"
+        return
+      end
 
-      pp query
+      # TODO: support --version
+
+      library = Library.fetch lib_name
+      data = library.data.program
+      unless query.types.empty?
+        data = resolve_type data, query.types
+        if data.nil? && lib_name != "crystal"
+          data = resolve_type library.data.program.types.not_nil![0], query.types
+        end
+
+        if data.nil?
+          return error "could not resolve types or namespaces for that symbol"
+        end
+      end
+
+      results = Docr::Search.filter_types data, query.symbol
+      if results.empty?
+        return error "no documentation found for symbol '#{query.symbol}'"
+      end
+
+      str = String.build do |io|
+        io << "Search Results:\n\n"
+
+        results.each do |kind, result|
+          case kind
+          when .constant?
+            result.each do |const|
+              parts = const.name.split "::"
+              io << parts[0].colorize.blue
+              parts[1..].each do |part|
+                io << "::"
+                io << part.colorize.blue
+              end
+
+              if source = const.source
+                io << " (" << source.file << ':' << source.line << ')'
+              else
+                io << " (top level)"
+              end
+
+              io << '\n'
+            end
+
+            io << '\n'
+          when .module?
+            result.each do |mod|
+              io << "module ".colorize.red
+              io << mod.name.colorize.blue
+
+              if source = mod.source
+                io << " (" << source.file << ':' << source.line << ')'
+              else
+                io << " (top level)"
+              end
+
+              io << '\n'
+            end
+          when .class?
+            result.each do |cls|
+              io << "class ".colorize.red
+              io << cls.name.colorize.blue
+
+              if source = cls.source
+                io << " (" << source.file << ':' << source.line << ')'
+              else
+                io << " (top level)"
+              end
+
+              io << '\n'
+            end
+          when .struct?
+            result.each do |strct|
+              io << "struct ".colorize.red
+              io << strct.name.colorize.blue
+
+              if source = strct.source
+                io << " (" << source.file << ':' << source.line << ')'
+              else
+                io << " (top level)"
+              end
+
+              io << '\n'
+            end
+          when .enum?
+            result.each do |_enum|
+              io << "enum ".colorize.red
+              io << _enum.name.colorize.blue
+
+              if source = _enum.source
+                io << " (" << source.file << ':' << source.line << ')'
+              else
+                io << " (top level)"
+              end
+
+              io << '\n'
+            end
+          when .alias?
+            result.each do |_alias|
+              io << "alias ".colorize.red
+              io << _alias.name.colorize.blue
+
+              if source = _alias.source
+                io << " (" << source.file << ':' << source.line << ')'
+              else
+                io << " (top level)"
+              end
+
+              io << '\n'
+            end
+          when .def?
+            result.each do |method|
+              io << "def ".colorize.red
+              io << method.name.colorize.blue
+
+              if source = method.source
+                io << " (" << source.file << ':' << source.line << ')'
+              else
+                io << " (unknown source)"
+              end
+
+              io << '\n'
+            end
+          end
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def resolve_type(top : Models::Type, types : Array(String))
     end
   end
 
