@@ -61,6 +61,7 @@ module Docr::Commands
 
       query = Query.parse [type, symbol].reject(Nil)
       versions = Library.get_versions_for lib_name
+
       if versions.empty?
         format = "docr add #{lib_name} <source>".colorize.blue
         error "no documentation is available for this library"
@@ -72,6 +73,7 @@ module Docr::Commands
 
       library = Library.fetch lib_name
       data = library.data.program
+
       unless query.types.empty?
         data = resolve_type data, query.types
         if data.nil? && lib_name != "crystal"
@@ -95,106 +97,148 @@ module Docr::Commands
           case kind
           when .constant?
             result.each do |const|
-              parts = const.value
-              io << parts[0].colorize.blue
-              parts[1..].each do |part|
-                io << "::"
-                io << part.colorize.blue
-              end
-
               if source = const.source
-                io << " (" << source.file << ':' << source.line << ')'
+                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
               else
-                io << " (top level)"
+                io << "# (top level)\n".colorize.light_gray
               end
 
+              io << const.value.map(&.colorize.blue).join("::")
+              io << '\n'
+            end
+          when .module?
+            result.each do |_module|
+              if source = _module.source
+                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
+              else
+                io << "# (top level)\n".colorize.light_gray
+              end
+
+              io << "module ".colorize.red
+              io << _module.value.map(&.colorize.blue).join("::")
+              io << "\n\n"
+            end
+          when .class?
+            result.each do |_class|
+              if source = _class.source
+                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
+              else
+                io << "# (top level)\n".colorize.light_gray
+              end
+
+              io << "class ".colorize.red
+              io << _class.value.map(&.colorize.blue).join("::")
+              io << "\n\n"
+            end
+          when .struct?
+            result.each do |_struct|
+              if source = _struct.source
+                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
+              else
+                io << "# (top level)\n".colorize.light_gray
+              end
+
+              io << "struct ".colorize.red
+              io << _struct.value.map(&.colorize.blue).join("::")
+              io << "\n\n"
+            end
+          when .enum?
+            result.each do |_enum|
+              if source = _enum.source
+                io << "# #{source.file}:#{source.line})\n".colorize.light_gray
+              else
+                io << "# (top level)\n".colorize.light_gray
+              end
+
+              io << "enum ".colorize.red
+              io << _enum.value.map(&.colorize.blue).join("::")
+              io << "\n\n"
+            end
+          when .alias?
+            result.each do |_alias|
+              if source = _alias.source
+                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
+              else
+                io << "# (top level)\n".colorize.light_gray
+              end
+
+              io << "alias ".colorize.red
+              io << _alias.value.map(&.colorize.blue).join("::")
               io << '\n'
             end
 
             io << '\n'
-          when .module?
-            result.each do |mod|
-              io << "module ".colorize.red
-              io << mod.value[0].colorize.blue
-
-              if source = mod.source
-                io << " (" << source.file << ':' << source.line << ')'
-              else
-                io << " (top level)"
-              end
-
-              io << '\n'
-            end
-          when .class?
-            result.each do |cls|
-              io << "class ".colorize.red
-              io << cls.value[0].colorize.blue
-
-              if source = cls.source
-                io << " (" << source.file << ':' << source.line << ')'
-              else
-                io << " (top level)"
-              end
-
-              io << '\n'
-            end
-          when .struct?
-            result.each do |strct|
-              io << "struct ".colorize.red
-              io << strct.value[0].colorize.blue
-
-              if source = strct.source
-                io << " (" << source.file << ':' << source.line << ')'
-              else
-                io << " (top level)"
-              end
-
-              io << '\n'
-            end
-          when .enum?
-            result.each do |_enum|
-              io << "enum ".colorize.red
-              io << _enum.value[0].colorize.blue
-
-              if source = _enum.source
-                io << " (" << source.file << ':' << source.line << ')'
-              else
-                io << " (top level)"
-              end
-
-              io << '\n'
-            end
-          when .alias?
-            result.each do |_alias|
-              io << "alias ".colorize.red
-              io << _alias.value[0].colorize.blue
-
-              if source = _alias.source
-                io << " (" << source.file << ':' << source.line << ')'
-              else
-                io << " (top level)"
-              end
-
-              io << '\n'
-            end
           when .def?
             result.each do |method|
-              io << "def ".colorize.red
-              io << method.value[0].colorize.blue
-
               if source = method.source
-                io << " (" << source.file << ':' << source.line << ')'
+                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
               else
-                io << " (unknown source)"
+                io << "# (top level)\n".colorize.light_gray
               end
 
-              io << '\n'
+              io << "def ".colorize.red
+              if method.value.size <= 2
+                if method.value[1].includes?('(')
+                  io << method.value[0].colorize.magenta
+                  io << method.value[1]
+                else
+                  io << method.value[0].colorize.blue
+                  io << '.'
+                  io << method.value[1].colorize.magenta
+                end
+              else
+                if method.value.last.includes?('(')
+                  io << method.value[0...-2].map(&.colorize.blue).join("::")
+                  io << '.'
+                  io << method.value[-2].colorize.magenta
+                  io << method.value.last
+                else
+                  io << method.value[0...-1].map(&.colorize.blue).join("::")
+                  io << '.'
+                  io << method.value.last.colorize.magenta
+                end
+              end
+
+              io << "\n\n"
+            end
+          when .macro?
+            result.each do |method|
+              if source = method.source
+                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
+              else
+                io << "# (top level)\n".colorize.light_gray
+              end
+
+              io << "macro ".colorize.red
+              if method.value.size <= 2
+                if method.value[1].includes?('(')
+                  io << method.value[0].colorize.magenta
+                  io << method.value[1]
+                else
+                  io << method.value[0].colorize.blue
+                  io << '.'
+                  io << method.value[1].colorize.magenta
+                end
+              else
+                if method.value.last.includes?('(')
+                  io << method.value[0...-2].map(&.colorize.blue).join("::")
+                  io << '.'
+                  io << method.value[-2].colorize.magenta
+                  io << method.value.last
+                else
+                  io << method.value[0...-1].map(&.colorize.blue).join("::")
+                  io << '.'
+                  io << method.value.last.colorize.magenta
+                end
+              end
+
+              io << "\n\n"
             end
           end
         end
       end
 
-      stdout.puts str
+      stdout.puts str.chomp
     end
 
     private def resolve_type(top : Models::Type, names : Array(String)) : Models::Type?
