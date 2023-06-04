@@ -1,6 +1,7 @@
 require "crest"
 require "file_utils"
 require "json"
+require "levenshtein"
 
 require "./docr/*"
 

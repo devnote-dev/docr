@@ -85,18 +85,44 @@ module Docr::Search
     results
   end
 
+  private struct Entry(T)
+    getter value : T
+    getter dist : Int32
+
+    def initialize(@value, @dist)
+    end
+  end
+
+  private def sort_by(target : String, subjects : Array(T), & : T -> String) : Array(T) forall T
+    t = target.size / 5
+    best : Entry(T)? = nil
+    res = [] of Entry(T)
+
+    subjects.each do |subject|
+      dist = Levenshtein.distance target, yield subject
+      if dist <= t
+        if best
+          if dist < best.dist
+            res << best
+            best = Entry(T).new(subject, dist)
+          end
+        else
+          best = Entry(T).new(subject, dist)
+          res << best
+        end
+      end
+    end
+
+    return [] of T if best.nil?
+
+    res.map &.value
+  end
+
   def filter_constants(type : Models::Type, symbol : String) : Array(Models::Constant)?
     return nil unless constants = type.constants
     return nil if constants.empty?
 
-    index = Index.new do |idx|
-      constants.each { |c| idx.add c.name }
-    end
-
-    results = index.query symbol
-    return nil if results.empty?
-
-    results.map { |i| constants[i]? }.reject(Nil)
+    sort_by(symbol, constants, &.name)
   end
 
   {% for name in %w[constructors class_methods instance_methods macros] %}
@@ -104,14 +130,41 @@ module Docr::Search
       return nil unless methods = type.{{name.id}}
       return nil if methods.empty?
 
-      index = Index.new do |idx|
-        methods.each { |m| idx.add m.name }
-      end
-
-      results = index.query symbol
-      return nil if results.empty?
-
-      results.map { |i| methods[i]? }.reject(Nil)
+      sort_by(symbol, methods, &.name)
     end
   {% end %}
+
+  # TODO: so this doesn't actually work as intended,
+  #       reverting back to the levenshtein implementation
+  #       until this can be worked out properly.
+
+  # def filter_constants(type : Models::Type, symbol : String) : Array(Models::Constant)?
+  #   return nil unless constants = type.constants
+  #   return nil if constants.empty?
+
+  #   index = Index.new do |idx|
+  #     constants.each { |c| idx.add c.name }
+  #   end
+
+  #   results = index.query symbol
+  #   return nil if results.empty?
+
+  #   results.map { |i| constants[i]? }.reject(Nil)
+  # end
+
+  # {% for name in %w[constructors class_methods instance_methods macros] %}
+  #   def filter_{{name.id}}(type : Models::Type, symbol : String) : Array(Models::Def)?
+  #     return nil unless methods = type.{{name.id}}
+  #     return nil if methods.empty?
+
+  #     index = Index.new do |idx|
+  #       methods.each { |m| idx.add m.name }
+  #     end
+
+  #     results = index.query symbol
+  #     return nil if results.empty?
+
+  #     results.map { |i| methods[i]? }.reject(Nil)
+  #   end
+  # {% end %}
 end
