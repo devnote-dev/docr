@@ -97,86 +97,19 @@ module Docr::Commands
           case kind
           when .constant?
             result.each do |const|
-              if source = const.source
-                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
-              else
-                io << "# (top level)\n".colorize.light_gray
-              end
-
+              def_source_for const
               io << const.value.map(&.colorize.blue).join("::")
               io << '\n'
             end
-          when .module?
-            result.each do |_module|
-              if source = _module.source
-                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
-              else
-                io << "# (top level)\n".colorize.light_gray
-              end
-
-              io << "module ".colorize.red
-              io << _module.value.map(&.colorize.blue).join("::")
-              io << "\n\n"
-            end
-          when .class?
-            result.each do |_class|
-              if source = _class.source
-                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
-              else
-                io << "# (top level)\n".colorize.light_gray
-              end
-
-              io << "class ".colorize.red
-              io << _class.value.map(&.colorize.blue).join("::")
-              io << "\n\n"
-            end
-          when .struct?
-            result.each do |_struct|
-              if source = _struct.source
-                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
-              else
-                io << "# (top level)\n".colorize.light_gray
-              end
-
-              io << "struct ".colorize.red
-              io << _struct.value.map(&.colorize.blue).join("::")
-              io << "\n\n"
-            end
-          when .enum?
-            result.each do |_enum|
-              if source = _enum.source
-                io << "# #{source.file}:#{source.line})\n".colorize.light_gray
-              else
-                io << "# (top level)\n".colorize.light_gray
-              end
-
-              io << "enum ".colorize.red
-              io << _enum.value.map(&.colorize.blue).join("::")
-              io << "\n\n"
-            end
-          when .alias?
-            result.each do |_alias|
-              if source = _alias.source
-                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
-              else
-                io << "# (top level)\n".colorize.light_gray
-              end
-
-              io << "alias ".colorize.red
-              io << _alias.value.map(&.colorize.blue).join("::")
-              io << '\n'
-            end
-
-            io << '\n'
-          when .def?
+          when .def?, .macro?
             result.each do |method|
-              if source = method.source
-                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
+              def_source_for method
+              if kind.def?
+                io << "def ".colorize.red
               else
-                io << "# (top level)\n".colorize.light_gray
+                io << "macro ".colorize.red
               end
 
-              io << "def ".colorize.red
               if method.value.size <= 2
                 if method.value[1].includes?('(')
                   io << method.value[0].colorize.magenta
@@ -201,37 +134,18 @@ module Docr::Commands
 
               io << "\n\n"
             end
-          when .macro?
-            result.each do |method|
-              if source = method.source
-                io << "# #{source.file}:#{source.line}\n".colorize.light_gray
-              else
-                io << "# (top level)\n".colorize.light_gray
+          else
+            result.each do |object|
+              def_source_for object
+              case kind
+              when .module? then io << "module ".colorize.red
+              when .class?  then io << "class ".colorize.red
+              when .struct? then io << "struct ".colorize.red
+              when .enum?   then io << "enum ".colorize.red
+              when .alias?  then io << "alias ".colorize.red
               end
 
-              io << "macro ".colorize.red
-              if method.value.size <= 2
-                if method.value[1].includes?('(')
-                  io << method.value[0].colorize.magenta
-                  io << method.value[1]
-                else
-                  io << method.value[0].colorize.blue
-                  io << '.'
-                  io << method.value[1].colorize.magenta
-                end
-              else
-                if method.value.last.includes?('(')
-                  io << method.value[0...-2].map(&.colorize.blue).join("::")
-                  io << '.'
-                  io << method.value[-2].colorize.magenta
-                  io << method.value.last
-                else
-                  io << method.value[0...-1].map(&.colorize.blue).join("::")
-                  io << '.'
-                  io << method.value.last.colorize.magenta
-                end
-              end
-
+              io << object.value.map(&.colorize.blue).join("::")
               io << "\n\n"
             end
           end
@@ -252,6 +166,14 @@ module Docr::Commands
 
           return type
         end
+      end
+    end
+
+    private macro def_source_for(name)
+      if source = {{name.id}}.source
+        io << "# #{source.file}:#{source.line}\n".colorize.light_gray
+      else
+        io << "# (top level)\n".colorize.light_gray
       end
     end
   end
