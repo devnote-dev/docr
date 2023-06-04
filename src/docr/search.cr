@@ -40,7 +40,18 @@ module Docr::Search
       {% for name in %w[constructors class_methods instance_methods] %}
         if methods = filter_{{name.id}}(type, symbol)
           results[:def] = methods.map do |method|
-            Result.new([method.name], nil, method.location)
+            value = if type.full_name == "Top Level Namespace"
+                      [] of String
+                    else
+                      type.full_name.split("::", remove_empty: true)
+                    end
+
+            value << method.name
+            if args = method.args
+              value << args
+            end
+
+            Result.new(value, nil, method.location)
           end
         end
       {% end %}
@@ -48,7 +59,18 @@ module Docr::Search
 
     if macros = filter_macros(type, symbol)
       results[:macro] = macros.map do |_macro|
-        Result.new([_macro.name], nil, _macro.location)
+        value = if type.full_name == "Top Level Namespace"
+                  [] of String
+                else
+                  type.full_name.split("::", remove_empty: true)
+                end
+
+        value << _macro.name
+        if args = _macro.args
+          value << args
+        end
+
+        Result.new(value, nil, _macro.location)
       end
     end
 
