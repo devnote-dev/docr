@@ -13,11 +13,11 @@ module Docr::Search
       Macro
     end
 
-    getter name : String
+    getter value : Array(String)
     getter scope : String?
     getter source : Models::Location?
 
-    def initialize(@name : String, @scope : String?, @source : Models::Location?)
+    def initialize(@value : Array(String), @scope : String?, @source : Models::Location?)
     end
   end
 
@@ -31,7 +31,8 @@ module Docr::Search
       end
 
       results[:constant] = constants.map do |const|
-        Result.new(const.name, nil, location)
+        value = type.full_name.split("::", remove_empty: true)
+        Result.new(value << const.name, nil, location)
       end
     end
 
@@ -39,7 +40,7 @@ module Docr::Search
       {% for name in %w[constructors class_methods instance_methods] %}
         if methods = filter_{{name.id}}(type, symbol)
           results[:def] = methods.map do |method|
-            Result.new(method.name, nil, method.location)
+            Result.new([method.name], nil, method.location)
           end
         end
       {% end %}
@@ -47,7 +48,7 @@ module Docr::Search
 
     if macros = filter_macros(type, symbol)
       results[:macro] = macros.map do |_macro|
-        Result.new(_macro.name, nil, _macro.location)
+        Result.new([_macro.name], nil, _macro.location)
       end
     end
 
@@ -66,7 +67,7 @@ module Docr::Search
                end
 
         results[kind] = inner.locations.map do |location|
-          Result.new(inner.name, type.name, location)
+          Result.new([inner.name], type.name, location)
         end
 
         next
@@ -95,7 +96,7 @@ module Docr::Search
     results = index.query symbol
     return nil if results.empty?
 
-    results.map { |i| constants[i] }
+    results.map { |i| constants[i]? }.reject(Nil)
   end
 
   {% for name in %w[constructors class_methods instance_methods macros] %}

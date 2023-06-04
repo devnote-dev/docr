@@ -95,7 +95,7 @@ module Docr::Commands
           case kind
           when .constant?
             result.each do |const|
-              parts = const.name.split "::"
+              parts = const.value
               io << parts[0].colorize.blue
               parts[1..].each do |part|
                 io << "::"
@@ -115,7 +115,7 @@ module Docr::Commands
           when .module?
             result.each do |mod|
               io << "module ".colorize.red
-              io << mod.name.colorize.blue
+              io << mod.value[0].colorize.blue
 
               if source = mod.source
                 io << " (" << source.file << ':' << source.line << ')'
@@ -128,7 +128,7 @@ module Docr::Commands
           when .class?
             result.each do |cls|
               io << "class ".colorize.red
-              io << cls.name.colorize.blue
+              io << cls.value[0].colorize.blue
 
               if source = cls.source
                 io << " (" << source.file << ':' << source.line << ')'
@@ -141,7 +141,7 @@ module Docr::Commands
           when .struct?
             result.each do |strct|
               io << "struct ".colorize.red
-              io << strct.name.colorize.blue
+              io << strct.value[0].colorize.blue
 
               if source = strct.source
                 io << " (" << source.file << ':' << source.line << ')'
@@ -154,7 +154,7 @@ module Docr::Commands
           when .enum?
             result.each do |_enum|
               io << "enum ".colorize.red
-              io << _enum.name.colorize.blue
+              io << _enum.value[0].colorize.blue
 
               if source = _enum.source
                 io << " (" << source.file << ':' << source.line << ')'
@@ -167,7 +167,7 @@ module Docr::Commands
           when .alias?
             result.each do |_alias|
               io << "alias ".colorize.red
-              io << _alias.name.colorize.blue
+              io << _alias.value[0].colorize.blue
 
               if source = _alias.source
                 io << " (" << source.file << ':' << source.line << ')'
@@ -180,7 +180,7 @@ module Docr::Commands
           when .def?
             result.each do |method|
               io << "def ".colorize.red
-              io << method.name.colorize.blue
+              io << method.value[0].colorize.blue
 
               if source = method.source
                 io << " (" << source.file << ':' << source.line << ')'
