@@ -116,18 +116,18 @@ module Docr::Commands
                   io << method.value[1]
                 else
                   io << method.value[0].colorize.blue
-                  io << '.'
+                  io << (method.instance? ? '#' : '.')
                   io << method.value[1].colorize.magenta
                 end
               else
                 if method.value.last.includes?('(')
                   io << method.value[0...-2].map(&.colorize.blue).join("::")
-                  io << '.'
+                  io << (method.instance? ? '#' : '.')
                   io << method.value[-2].colorize.magenta
                   io << method.value.last
                 else
                   io << method.value[0...-1].map(&.colorize.blue).join("::")
-                  io << '.'
+                  io << (method.instance? ? '#' : '.')
                   io << method.value.last.colorize.magenta
                 end
               end

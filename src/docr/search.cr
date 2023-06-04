@@ -61,8 +61,10 @@ module Docr::Search
     getter value : Array(String)
     getter scope : String?
     getter source : Models::Location?
+    getter? instance : Bool
 
-    def initialize(@value : Array(String), @scope : String?, @source : Models::Location?)
+    def initialize(@value : Array(String), @scope : String?,
+                   @source : Models::Location?, @instance : Bool = false)
     end
   end
 
@@ -96,7 +98,7 @@ module Docr::Search
               value << args
             end
 
-            Result.new(value, nil, method.location)
+            Result.new(value, nil, method.location, {{ name == "instance_methods" }})
           end
         end
       {% end %}
