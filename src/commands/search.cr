@@ -197,7 +197,18 @@ module Docr::Commands
       stdout.puts str
     end
 
-    private def resolve_type(top : Models::Type, types : Array(String))
+    private def resolve_type(top : Models::Type, names : Array(String)) : Models::Type?
+      return nil unless types = top.types
+
+      types.each do |type|
+        if type.name == names[0] || type.full_name == names[0]
+          if names.size - 1 != 0
+            return resolve_type type, names[1..]
+          end
+
+          return type
+        end
+      end
     end
   end
 
