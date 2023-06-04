@@ -72,20 +72,20 @@ module Docr::Commands
       # TODO: support --version
 
       library = Library.fetch lib_name
-      data = library.data.program
+      data = res = library.data.program
 
       unless query.types.empty?
-        data = resolve_type data, query.types
-        if data.nil? && lib_name != "crystal"
-          data = resolve_type library.data.program.types.not_nil![0], query.types
+        res = resolve_type data, query.types
+        if res.nil? && lib_name != "crystal"
+          res = resolve_type(data.types.as(Array)[0], query.types)
         end
 
-        if data.nil?
+        if res.nil?
           return error "could not resolve types or namespaces for that symbol"
         end
       end
 
-      results = Docr::Search.filter_types data, query.symbol
+      results = Docr::Search.filter_types(res.as(Models::Type), query.symbol)
       if results.empty?
         return error "no documentation found for symbol '#{query.symbol}'"
       end
