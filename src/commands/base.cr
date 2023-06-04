@@ -95,14 +95,14 @@ module Docr::Commands
       raise ex if ex.is_a? SystemExit
 
       if ex.is_a? Cling::CommandError
-        error "c" + ex.to_s[1..]
-        error "see '#{"docr --help".colorize.blue}' for more information"
+        error ex.to_s
+        error "See '#{"docr --help".colorize.blue}' for more information"
         return
       end
 
-      error "unexpected exception:"
+      error "Unexpected exception:"
       error ex
-      error "please report this on the Docr GitHub issues:"
+      error "Please report this on the Docr GitHub issues:"
       error "https://github.com/devnote-dev/docr/issues"
 
       return unless @debug
@@ -114,25 +114,25 @@ module Docr::Commands
 
     def on_missing_arguments(args : Array(String))
       command = "docr #{self.name} --help".colorize.blue
-      error "missing required argument#{"s" if args.size > 1}:"
+      error "Missing required argument#{"s" if args.size > 1}:"
       error " #{args.join(", ")}"
-      error "see '#{command}' for more information"
+      error "See '#{command}' for more information"
       system_exit
     end
 
     def on_unknown_arguments(args : Array(String))
       command = %(docr #{self.name == "main" ? "" : self.name + " "}--help).colorize.blue
-      error "unexpected argument#{"s" if args.size > 1} for this command:"
+      error "Unexpected argument#{"s" if args.size > 1} for this command:"
       error " #{args.join ", "}"
-      error "see '#{command}' for more information"
+      error "See '#{command}' for more information"
       system_exit
     end
 
     def on_unknown_options(options : Array(String))
       command = %(docr #{self.name == "main" ? "" : self.name + " "}--help).colorize.blue
-      error "unexpected option#{"s" if options.size > 1} for this command:"
+      error "Unexpected option#{"s" if options.size > 1} for this command:"
       error " #{options.join ", "}"
-      error "see '#{command}' for more information"
+      error "See '#{command}' for more information"
       system_exit
     end
   end

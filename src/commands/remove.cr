@@ -19,7 +19,7 @@ module Docr::Commands
 
       library.delete version.nil?
     rescue ex : Library::Error
-      error "failed to remove library:"
+      error "Failed to remove library:"
       error ex
     end
   end

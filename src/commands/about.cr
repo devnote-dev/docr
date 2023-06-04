@@ -21,7 +21,7 @@ module Docr::Commands
 
       stdout.puts library.data.body
     rescue ex : Library::Error
-      error "failed to fetch library:"
+      error "Failed to fetch library:"
       error ex
     end
   end

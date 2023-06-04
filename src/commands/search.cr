@@ -64,8 +64,8 @@ module Docr::Commands
 
       if versions.empty?
         format = "docr add #{lib_name} <source>".colorize.blue
-        error "no documentation is available for this library"
-        error "to import a version of this library, run '#{format}'"
+        error "No documentation is available for this library"
+        error "To import a version of this library, run '#{format}'"
         return
       end
 
@@ -81,13 +81,13 @@ module Docr::Commands
         end
 
         if res.nil?
-          return error "could not resolve types or namespaces for that symbol"
+          return error "Could not resolve types or namespaces for that symbol"
         end
       end
 
       results = Docr::Search.filter_types(res.as(Models::Type), query.symbol)
       if results.empty?
-        return error "no documentation found for symbol '#{query.symbol}'"
+        return error "No documentation found for symbol '#{query.symbol}'"
       end
 
       str = String.build do |io|

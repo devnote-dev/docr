@@ -10,7 +10,7 @@ module Docr::Search
 
     def self.parse(args : Array(String))
       str = args.join ' '
-      raise "invalid module or type path" unless str.matches? PATH_RULE
+      raise "Invalid module or type path" unless str.matches? PATH_RULE
 
       symbols = parse_symbol str
       types = [] of String
@@ -31,14 +31,14 @@ module Docr::Search
         parts = parts[0].split ' '
       end
 
-      raise "invalid symbol path" if parts.size > 2
+      raise "Invalid symbol path" if parts.size > 2
 
       parts
     end
 
     private def self.parse_types(str : String) : Array(String)
       parts = str.split "::", remove_empty: true
-      raise "invalid module or type path" unless parts.all? &.matches? MODULE_RULE
+      raise "Invalid module or type path" unless parts.all? &.matches? MODULE_RULE
       parts
     end
 
