@@ -1,6 +1,51 @@
 module Docr::Search
   extend self
 
+  struct Query
+    PATH_RULE   = /\A(?:[\w:!?<>+\-*\/^=~%$&`\[|\]]+)(?:(?:\.|#|\s)(?:[\w!?<>+\-*\/^=~%$&`\[|\]]+))?\z/
+    MODULE_RULE = /\A\w+\z/
+
+    getter types : Array(String)
+    getter symbol : String
+
+    def self.parse(args : Array(String))
+      str = args.join ' '
+      raise "invalid module or type path" unless str.matches? PATH_RULE
+
+      symbols = parse_symbol str
+      types = [] of String
+      types = parse_types symbols[0] if symbols.size == 2
+
+      new types, symbols.last
+    end
+
+    private def self.parse_symbol(str : String?) : Array(String)
+      return [] of String if str.nil?
+
+      parts = str.split '.'
+      if parts.size == 1
+        parts = parts[0].split '#'
+      end
+
+      if parts.size == 1
+        parts = parts[0].split ' '
+      end
+
+      raise "invalid symbol path" if parts.size > 2
+
+      parts
+    end
+
+    private def self.parse_types(str : String) : Array(String)
+      parts = str.split "::", remove_empty: true
+      raise "invalid module or type path" unless parts.all? &.matches? MODULE_RULE
+      parts
+    end
+
+    def initialize(@types, @symbol)
+    end
+  end
+
   struct Result
     enum Kind
       Constant
