@@ -139,9 +139,7 @@ module Docr::Commands
       res = Process.run command, chdir: dir, error: err, shell: true
       debug "status: #{res.exit_status}"
 
-      if !res.success? || !err.empty?
-        err.to_s
-      end
+      return err.to_s unless res.success? && err.empty?
     end
   end
 end

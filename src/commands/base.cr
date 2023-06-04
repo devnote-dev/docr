@@ -105,10 +105,11 @@ module Docr::Commands
       error "please report this on the Docr GitHub issues:"
       error "https://github.com/devnote-dev/docr/issues"
 
-      if @debug && (stack = ex.backtrace)
-        debug "backtrace for exception:"
-        stack.each { |line| debug " " + line }
-      end
+      return unless @debug
+      debug "getting stack trace..."
+
+      stack = ex.backtrace || %w[???] # slow, needs investigating
+      stack.each { |line| debug " " + line }
     end
 
     def on_missing_arguments(args : Array(String))
