@@ -21,13 +21,19 @@ jobs:
         with:
           crystal: latest
 
+      # - name: Install Ameba
+      #  uses: crystal-ameba/github-action@v0.7.1
+      #  env:
+      #    GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
+
       - name: Install Ameba
-        uses: crystal-ameba/github-action@v0.7.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: shards install --frozen
 
       - name: Check Format
         run: crystal tool format --check
 
       - name: Run Specs
         run: crystal spec
+
+      - name: Run Lints
+        run: bin/ameba
