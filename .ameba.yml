@@ -4,3 +4,7 @@ Globs:
 
 Metrics/CyclomaticComplexity:
   Enabled: false
+
+# There is nothing to prove that this affects performance
+Performance/AnyInsteadOfEmpty:
+  Enabled: false
