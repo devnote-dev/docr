@@ -49,16 +49,15 @@ module Docr::Commands
       else
         if type.nil?
           arguments.hash["type"] = Cling::Argument.new("type")
-        elsif symbol.nil?
+        end
+
+        if symbol.nil?
           arg = Cling::Argument.new("symbol")
           arg.value = arguments.get?("type")
           arguments.hash["symbol"] = arg
-          arguments.hash["type"].value = arguments.get("library")
-        else
-          value = arguments.get("library").as_s + " " + arguments.get("type").as_s
-          arguments.hash["type"].value = Cling::Value.new(value)
         end
 
+        arguments.hash["type"].value = arguments.get("library")
         arguments.hash["library"].value = Cling::Value.new("crystal")
       end
 
