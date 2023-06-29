@@ -6,17 +6,17 @@ module Docr::Commands
       @description = <<-DESC
         Gets information about a specified type/namespace or symbol. This supports
         Crystal path syntax, meaning the following commands are valid:
-        
+
         • docr info JSON::Any.as_s
         • docr info JSON::Any#as_s
         • docr info JSON::Any as_s
-        
+
         However, the following commands are not valid:
-        
+
         • docr info JSON Any as_s
         • docr info JSON Any.as_s
         • docr info JSON Any#as_s
-        
+
         This is because the first argument is parsed as the base type or namespace to
         look in, and the second argument is parsed as the symbol to look for. In the
         first example, JSON::Any is the namespace and as_s the symbol, whereas in the
