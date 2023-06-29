@@ -100,10 +100,300 @@ module Docr::Commands
         end
       end
 
-      results = Docr::Search.filter_types(res.as(Models::Type), query.symbol)
-      if results.empty?
-        return error "No documentation found for symbol '#{query.symbol}'"
+      tree = Docr::Search.filter_type_tree(res.as(Models::Type), query.symbol)
+
+      case
+      when tree.constants.any?   then format tree.constants
+      when tree.modules.any?     then format modules: tree.modules
+      when tree.classes.any?     then format classes: tree.classes
+      when tree.structs.any?     then format structs: tree.structs
+      when tree.enums.any?       then format enums: tree.enums
+      when tree.aliases.any?     then format aliases: tree.aliases
+      when tree.annotations.any? then format annotations: tree.annotations
+      when tree.defs.any?        then format defs: tree.defs
+      when tree.macros.any?      then format macros: tree.macros
+      else                            error "No documentation found for symbol '#{query.symbol}'"
       end
+    end
+
+    private def resolve_type(top : Models::Type, names : Array(String)) : Models::Type?
+      return nil unless types = top.types
+
+      types.each do |type|
+        if type.name == names[0] || type.full_name == names[0]
+          if names.size - 1 != 0
+            return resolve_type type, names[1..]
+          end
+
+          return type
+        end
+      end
+    end
+
+    private def format(consts : Array(Models::Constant)) : Nil
+      const = consts[0]
+
+      str = String.build do |io|
+        io << const.name.colorize.blue
+        io << " = " << const.value << "\n\n"
+
+        if summary = const.summary
+          io << summary << "\n\n"
+        end
+
+        io << "Defined:\n"
+        io << " (cannot resolve location)\n".colorize.light_gray # TODO
+
+        if doc = const.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, modules : Array(Models::Type)) : Nil
+      mod = modules[0]
+
+      str = String.build do |io|
+        io << "module ".colorize.red
+        io << mod.full_name.colorize.blue << '\n'
+
+        if included = mod.included
+          included.each do |type|
+            io << "  include ".colorize.red
+            io << type.full_name << '\n'
+          end
+          io << "end".colorize.red
+        end
+
+        if summary = mod.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:\n"
+        mod.locations.each do |loc|
+          io << "• " << loc.file << ':' << loc.line << '\n'
+        end
+
+        if methods = mod.class_methods
+          io << "\nMethods: " << methods.size << '\n'
+        end
+
+        if doc = mod.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, classes : Array(Models::Type)) : Nil
+      cls = classes[0]
+
+      str = String.build do |io|
+        io << "abstract ".colorize.red if cls.abstract?
+        io << "class ".colorize.red
+        io << cls.full_name.colorize.blue
+
+        if parent = cls.superclass
+          io << " < " << parent.full_name.colorize.blue
+        end
+
+        io << '\n'
+        if summary = cls.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:\n"
+        cls.locations.each do |loc|
+          io << "• " << loc.file << ':' << loc.line << '\n'
+        end
+
+        io << "\nConstructors: " << cls.constructors.try(&.size) || 0
+        io << "\nClass Methods: " << cls.class_methods.try(&.size) || 0
+        io << "\nInstance Methods: " << cls.instance_methods.try(&.size) || 0
+        io << "\nMacros: " << cls.macros.try(&.size) || 0
+        io << '\n'
+
+        if doc = cls.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, structs : Array(Models::Type)) : Nil
+      _struct = structs[0]
+
+      str = String.build do |io|
+        io << "abstract ".colorize.red if _struct.abstract?
+        io << "struct ".colorize.red
+        io << _struct.full_name.colorize.blue
+
+        if parent = _struct.superclass
+          io << " < " << parent.full_name.colorize.blue
+        end
+
+        io << '\n'
+        if summary = _struct.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:\n"
+        _struct.locations.each do |loc|
+          io << "• " << loc.file << ':' << loc.line << '\n'
+        end
+
+        io << "\nConstructors: " << _struct.constructors.try(&.size) || 0
+        io << "\nClass Methods: " << _struct.class_methods.try(&.size) || 0
+        io << "\nInstance Methods: " << _struct.instance_methods.try(&.size) || 0
+        io << "\nMacros: " << _struct.macros.try(&.size) || 0
+        io << '\n'
+
+        if doc = _struct.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, enums : Array(Models::Type)) : Nil
+      _enum = enums[0]
+
+      str = String.build do |io|
+        io << "enum ".colorize.red
+        io << _enum.full_name.colorize.blue << '\n'
+
+        if summary = _enum.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:\n"
+        _enum.locations.each do |loc|
+          io << "• " << loc.file << ':' << loc.line << '\n'
+        end
+
+        io << "\nConstructors: " << _enum.constructors.try(&.size) || 0
+        io << "\nClass Methods: " << _enum.class_methods.try(&.size) || 0
+        io << "\nInstance Methods: " << _enum.instance_methods.try(&.size) || 0
+        io << "\nMacros: " << _enum.macros.try(&.size) || 0
+        io << '\n'
+
+        if doc = _enum.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, aliases : Array(Models::Type)) : Nil
+      _alias = aliases[0]
+
+      str = String.build do |io|
+        io << "alias ".colorize.red
+        io << _alias.full_name.colorize.blue
+        io << " = " << _alias.aliased << '\n'
+
+        if summary = _alias.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:\n"
+        _alias.locations.each do |loc|
+          io << "• " << loc.file << ':' << loc.line << '\n'
+        end
+
+        if doc = _alias.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, annotations : Array(Models::Type)) : Nil
+      ann = annotations[0]
+
+      str = String.build do |io|
+        io << "annotation ".colorize.red
+        io << ann.full_name.colorize.blue << '\n'
+
+        if summary = ann.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:\n"
+        ann.locations.each do |loc|
+          io << "• " << loc.file << ':' << loc.line << '\n'
+        end
+
+        if doc = ann.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, defs : Array(Models::Def)) : Nil
+      method = defs[0]
+
+      str = String.build do |io|
+        io << "abstract ".colorize.red if method.abstract?
+        io << "def ".colorize.red
+        io << method.name.colorize.magenta
+        io << method.args if method.args
+        io << '\n'
+
+        if summary = method.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:"
+        if loc = method.location
+          io << "\n• " << loc.file << ':' << loc.line << '\n'
+        else
+          io << "\n (cannot resolve location)\n".colorize.light_gray
+        end
+
+        if doc = method.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
+    end
+
+    private def format(*, macros : Array(Models::Def)) : Nil
+      method = macros[0]
+
+      str = String.build do |io|
+        io << "macro ".colorize.red
+        io << method.name.colorize.magenta
+        io << method.args if method.args
+        io << '\n'
+
+        if summary = method.summary
+          io << '\n' << summary << '\n'
+        end
+
+        io << "\nDefined:"
+        if loc = method.location
+          io << "\n• " << loc.file << ':' << loc.line << '\n'
+        else
+          io << "\n (cannot resolve location)\n".colorize.light_gray
+        end
+
+        if doc = method.doc
+          io << '\n' << doc << '\n'
+        end
+      end
+
+      stdout.puts str
     end
   end
 end
