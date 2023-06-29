@@ -34,7 +34,7 @@ module Docr
       add_command Commands::Search.new
       add_command Commands::Add.new
       # add_command Commands::Check.new
-      # add_command Commands::Update.new
+      add_command Commands::Update.new
       add_command Commands::Remove.new
       add_command Commands::Env.new
       add_command Commands::Version.new
