@@ -5,6 +5,7 @@ require "yaml"
 require "./commands/base"
 require "./commands/*"
 require "./docr"
+require "./formatters/*"
 
 Colorize.on_tty_only!
 
