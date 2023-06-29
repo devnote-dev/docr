@@ -1,6 +1,6 @@
 name: docr
 description: A CLI tool for searching Crystal documentation
-version: 3.0.0
+version: 1.0.0
 crystal: 1.8.0
 
 authors:

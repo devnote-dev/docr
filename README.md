@@ -10,15 +10,12 @@ See the [releases page](https://github.com/devnote-dev/docr/releases/latest) for
 
 ### From Source
 
-Go 1.19 or above is required to build Docr.
+Crystal v1.8.0 or above is required to build Docr.
 
 ```sh
 git clone https://github.com/devnote-dev/docr
 cd docr
-go get
-
-scripts/build.cmd # for windows
-scripts/build.sh # for linux/darwin
+shards build
 ```
 
 ## Usage
