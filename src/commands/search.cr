@@ -85,7 +85,7 @@ module Docr::Commands
         end
       end
 
-      results = Docr::Search.filter_types(res.as(Models::Type), query.symbol)
+      results = Docr::Search.filter_type_results(res.as(Models::Type), query.symbol)
       if results.empty?
         return error "No documentation found for symbol '#{query.symbol}'"
       end

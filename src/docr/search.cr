@@ -46,6 +46,30 @@ module Docr::Search
     end
   end
 
+  class Tree
+    property constants : Array(Models::Constant)
+    property modules : Array(Models::Type)
+    property classes : Array(Models::Type)
+    property structs : Array(Models::Type)
+    property enums : Array(Models::Type)
+    property aliases : Array(Models::Type)
+    property annotations : Array(Models::Type)
+    property defs : Array(Models::Def)
+    property macros : Array(Models::Def)
+
+    def initialize
+      @constants = [] of Models::Constant
+      @modules = [] of Models::Type
+      @classes = [] of Models::Type
+      @structs = [] of Models::Type
+      @enums = [] of Models::Type
+      @aliases = [] of Models::Type
+      @annotations = [] of Models::Type
+      @defs = [] of Models::Def
+      @macros = [] of Models::Def
+    end
+  end
+
   struct Result
     enum Kind
       Constant
@@ -68,7 +92,49 @@ module Docr::Search
     end
   end
 
-  def filter_types(type : Models::Type, symbol : String) : Hash(Result::Kind, Array(Result))
+  def filter_type_tree(type : Models::Type, symbol : String) : Tree
+    tree = Tree.new
+
+    if constants = filter_constants(type, symbol)
+      tree.constants = constants
+    end
+
+    if methods = filter_constructors(type, symbol)
+      tree.defs = methods
+    end
+
+    if methods = filter_class_methods(type, symbol)
+      tree.defs.concat methods
+    end
+
+    if methods = filter_instance_methods(type, symbol)
+      tree.defs.concat methods
+    end
+
+    if macros = filter_macros(type, symbol)
+      tree.macros = macros
+    end
+
+    return tree unless types = type.types
+    return tree if types.empty?
+
+    types.each do |inner|
+      sub = filter_type_tree inner, symbol
+      tree.constants.concat sub.constants
+      tree.modules.concat sub.modules
+      tree.classes.concat sub.classes
+      tree.structs.concat sub.structs
+      tree.enums.concat sub.enums
+      tree.aliases.concat sub.aliases
+      tree.annotations.concat sub.annotations
+      tree.defs.concat sub.defs
+      tree.macros.concat sub.macros
+    end
+
+    tree
+  end
+
+  def filter_type_results(type : Models::Type, symbol : String) : Hash(Result::Kind, Array(Result))
     results = {} of Result::Kind => Array(Result)
 
     if constants = filter_constants(type, symbol)
@@ -142,7 +208,7 @@ module Docr::Search
         next
       end
 
-      filter_types(inner, symbol).each do |k, v|
+      filter_type_results(inner, symbol).each do |k, v|
         if results.has_key? k
           results[k] += v
         else
