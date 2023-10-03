@@ -65,14 +65,14 @@ module Docr::Models
     getter locations : Array(Location)
     getter aliased : String?
     getter superclass : Class?
-    getter constants : Array(Constant)?
-    getter ancestors : Array(Class)?
-    getter included : Array(Class)?
-    getter extended : Array(Class)?
-    getter constructors : Array(Def)?
-    getter class_methods : Array(Def)?
-    getter instance_methods : Array(Def)?
-    getter macros : Array(Def)?
-    getter types : Array(Type)?
+    getter! constants : Array(Constant)?
+    getter! ancestors : Array(Class)?
+    getter! included : Array(Class)?
+    getter! extended : Array(Class)?
+    getter! constructors : Array(Def)?
+    getter! class_methods : Array(Def)?
+    getter! instance_methods : Array(Def)?
+    getter! macros : Array(Def)?
+    getter! types : Array(Type)?
   end
 end
