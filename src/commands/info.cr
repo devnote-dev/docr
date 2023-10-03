@@ -72,6 +72,7 @@ module Docr::Commands
       debug "library: #{lib_name.inspect}"
       debug "type: #{type.inspect}"
       debug "symbol: #{symbol.inspect}"
+      return
 
       query = Docr::Search::Query.parse [type, symbol].reject(Nil)
       versions = Library.get_versions_for lib_name

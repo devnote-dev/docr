@@ -1,5 +1,6 @@
 require "crest"
 require "file_utils"
+require "fzy"
 require "json"
 require "levenshtein"
 

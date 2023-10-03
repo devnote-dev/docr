@@ -1,305 +1,87 @@
-module Docr::Search
-  extend self
+module Docr
+  class Search
+    QUERY_RULE = /^(?<ns>(?:::)?[A-Z_]{1,}(?:\w+|::)+)?(?<scp>\.|#|\s+)?(?<sym>[a-zA-Z_]{1,}[\w!?=]|[!?<=>^+\-~\/*&%\[|\]])?$/
 
-  struct Query
-    PATH_RULE   = /\A(?:[\w:!?<>+\-*\/^=~%$&`\[|\]]+)(?:(?:\.|#|\s)(?:[\w!?<>+\-*\/^=~%$&`\[|\]]+))?\z/
-    MODULE_RULE = /\A\w+\z/
-
-    getter types : Array(String)
-    getter symbol : String
-
-    def self.parse(args : Array(String))
-      str = args.join ' '
-      raise "Invalid module or type path" unless str.matches? PATH_RULE
-
-      symbols = parse_symbol str
-      types = [] of String
-      types = parse_types symbols[0] if symbols.size == 2
-
-      new types, symbols.last
-    end
-
-    private def self.parse_symbol(str : String?) : Array(String)
-      return [] of String if str.nil?
-
-      parts = str.split '.'
-      if parts.size == 1
-        parts = parts[0].split '#'
-      end
-
-      if parts.size == 1
-        parts = parts[0].split ' '
-      end
-
-      raise "Invalid symbol path" if parts.size > 2
-
-      parts
-    end
-
-    private def self.parse_types(str : String) : Array(String)
-      parts = str.split "::", remove_empty: true
-      raise "Invalid module or type path" unless parts.all? &.matches? MODULE_RULE
-      parts
-    end
-
-    def initialize(@types, @symbol)
-    end
-  end
-
-  class Tree
-    property constants : Array(Models::Constant)
-    property modules : Array(Models::Type)
-    property classes : Array(Models::Type)
-    property structs : Array(Models::Type)
-    property enums : Array(Models::Type)
-    property aliases : Array(Models::Type)
-    property annotations : Array(Models::Type)
-    property defs : Array(Models::Def)
-    property macros : Array(Models::Def)
-
-    def initialize
-      @constants = [] of Models::Constant
-      @modules = [] of Models::Type
-      @classes = [] of Models::Type
-      @structs = [] of Models::Type
-      @enums = [] of Models::Type
-      @aliases = [] of Models::Type
-      @annotations = [] of Models::Type
-      @defs = [] of Models::Def
-      @macros = [] of Models::Def
-    end
-  end
-
-  struct Result
-    enum Kind
-      Constant
-      Module
+    enum Scope
       Class
-      Struct
-      Enum
-      Alias
-      Def
-      Macro
-    end
+      Instance
+      All
 
-    getter value : Array(String)
-    getter scope : String?
-    getter source : Models::Location?
-    getter? instance : Bool
-
-    def initialize(@value : Array(String), @scope : String?,
-                   @source : Models::Location?, @instance : Bool = false)
-    end
-  end
-
-  def filter_type_tree(type : Models::Type, symbol : String) : Tree
-    tree = Tree.new
-
-    if constants = filter_constants(type, symbol)
-      tree.constants = constants
-    end
-
-    if methods = filter_constructors(type, symbol)
-      tree.defs = methods
-    end
-
-    if methods = filter_class_methods(type, symbol)
-      tree.defs.concat methods
-    end
-
-    if methods = filter_instance_methods(type, symbol)
-      tree.defs.concat methods
-    end
-
-    if macros = filter_macros(type, symbol)
-      tree.macros = macros
-    end
-
-    return tree unless types = type.types
-    return tree if types.empty?
-
-    types.each do |inner|
-      sub = filter_type_tree inner, symbol
-      tree.constants.concat sub.constants
-      tree.modules.concat sub.modules
-      tree.classes.concat sub.classes
-      tree.structs.concat sub.structs
-      tree.enums.concat sub.enums
-      tree.aliases.concat sub.aliases
-      tree.annotations.concat sub.annotations
-      tree.defs.concat sub.defs
-      tree.macros.concat sub.macros
-    end
-
-    tree
-  end
-
-  def filter_type_results(type : Models::Type, symbol : String) : Hash(Result::Kind, Array(Result))
-    results = {} of Result::Kind => Array(Result)
-
-    if constants = filter_constants(type, symbol)
-      location : Models::Location? = nil
-      if type.name != "Top Level Namespace" && !type.locations.empty?
-        location = type.locations.first
-      end
-
-      results[:constant] = constants.map do |const|
-        value = type.full_name.split("::", remove_empty: true)
-        Result.new(value << const.name, nil, location)
-      end
-    end
-
-    {% begin %}
-      {% for name in %w[constructors class_methods instance_methods] %}
-        if methods = filter_{{name.id}}(type, symbol)
-          results[:def] = methods.map do |method|
-            value = if type.full_name == "Top Level Namespace"
-                      [] of String
-                    else
-                      type.full_name.split("::", remove_empty: true)
-                    end
-
-            value << method.name
-            if args = method.args
-              value << args
-            end
-
-            Result.new(value, nil, method.location, {{ name == "instance_methods" }})
-          end
+      def self.from(str : String?)
+        case str
+        when "." then Scope::Class
+        when "#" then Scope::Instance
+        else          Scope::All
         end
-      {% end %}
+      end
+    end
+
+    property! constants : Array(Models::Constant)
+    property! modules : Array(Models::Type)
+    property! classes : Array(Models::Type)
+    property! structs : Array(Models::Type)
+    property! enums : Array(Models::Type)
+    property! aliases : Array(Models::Type)
+    property! annotations : Array(Models::Type)
+    property! defs : Array(Models::Def)
+    property! macros : Array(Models::Def)
+
+    def results? : Bool
+      !(@constants.nil? && @modules.nil? && @classes.nil? && @structs.nil? && @enums.nil? && @aliases.nil? && @annotations.nil? && @defs.nil? && @macros.nil?)
+    end
+
+    def apply_filters(type : Models::Type, namespace : String, scope : Scope, symbol : String?) : Nil
+      symbol ||= namespace
+
+      filter_constants type, symbol
+      filter_modules type, symbol
+      filter_classes type, symbol
+      filter_structs type, symbol
+      filter_annotations type, symbol
+      filter_enums type, symbol
+      filter_aliases type, symbol
+    end
+
+    private def filter_constants(type : Models::Type, symbol : String) : Nil
+      return unless type.constants?
+      matches = Fzy.search(symbol, type.constants.map &.name)
+      pp! matches
+
+      @constants = matches.map do |match|
+        type.constants.find! { |c| c.name == match.value }
+      end
+    end
+
+    {% for type in %w(modules classes structs annotations) %}
+      private def filter_{{type.id}}(type : Models::Type, symbol : String) : Nil
+        return unless type.types?
+        {{ type.id }} = type.types.select { |t| t.kind == {{ type }} }
+        matches = Fzy.search(symbol, {{ type.id }}.map &.name)
+
+        @{{ type.id }} = matches.map do |match|
+          {{ type.id }}.find! { |v| v.name == match.value }
+        end
+      end
     {% end %}
 
-    if macros = filter_macros(type, symbol)
-      results[:macro] = macros.map do |_macro|
-        value = if type.full_name == "Top Level Namespace"
-                  [] of String
-                else
-                  type.full_name.split("::", remove_empty: true)
-                end
+    private def filter_enums(type : Models::Type, symbol : String) : Nil
+      return unless type.types?
+      enums = type.types.select &.enum?
+      matches = Fzy.search(symbol, enums.map &.name)
 
-        value << _macro.name
-        if args = _macro.args
-          value << args
-        end
-
-        Result.new(value, nil, _macro.location)
+      @enums = matches.map do |match|
+        enums.find! { |e| e.name == match.value }
       end
     end
 
-    return results unless types = type.types
-    return results if types.empty?
+    private def filter_aliases(type : Models::Type, symbol : String) : Nil
+      return unless type.types?
+      aliases = type.types.select &.alias?
+      matches = Fzy.search(symbol, aliases.map &.name)
 
-    types.each do |inner|
-      if inner.name == symbol || inner.full_name == symbol
-        kind = case inner.kind
-               when "module" then Result::Kind::Module
-               when "class"  then Result::Kind::Class
-               when "struct" then Result::Kind::Struct
-               when "enum"   then Result::Kind::Enum
-               when "alias"  then Result::Kind::Alias
-               else               raise "unknown type '#{inner.kind}'"
-               end
-
-        results[kind] = inner.locations.map do |location|
-          Result.new([inner.name], type.name, location)
-        end
-
-        next
-      end
-
-      filter_type_results(inner, symbol).each do |k, v|
-        if results.has_key? k
-          results[k] += v
-        else
-          results[k] = v
-        end
+      @aliases = matches.map do |match|
+        aliases.find! { |e| e.name == match.value }
       end
     end
-
-    results
   end
-
-  private struct Entry(T)
-    getter value : T
-    getter dist : Int32
-
-    def initialize(@value, @dist)
-    end
-  end
-
-  private def sort_by(target : String, subjects : Array(T), & : T -> String) : Array(T) forall T
-    t = target.size / 5
-    best : Entry(T)? = nil
-    res = [] of Entry(T)
-
-    subjects.each do |subject|
-      dist = Levenshtein.distance target, yield subject
-      if dist <= t
-        if best
-          if dist < best.dist
-            res << best
-            best = Entry(T).new(subject, dist)
-          end
-        else
-          best = Entry(T).new(subject, dist)
-          res << best
-        end
-      end
-    end
-
-    return [] of T if best.nil?
-
-    res.map &.value
-  end
-
-  def filter_constants(type : Models::Type, symbol : String) : Array(Models::Constant)?
-    return nil unless constants = type.constants
-    return nil if constants.empty?
-
-    sort_by(symbol, constants, &.name)
-  end
-
-  {% for name in %w[constructors class_methods instance_methods macros] %}
-    def filter_{{name.id}}(type : Models::Type, symbol : String) : Array(Models::Def)?
-      return nil unless methods = type.{{name.id}}
-      return nil if methods.empty?
-
-      sort_by(symbol, methods, &.name)
-    end
-  {% end %}
-
-  # TODO: so this doesn't actually work as intended,
-  #       reverting back to the levenshtein implementation
-  #       until this can be worked out properly.
-
-  # def filter_constants(type : Models::Type, symbol : String) : Array(Models::Constant)?
-  #   return nil unless constants = type.constants
-  #   return nil if constants.empty?
-
-  #   index = Index.new do |idx|
-  #     constants.each { |c| idx.add c.name }
-  #   end
-
-  #   results = index.query symbol
-  #   return nil if results.empty?
-
-  #   results.map { |i| constants[i]? }.reject(Nil)
-  # end
-
-  # {% for name in %w[constructors class_methods instance_methods macros] %}
-  #   def filter_{{name.id}}(type : Models::Type, symbol : String) : Array(Models::Def)?
-  #     return nil unless methods = type.{{name.id}}
-  #     return nil if methods.empty?
-
-  #     index = Index.new do |idx|
-  #       methods.each { |m| idx.add m.name }
-  #     end
-
-  #     results = index.query symbol
-  #     return nil if results.empty?
-
-  #     results.map { |i| methods[i]? }.reject(Nil)
-  #   end
-  # {% end %}
 end
