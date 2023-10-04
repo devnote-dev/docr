@@ -26,5 +26,5 @@ development_dependencies:
 
 targets:
   docr:
-    main: src/cli.cr
+    main: src/main.cr
     flags: --progress
