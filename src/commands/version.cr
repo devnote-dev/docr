@@ -7,7 +7,9 @@ module Docr::Commands
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
-      stdout.puts "Docr version #{Docr::VERSION} #{Docr::BUILD_HASH} (#{Docr::BUILD_DATE})"
+      stdout << "docr version " << Docr::VERSION
+      stdout << " [" << Docr::BUILD_HASH << "] ("
+      stdout << Docr::BUILD_DATE << ")\n"
     end
   end
 end

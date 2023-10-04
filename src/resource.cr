@@ -1,20 +1,18 @@
 module Docr::Resource
-  extend self
-
-  def fetch_crystal_docs(version : String) : Models::TopLevel
+  def self.fetch_crystal_docs(version : String) : Models::TopLevel
     res = Crest.get "https://crystal-lang.org/api/#{version}/index.json"
 
     Models::TopLevel.from_json res.body
   end
 
-  def fetch_crystal_versions : Array(String)
+  def self.fetch_crystal_versions : Array(String)
     path = Library::CACHE_DIR / "versions.txt"
     import_crystal_versions unless File.exists? path
 
     File.read_lines(path).map(&.split(',').first)
   end
 
-  def import_crystal_versions : Nil
+  def self.import_crystal_versions : Nil
     cache = Library::CACHE_DIR
     Dir.mkdir_p cache unless Dir.exists? cache
     FileUtils.rm_rf cache unless Dir.empty? cache
@@ -28,7 +26,7 @@ module Docr::Resource
     File.write(cache / "versions.txt", content)
   end
 
-  def import_crystal_version(version : String) : Nil
+  def self.import_crystal_version(version : String) : Nil
     versions = fetch_crystal_versions
     unless versions.includes? version
       raise Library::Error.new "crystal version #{version} not available"

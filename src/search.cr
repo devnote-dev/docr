@@ -27,7 +27,17 @@ module Docr
     property! macros : Array(Models::Def)
 
     def results? : Bool
-      !(@constants.nil? && @modules.nil? && @classes.nil? && @structs.nil? && @enums.nil? && @aliases.nil? && @annotations.nil? && @defs.nil? && @macros.nil?)
+      !(
+        @constants.nil? &&
+          @modules.nil? &&
+          @classes.nil? &&
+          @structs.nil? &&
+          @enums.nil? &&
+          @aliases.nil? &&
+          @annotations.nil? &&
+          @defs.nil? &&
+          @macros.nil?
+      )
     end
 
     def apply_filters(type : Models::Type, namespace : String, scope : Scope, symbol : String?) : Nil

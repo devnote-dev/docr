@@ -18,19 +18,11 @@ module Docr::Commands
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       if value = arguments.get? "name"
-        # FIXME: this is broken for some reason
-        # case value
-        # when "DOCR_CACHE"   then stdout.puts Library::CACHE_DIR
-        # when "DOCR_LIBRARY" then stdout.puts Library::LIBRARY_DIR
-        # end
-
         if value == "DOCR_CACHE"
-          stdout.puts Library::CACHE_DIR
+          return stdout.puts Library::CACHE_DIR
         elsif value == "DOCR_LIBRARY"
-          stdout.puts Library::LIBRARY_DIR
+          return stdout.puts Library::LIBRARY_DIR
         end
-
-        return
       end
 
       warn_cache = Dir.exists?(Library::CACHE_DIR) ? "" : " (!)".colorize.yellow

@@ -1,28 +1,16 @@
 module Docr
   class Library
-    CACHE_DIR = begin
-      {% if flag?(:win32) %}
-        Path[::ENV["LOCALAPPDATA"]] / "docr"
-      {% else %}
-        if cache = ::ENV["XDG_CACHE_HOME"]?
-          Path[cache] / "docr"
-        else
-          Path.home / ".config" / "docr"
-        end
-      {% end %}
-    end
+    CACHE_DIR = {% if flag?(:win32) %}
+                  Path[ENV["LOCALAPPDATA"], "docr"]
+                {% else %}
+                  Path[ENV["XDG_CACHE_HOME"]? || Path.home / ".config" / "docr"]
+                {% end %}
 
-    LIBRARY_DIR = begin
-      {% if flag?(:win32) %}
-        Path[::ENV["APPDATA"]] / "docr"
-      {% else %}
-        if data = ::ENV["XDG_DATA_HOME"]?
-          Path[data] / "docr"
-        else
-          Path.home / ".local" / "share" / "docr"
-        end
-      {% end %}
-    end
+    LIBRARY_DIR = {% if flag?(:win32) %}
+                    Path[ENV["APPDATA"], "docr"]
+                  {% else %}
+                    Path[ENV["XDG_DATA_HOME"]? || Path.home / ".local" / "share" / "docr"]
+                  {% end %}
 
     class Error < Exception
     end
