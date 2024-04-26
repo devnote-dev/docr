@@ -50,10 +50,17 @@ module Docr::Commands
       query = Redoc.parse_query arguments.get("input").as_s
 
       if type = project.resolve? *query
-        pp type # ameba:disable Lint/DebugCalls
-      else
-        error "could not resolve types or symbols for input"
+        return Formatters::Default.format stdout, type
       end
+
+      if query[0].empty? && name == "crystal"
+        query[0] << "Object"
+        if type = project.resolve? *query
+          return Formatters::Default.format stdout, type
+        end
+      end
+
+      error "could not resolve types or symbols for input"
     end
   end
 end
