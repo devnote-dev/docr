@@ -32,7 +32,7 @@ module Docr::Commands
     private def add_crystal_library(version : String) : Nil
       info "Fetching available versions..."
 
-      versions = Resource.fetch_crystal_versions
+      versions = Resolver.fetch_crystal_versions
       version = versions[1] if version == "latest"
 
       if version == "nightly"
@@ -41,6 +41,7 @@ module Docr::Commands
         info "Importing crystal library version #{version}"
       end
 
+      Dir.mkdir_p LIBRARY_DIR / "crystal"
       set = Library.get_versions_for "crystal"
       term = version == "nightly" ? "Nightly build of crystal" : "Crystal version #{version}"
 
@@ -56,14 +57,14 @@ module Docr::Commands
         return
       end
 
-      Resource.import_crystal_version version
+      Resolver.import_crystal_version version
 
       info "Imported #{term}"
     end
 
     private def add_external_library(name : String, source : String, version : String) : Nil
       uri = URI.parse source
-      cache_dir = Library::CACHE_DIR / name
+      cache_dir = CACHE_DIR / name
       Dir.mkdir_p cache_dir
 
       info "Cloning into #{uri}..."
@@ -116,7 +117,7 @@ module Docr::Commands
       end
 
       info "Building documentation..."
-      lib_dir = Library::LIBRARY_DIR / name / version
+      lib_dir = LIBRARY_DIR / name / version
       Dir.mkdir_p lib_dir
 
       if err = exec "crystal docs -o #{lib_dir}", cache_dir

@@ -11,6 +11,7 @@ require "./commands/base"
 require "./commands/*"
 # require "./formatters/*"
 require "./library"
+require "./resolver"
 
 Colorize.on_tty_only!
 
@@ -52,7 +53,7 @@ module Docr
       add_command Commands::List.new
       # add_command Commands::Info.new
       # add_command Commands::Search.new
-      # add_command Commands::Add.new
+      add_command Commands::Add.new
       # add_command Commands::Check.new
       # add_command Commands::Update.new
       add_command Commands::Remove.new
