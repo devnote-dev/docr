@@ -3,7 +3,7 @@ module Docr::Library
     if version
       File.exists?(LIBRARY_DIR / name / (version + ".json"))
     else
-      !get_versions_for(name).empty?
+      Dir.exists?(LIBRARY_DIR / name) && !get_versions_for(name).empty?
     end
   end
 
