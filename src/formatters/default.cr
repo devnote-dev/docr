@@ -100,6 +100,11 @@ module Docr::Formatters::Default
       io << " : "
       format_path io, ret
     end
+
+    if type.generic?
+      io << " forall ".colorize.red
+      type.free_vars.join(io, ", ") { |v, str| str << v.colorize.blue }
+    end
     io << '\n'
 
     if summary = type.summary
@@ -161,10 +166,6 @@ module Docr::Formatters::Default
     io << '*' if type.splat?
     io << "**" if type.double_splat?
     io << '&' if type.block?
-
-    if ext = type.external_name
-      io << ext << " "
-    end
     io << type.name
 
     if rest = type.type
