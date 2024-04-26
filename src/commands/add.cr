@@ -117,13 +117,20 @@ module Docr::Commands
       end
 
       info "Building documentation..."
-      lib_dir = LIBRARY_DIR / name / version
-      Dir.mkdir_p lib_dir
-
-      if err = exec "crystal docs -o #{lib_dir}", cache_dir
+      if err = exec "crystal docs", cache_dir
         error "Failed to build documentation:"
         error err
         return
+      end
+
+      lib_dir = LIBRARY_DIR / name
+      Dir.mkdir_p lib_dir
+
+      File.open(lib_dir / (version + ".json"), mode: "w") do |dest|
+        File.open(cache_dir / "docs" / "index.json") do |src|
+          proj = Redoc.load src
+          proj.to_json dest
+        end
       end
 
       info "Imported #{name} version #{version}"
