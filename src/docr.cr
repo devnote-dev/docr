@@ -11,7 +11,6 @@ require "./commands/base"
 require "./commands/*"
 # require "./formatters/*"
 require "./library"
-require "./resource"
 
 Colorize.on_tty_only!
 
@@ -24,6 +23,18 @@ module Docr
                  {{ `date +%F`.stringify.chomp }}
                {% end %}
   BUILD_HASH = {{ `git rev-parse HEAD`.stringify[0...8] }}
+
+  CACHE_DIR = {% if flag?(:win32) %}
+                Path[ENV["LOCALAPPDATA"], "docr"]
+              {% else %}
+                Path[ENV["XDG_CACHE_HOME"]? || Path.home / ".config" / "docr"]
+              {% end %}
+
+  LIBRARY_DIR = {% if flag?(:win32) %}
+                  Path[ENV["APPDATA"], "docr"]
+                {% else %}
+                  Path[ENV["XDG_DATA_HOME"]? || Path.home / ".local" / "share" / "docr"]
+                {% end %}
 
   class App < Commands::Base
     def setup : Nil
@@ -39,11 +50,11 @@ module Docr
       add_command Commands::About.new
       # add_command Commands::Meta.new
       add_command Commands::List.new
-      add_command Commands::Info.new
-      add_command Commands::Search.new
-      add_command Commands::Add.new
+      # add_command Commands::Info.new
+      # add_command Commands::Search.new
+      # add_command Commands::Add.new
       # add_command Commands::Check.new
-      add_command Commands::Update.new
+      # add_command Commands::Update.new
       add_command Commands::Remove.new
       add_command Commands::Env.new
       add_command Commands::Version.new
