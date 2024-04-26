@@ -8,12 +8,9 @@ require "yaml"
 
 require "./commands/base"
 require "./commands/*"
-require "./formatters/*"
-require "./index"
+# require "./formatters/*"
 require "./library"
-require "./models"
 require "./resource"
-require "./search"
 
 Colorize.on_tty_only!
 
