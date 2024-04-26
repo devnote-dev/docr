@@ -4,6 +4,7 @@ require "crest"
 require "file_utils"
 require "fzy"
 require "json"
+require "redoc"
 require "yaml"
 
 require "./commands/base"

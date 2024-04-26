@@ -24,3 +24,7 @@ shards:
     git: https://github.com/mamantoha/http_proxy.git
     version: 0.10.1
 
+  redoc:
+    git: https://github.com/devnote-dev/redoc.git
+    version: 0.1.0+git.commit.0eba48cce0b3332b251d43b247243586cb7f549a
+
