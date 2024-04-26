@@ -17,12 +17,24 @@ module Docr::Commands
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       name = arguments.get("name").as_s
       version = arguments.get?("version").try &.as_s
-      library = Library.fetch name, version
 
-      stdout.puts library.data.body
-    rescue ex : Library::Error
-      error "Failed to fetch library:"
-      error ex
+      unless Library.exists?(name, version)
+        if version
+          if Library.exists?(name)
+            error "version '#{version}' of #{name} not found or imported"
+            system_exit
+          end
+        end
+
+        error "library '#{name}' not imported"
+        system_exit
+      end
+
+      version ||= Library.get_versions_for(name).sort.last
+      stdout.puts Library.get(name, version).description
+    rescue JSON::Error
+      error "failed to open library: source file is in an invalid format"
+      error "please remove and import the library again"
     end
   end
 end
