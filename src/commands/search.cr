@@ -1,3 +1,5 @@
+{% skip_file %}
+
 module Docr::Commands
   class Search < Base
     QUERY_RULE = /^(?<ns>(?:::)?[A-Z_]{1,}(?:\w+|::)+)?(?<scp>\.|#|\s+)?(?<sym>[a-zA-Z_]{1,}[\w!?=]|[!?<^>=+\-~\/*&%\[|\]])?$/
