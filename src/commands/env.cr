@@ -19,17 +19,17 @@ module Docr::Commands
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       if value = arguments.get? "name"
         if value == "DOCR_CACHE"
-          return stdout.puts Library::CACHE_DIR
+          return stdout.puts CACHE_DIR
         elsif value == "DOCR_LIBRARY"
-          return stdout.puts Library::LIBRARY_DIR
+          return stdout.puts LIBRARY_DIR
         end
       end
 
-      warn_cache = Dir.exists?(Library::CACHE_DIR) ? "" : " (!)".colorize.yellow
-      lib_cache = Dir.exists?(Library::LIBRARY_DIR) ? "" : " (!)".colorize.yellow
+      warn_cache = Dir.exists?(CACHE_DIR) ? "" : " (!)".colorize.yellow
+      lib_cache = Dir.exists?(LIBRARY_DIR) ? "" : " (!)".colorize.yellow
 
-      stdout << "DOCR_CACHE=" << Library::CACHE_DIR << warn_cache << '\n'
-      stdout << "DOCR_LIBRARY=" << Library::LIBRARY_DIR << lib_cache << '\n'
+      stdout << "DOCR_CACHE=" << CACHE_DIR << warn_cache << '\n'
+      stdout << "DOCR_LIBRARY=" << LIBRARY_DIR << lib_cache << '\n'
     end
 
     class Init < Base
@@ -40,8 +40,8 @@ module Docr::Commands
       end
 
       def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
-        Dir.mkdir_p Library::CACHE_DIR unless Dir.exists? Library::CACHE_DIR
-        Dir.mkdir_p Library::LIBRARY_DIR unless Dir.exists? Library::LIBRARY_DIR
+        Dir.mkdir_p CACHE_DIR unless Dir.exists? CACHE_DIR
+        Dir.mkdir_p LIBRARY_DIR unless Dir.exists? LIBRARY_DIR
       end
     end
   end

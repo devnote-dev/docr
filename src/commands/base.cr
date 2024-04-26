@@ -106,7 +106,7 @@ module Docr::Commands
       error "https://github.com/devnote-dev/docr/issues"
 
       return unless @debug
-      debug "getting stack trace..."
+      debug "loading stack trace..."
 
       stack = ex.backtrace || %w[???] # slow, needs investigating
       stack.each { |line| debug " " + line }
