@@ -1,251 +1,204 @@
 module Docr::Formatters::Default
-  extend self
+  def self.format(io : IO, type : Redoc::Const) : Nil
+    io << type.name.colorize.blue << " = " << type.value << '\n'
 
-  def format(consts : Array(Models::Constant)) : String
-    const = consts[0]
+    if summary = type.summary
+      io << "\n  " << summary << '\n'
+    end
 
-    String.build do |io|
-      io << const.name.colorize.blue
-      io << " = " << const.value << "\n\n"
+    io << "\nDefined: "
+    if type.top_level?
+      io << "top-level namespace\n".colorize.dark_gray
+    else
+      io << "(cannot resolve location)\n".colorize.dark_gray
+    end
 
+    if doc = type.doc
+      io << '\n'
+      doc.lines.join(io, '\n') { |line, str| str << "  " << line }
+    end
+  end
+
+  def self.format(io : IO, type : Redoc::Module) : Nil
+    io << "module ".colorize.red
+    format_path io, type.full_name
+    io << '\n'
+    format_base io, type
+  end
+
+  def self.format(io : IO, type : Redoc::Class) : Nil
+    io << "abstract ".colorize.red if type.abstract?
+    io << "class ".colorize.red
+    format_path io, type.full_name
+
+    if parent = type.parent
+      io << " < "
+      format_path io, parent.full_name
+    end
+    io << '\n'
+
+    format_base io, type
+  end
+
+  def self.format(io : IO, type : Redoc::Struct) : Nil
+    io << "abstract ".colorize.red if type.abstract?
+    io << "struct ".colorize.red
+    format_path io, type.full_name
+
+    if parent = type.parent
+      io << " < "
+      format_path io, parent.full_name
+    end
+    io << '\n'
+
+    format_base io, type
+  end
+
+  def self.format(io : IO, type : Redoc::Enum) : Nil
+    io << "enum ".colorize.red
+    format_path io, type.full_name
+    io << '\n'
+
+    type.constants.each do |const|
+      io << "  " << const.name.colorize.blue << " = " << const.value
       if summary = const.summary
-        io << summary << "\n\n"
+        io << "\n  " << summary << '\n'
       end
-
-      io << "Defined:\n"
-      io << " (cannot resolve location)\n".colorize.light_gray # TODO
-
-      if doc = const.doc
-        io << '\n' << doc << '\n'
-      end
+      io << '\n'
     end
+
+    io << "end\n".colorize.red
+    format_base io, type
   end
 
-  def format(*, modules : Array(Models::Type)) : String
-    mod = modules[0]
+  def self.format(io : IO, type : Redoc::Alias) : Nil
+    io << "alias ".colorize.red
+    format_path io, type.full_name
+    io << '\n'
+    format_base io, type
+  end
 
-    String.build do |io|
-      io << "module ".colorize.red
-      io << mod.full_name.colorize.blue << '\n'
+  def self.format(io : IO, type : Redoc::Annotation) : Nil
+    io << "annotation ".colorize.red
+    format_path io, type.full_name
+    io << '\n'
+    format_base io, type
+  end
 
-      if included = mod.included
-        included.each do |type|
-          io << "  include ".colorize.red
-          io << type.full_name << '\n'
+  def self.format(io : IO, type : Redoc::Def) : Nil
+    io << "abstract ".colorize.red if type.abstract?
+    io << "def ".colorize.red
+    io << type.name.colorize.magenta
+
+    unless type.params.empty?
+      io << '('
+      type.params.each { |p| format io, p }
+      io << ')'
+    end
+
+    if ret = type.return_type
+      io << " : "
+      format_path io, ret
+    end
+    io << '\n'
+
+    if summary = type.summary
+      io << "\n  " << summary << '\n'
+    end
+
+    io << "\nDefined:"
+    if loc = type.location
+      io << "\n• " << loc.filename << ':' << loc.line_number << '\n'
+      if url = loc.url
+        Colorize.with.dark_gray.surround(io) do
+          io << "  (" << url << ")\n"
         end
-        io << "end".colorize.red
       end
+    else
+      io << "(cannot resolve location)\n".colorize.dark_gray
+    end
 
-      if summary = mod.summary
-        io << '\n' << summary << '\n'
-      end
-
-      io << "\nDefined:\n"
-      mod.locations.each do |loc|
-        io << "• " << loc.file << ':' << loc.line << '\n'
-      end
-
-      if methods = mod.class_methods
-        io << "\nMethods: " << methods.size << '\n'
-      end
-
-      if doc = mod.doc
-        io << '\n' << doc << '\n'
-      end
+    if doc = type.doc
+      io << '\n'
+      doc.lines.join(io, '\n') { |line, str| str << "  " << line }
     end
   end
 
-  def format(*, classes : Array(Models::Type)) : String
-    cls = classes[0]
+  def self.format(io : IO, type : Redoc::Macro) : Nil
+    io << "macro ".colorize.red
+    io << type.name.colorize.magenta
 
-    String.build do |io|
-      io << "abstract ".colorize.red if cls.abstract?
-      io << "class ".colorize.red
-      io << cls.full_name.colorize.blue
+    unless type.params.empty?
+      io << '('
+      type.params.each { |p| format io, p }
+      io << ')'
+    end
+    io << '\n'
 
-      if parent = cls.superclass
-        io << " < " << parent.full_name.colorize.blue
+    if summary = type.summary
+      io << "\n  " << summary << '\n'
+    end
+
+    io << "\nDefined:"
+    if loc = type.location
+      io << "\n• " << loc.filename << ':' << loc.line_number << '\n'
+      if url = loc.url
+        Colorize.with.dark_gray.surround(io) do
+          io << "  (" << url << ")\n"
+        end
       end
+    else
+      io << "(cannot resolve location)\n".colorize.dark_gray
+    end
 
+    if doc = type.doc
       io << '\n'
-      if summary = cls.summary
-        io << '\n' << summary << '\n'
-      end
-
-      io << "\nDefined:\n"
-      cls.locations.each do |loc|
-        io << "• " << loc.file << ':' << loc.line << '\n'
-      end
-
-      io << "\nConstructors: " << cls.constructors.try(&.size) || 0
-      io << "\nClass Methods: " << cls.class_methods.try(&.size) || 0
-      io << "\nInstance Methods: " << cls.instance_methods.try(&.size) || 0
-      io << "\nMacros: " << cls.macros.try(&.size) || 0
-      io << '\n'
-
-      if doc = cls.doc
-        io << '\n' << doc << '\n'
-      end
+      doc.lines.join(io, '\n') { |line, str| str << "  " << line }
     end
   end
 
-  def format(*, structs : Array(Models::Type)) : String
-    _struct = structs[0]
+  def self.format(io : IO, type : Redoc::Parameter) : Nil
+    io << '*' if type.splat?
+    io << "**" if type.double_splat?
+    io << '&' if type.block?
 
-    String.build do |io|
-      io << "abstract ".colorize.red if _struct.abstract?
-      io << "struct ".colorize.red
-      io << _struct.full_name.colorize.blue
+    if ext = type.external_name
+      io << ext << " "
+    end
+    io << type.name
 
-      if parent = _struct.superclass
-        io << " < " << parent.full_name.colorize.blue
-      end
+    if rest = type.type
+      io << " : " << rest
+    end
 
-      io << '\n'
-      if summary = _struct.summary
-        io << '\n' << summary << '\n'
-      end
-
-      io << "\nDefined:\n"
-      _struct.locations.each do |loc|
-        io << "• " << loc.file << ':' << loc.line << '\n'
-      end
-
-      io << "\nConstructors: " << _struct.constructors.try(&.size) || 0
-      io << "\nClass Methods: " << _struct.class_methods.try(&.size) || 0
-      io << "\nInstance Methods: " << _struct.instance_methods.try(&.size) || 0
-      io << "\nMacros: " << _struct.macros.try(&.size) || 0
-      io << '\n'
-
-      if doc = _struct.doc
-        io << '\n' << doc << '\n'
-      end
+    if value = type.default_value
+      io << " = " << value
     end
   end
 
-  def format(*, enums : Array(Models::Type)) : String
-    _enum = enums[0]
+  def self.format_base(io : IO, type : Redoc::Type) : Nil
+    if summary = type.summary
+      io << "\n  " << summary << '\n'
+    end
 
-    String.build do |io|
-      io << "enum ".colorize.red
-      io << _enum.full_name.colorize.blue << '\n'
-
-      if summary = _enum.summary
-        io << '\n' << summary << '\n'
+    io << "\nDefined:\n"
+    type.locations.each do |loc|
+      io << "• " << loc.filename << ':' << loc.line_number << '\n'
+      if url = loc.url
+        Colorize.with.dark_gray.surround(io) do
+          io << "  (" << url << ")\n\n"
+        end
       end
+    end
 
-      io << "\nDefined:\n"
-      _enum.locations.each do |loc|
-        io << "• " << loc.file << ':' << loc.line << '\n'
-      end
-
-      io << "\nConstructors: " << _enum.constructors.try(&.size) || 0
-      io << "\nClass Methods: " << _enum.class_methods.try(&.size) || 0
-      io << "\nInstance Methods: " << _enum.instance_methods.try(&.size) || 0
-      io << "\nMacros: " << _enum.macros.try(&.size) || 0
+    if doc = type.doc
       io << '\n'
-
-      if doc = _enum.doc
-        io << '\n' << doc << '\n'
-      end
+      doc.lines.join(io, '\n') { |line, str| str << "  " << line }
     end
   end
 
-  def format(*, aliases : Array(Models::Type)) : String
-    _alias = aliases[0]
-
-    String.build do |io|
-      io << "alias ".colorize.red
-      io << _alias.full_name.colorize.blue
-      io << " = " << _alias.aliased << '\n'
-
-      if summary = _alias.summary
-        io << '\n' << summary << '\n'
-      end
-
-      io << "\nDefined:\n"
-      _alias.locations.each do |loc|
-        io << "• " << loc.file << ':' << loc.line << '\n'
-      end
-
-      if doc = _alias.doc
-        io << '\n' << doc << '\n'
-      end
-    end
-  end
-
-  def format(*, annotations : Array(Models::Type)) : String
-    ann = annotations[0]
-
-    String.build do |io|
-      io << "annotation ".colorize.red
-      io << ann.full_name.colorize.blue << '\n'
-
-      if summary = ann.summary
-        io << '\n' << summary << '\n'
-      end
-
-      io << "\nDefined:\n"
-      ann.locations.each do |loc|
-        io << "• " << loc.file << ':' << loc.line << '\n'
-      end
-
-      if doc = ann.doc
-        io << '\n' << doc << '\n'
-      end
-    end
-  end
-
-  def format(*, defs : Array(Models::Def)) : String
-    method = defs[0]
-
-    String.build do |io|
-      io << "abstract ".colorize.red if method.abstract?
-      io << "def ".colorize.red
-      io << method.name.colorize.magenta
-      io << method.args if method.args
-      io << '\n'
-
-      if summary = method.summary
-        io << '\n' << summary << '\n'
-      end
-
-      io << "\nDefined:"
-      if loc = method.location
-        io << "\n• " << loc.file << ':' << loc.line << '\n'
-      else
-        io << "\n (cannot resolve location)\n".colorize.light_gray
-      end
-
-      if doc = method.doc
-        io << '\n' << doc << '\n'
-      end
-    end
-  end
-
-  def format(*, macros : Array(Models::Def)) : String
-    method = macros[0]
-
-    String.build do |io|
-      io << "macro ".colorize.red
-      io << method.name.colorize.magenta
-      io << method.args if method.args
-      io << '\n'
-
-      if summary = method.summary
-        io << '\n' << summary << '\n'
-      end
-
-      io << "\nDefined:"
-      if loc = method.location
-        io << "\n• " << loc.file << ':' << loc.line << '\n'
-      else
-        io << "\n (cannot resolve location)\n".colorize.light_gray
-      end
-
-      if doc = method.doc
-        io << '\n' << doc << '\n'
-      end
-    end
+  def self.format_path(io : IO, name : String) : Nil
+    # TODO: handle generics
+    name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
   end
 end

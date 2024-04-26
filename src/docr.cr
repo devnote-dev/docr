@@ -9,7 +9,7 @@ require "yaml"
 
 require "./commands/base"
 require "./commands/*"
-# require "./formatters/*"
+require "./formatters/*"
 require "./library"
 require "./resolver"
 
