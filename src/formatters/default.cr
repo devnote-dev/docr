@@ -92,7 +92,15 @@ module Docr::Formatters::Default
 
     unless type.params.empty?
       io << '('
-      type.params.each { |p| format io, p }
+      format io, type.params[0]
+
+      if type.params.size > 1
+        type.params[1..].each do |param|
+          io << ", "
+          format io, param
+        end
+      end
+
       io << ')'
     end
 
@@ -135,7 +143,15 @@ module Docr::Formatters::Default
 
     unless type.params.empty?
       io << '('
-      type.params.each { |p| format io, p }
+      format io, type.params[0]
+
+      if type.params.size > 1
+        type.params[1..].each do |param|
+          io << ", "
+          format io, param
+        end
+      end
+
       io << ')'
     end
     io << '\n'
@@ -163,9 +179,9 @@ module Docr::Formatters::Default
   end
 
   def self.format(io : IO, type : Redoc::Parameter) : Nil
-    io << '*' if type.splat?
-    io << "**" if type.double_splat?
-    io << '&' if type.block?
+    io << '*'.colorize.red if type.splat?
+    io << "**".colorize.red if type.double_splat?
+    io << '&'.colorize.red if type.block?
     io << type.name
 
     if rest = type.type
