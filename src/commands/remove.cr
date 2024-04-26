@@ -15,12 +15,20 @@ module Docr::Commands
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       name = arguments.get("name").as_s
       version = arguments.get?("version").try &.as_s
-      library = Library.fetch name, version
 
-      library.delete version.nil?
-    rescue ex : Library::Error
-      error "Failed to remove library:"
-      error ex
+      unless Library.exists?(name, version)
+        if version
+          if Library.exists?(name)
+            error "version '#{version}' of #{name} not found or imported"
+            system_exit
+          end
+        end
+
+        error "library '#{name}' not imported"
+        system_exit
+      end
+
+      Library.delete name, version
     end
   end
 end
