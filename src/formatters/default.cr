@@ -21,7 +21,7 @@ module Docr::Formatters::Default
 
   def self.format(io : IO, type : Redoc::Module) : Nil
     io << "module ".colorize.red
-    format_path io, type.full_name
+    format_path io, type.full_name, :magenta
     io << '\n'
     format_base io, type
   end
@@ -29,11 +29,11 @@ module Docr::Formatters::Default
   def self.format(io : IO, type : Redoc::Class) : Nil
     io << "abstract ".colorize.red if type.abstract?
     io << "class ".colorize.red
-    format_path io, type.full_name
+    format_path io, type.full_name, :magenta
 
     if parent = type.parent
       io << " < "
-      format_path io, parent.full_name
+      format_path io, parent.full_name, :magenta
     end
     io << '\n'
 
@@ -43,11 +43,11 @@ module Docr::Formatters::Default
   def self.format(io : IO, type : Redoc::Struct) : Nil
     io << "abstract ".colorize.red if type.abstract?
     io << "struct ".colorize.red
-    format_path io, type.full_name
+    format_path io, type.full_name, :magenta
 
     if parent = type.parent
       io << " < "
-      format_path io, parent.full_name
+      format_path io, parent.full_name, :magenta
     end
     io << '\n'
 
@@ -56,7 +56,7 @@ module Docr::Formatters::Default
 
   def self.format(io : IO, type : Redoc::Enum) : Nil
     io << "enum ".colorize.red
-    format_path io, type.full_name
+    format_path io, type.full_name, :magenta
     io << '\n'
 
     type.constants.each do |const|
@@ -73,14 +73,14 @@ module Docr::Formatters::Default
 
   def self.format(io : IO, type : Redoc::Alias) : Nil
     io << "alias ".colorize.red
-    format_path io, type.full_name
+    format_path io, type.full_name, :magenta
     io << '\n'
     format_base io, type
   end
 
   def self.format(io : IO, type : Redoc::Annotation) : Nil
     io << "annotation ".colorize.red
-    format_path io, type.full_name
+    format_path io, type.full_name, :magenta
     io << '\n'
     format_base io, type
   end
@@ -106,7 +106,7 @@ module Docr::Formatters::Default
 
     if ret = type.return_type
       io << " : "
-      format_path io, ret
+      format_path io, ret, :blue
     end
 
     if type.generic?
@@ -214,24 +214,24 @@ module Docr::Formatters::Default
     end
   end
 
-  def self.format_path(io : IO, name : String) : Nil
+  def self.format_path(io : IO, name : String, color : Colorize::ColorANSI) : Nil
     if name.includes? '('
       name, *params = name.split(/\(|\)|,/, remove_empty: true)
-      name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
+      name.split("::").join(io, "::") { |n, str| str << n.colorize(color) }
 
       io << '('
       params.join(io, ", ") do |param, str|
         if param.starts_with? "**"
-          str << "**".colorize.red << param[2..].colorize.blue
+          str << "**".colorize.red << param[2..].colorize(color)
         elsif param.starts_with? '*'
-          str << '*'.colorize.red << param[1..].colorize.blue
+          str << '*'.colorize.red << param[1..].colorize(color)
         else
-          str << param.colorize.blue
+          str << param.colorize(color)
         end
       end
       io << ')'
     else
-      name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
+      name.split("::").join(io, "::") { |n, str| str << n.colorize(color) }
     end
   end
 end
