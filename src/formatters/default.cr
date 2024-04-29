@@ -218,8 +218,17 @@ module Docr::Formatters::Default
     if name.includes? '('
       name, *params = name.split(/\(|\)|,/, remove_empty: true)
       name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
+
       io << '('
-      params.join(io, ", ") { |p, str| str << p.colorize.blue }
+      params.join(io, ", ") do |param, str|
+        if param.starts_with? "**"
+          str << "**".colorize.red << param[2..].colorize.blue
+        elsif param.starts_with? '*'
+          str << '*'.colorize.red << param[1..].colorize.blue
+        else
+          str << param.colorize.blue
+        end
+      end
       io << ')'
     else
       name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
