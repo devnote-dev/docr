@@ -215,7 +215,14 @@ module Docr::Formatters::Default
   end
 
   def self.format_path(io : IO, name : String) : Nil
-    # TODO: handle generics
-    name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
+    if name.includes? '('
+      name, *params = name.split(/\(|\)|,/, remove_empty: true)
+      name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
+      io << '('
+      params.join(io, ", ") { |p, str| str << p.colorize.blue }
+      io << ')'
+    else
+      name.split("::").join(io, "::") { |n, str| str << n.colorize.blue }
+    end
   end
 end
