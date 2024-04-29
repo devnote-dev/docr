@@ -74,8 +74,9 @@ module Docr::Formatters::Default
   def self.format(io : IO, type : Redoc::Alias) : Nil
     io << "alias ".colorize.red
     format_path io, type.full_name, :magenta
-    io << " = "
-    format_path io, type.type, :blue
+    io << " = " << type.type.colorize.blue
+    # TODO: fix recursive aliases formatting
+    # format_path io, type.type, :blue
     io << '\n'
     format_base io, type
   end
