@@ -16,15 +16,13 @@ module Docr::Commands
       add_argument "name", required: false
     end
 
-    def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Bool
+    def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       super
-
-      return true if Process.find_executable "git"
+      return if Process.find_executable "git"
 
       error "Could not find the git executable in the system"
       error "Git is required for this operation"
-
-      false
+      exit_program
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil

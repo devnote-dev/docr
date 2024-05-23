@@ -48,13 +48,13 @@ module Docr::Commands
       if set.includes? version
         error "#{term} is already imported"
         error "Did you mean to run 'docr update'?"
-        return
+        exit_program
       end
 
       unless versions.includes? version
         error "Crystal version #{version} is not available"
         error "Run 'docr check' to see available versions of imported libraries"
-        return
+        exit_program
       end
 
       Resolver.import_crystal_version version
@@ -77,13 +77,13 @@ module Docr::Commands
         if version.empty?
           error "Failed to clone #{uri}:"
           error err
-          return
+          exit_program
         end
 
         if err = exec args[0...-2].join(' '), cache_dir
           error "Failed to clone #{uri}:"
           error err
-          return
+          exit_program
         end
       end
 
@@ -91,7 +91,7 @@ module Docr::Commands
       if err = exec "shards install --without-development", cache_dir
         error "Failed to install library dependencies:"
         error err
-        return
+        exit_program
       end
 
       info "Getting shard information..."
@@ -100,6 +100,7 @@ module Docr::Commands
       unless shard["name"].as_s == name
         error "Cannot verify shard: names do not match"
         error "Expected '#{name}'; got '#{shard["name"]}'"
+        exit_program
       end
 
       if version == "latest"
@@ -108,19 +109,20 @@ module Docr::Commands
         unless shard["version"].as_s == version
           error "Cannot verify shard: versions do not match"
           error "Expected version #{version}; got #{shard["version"]}"
-          return
+          exit_program
         end
       end
 
       if Library.exists?(name, version)
-        return error "Library #{name} version #{version} is already imported"
+        error "Library #{name} version #{version} is already imported"
+        exit_program
       end
 
       info "Building documentation..."
       if err = exec "crystal docs", cache_dir
         error "Failed to build documentation:"
         error err
-        return
+        exit_program
       end
 
       lib_dir = LIBRARY_DIR / name

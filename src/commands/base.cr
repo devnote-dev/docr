@@ -57,16 +57,13 @@ module Docr::Commands
       end
     end
 
-    def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Bool
+    def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       @debug = true if options.has? "debug"
       Colorize.enabled = false if options.has? "no-color"
 
       if options.has? "help"
         stdout.puts help_template
-
-        false
-      else
-        true
+        exit_program 0
       end
     end
 
@@ -87,13 +84,7 @@ module Docr::Commands
       stdout << "(!) ".colorize.red << data << '\n'
     end
 
-    protected def system_exit : NoReturn
-      raise SystemExit.new
-    end
-
     def on_error(ex : Exception)
-      raise ex if ex.is_a? SystemExit
-
       if ex.is_a? Cling::CommandError
         error ex.to_s
         error "See '#{"docr --help".colorize.blue}' for more information"
@@ -117,7 +108,7 @@ module Docr::Commands
       error "Missing required argument#{"s" if args.size > 1}:"
       error " #{args.join(", ")}"
       error "See '#{command}' for more information"
-      system_exit
+      exit_program
     end
 
     def on_unknown_arguments(args : Array(String))
@@ -125,7 +116,7 @@ module Docr::Commands
       error "Unexpected argument#{"s" if args.size > 1} for this command:"
       error " #{args.join ", "}"
       error "See '#{command}' for more information"
-      system_exit
+      exit_program
     end
 
     def on_unknown_options(options : Array(String))
@@ -133,7 +124,7 @@ module Docr::Commands
       error "Unexpected option#{"s" if options.size > 1} for this command:"
       error " #{options.join ", "}"
       error "See '#{command}' for more information"
-      system_exit
+      exit_program
     end
   end
 end

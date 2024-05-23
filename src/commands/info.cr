@@ -28,6 +28,8 @@ module Docr::Commands
     end
 
     def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Nil
+      super
+
       unless arguments.has? "input"
         arg = Cling::Argument.new "input"
         arg.value = arguments.get "library"
@@ -42,7 +44,7 @@ module Docr::Commands
 
       unless Library.exists? name
         error "library '#{name}' not imported"
-        system_exit
+        exit_program
       end
 
       version = Library.get_versions_for(name).sort.last
