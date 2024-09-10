@@ -5,9 +5,9 @@ module Docr::Resolver
     end
   end
 
-  def self.fetch_crystal_versions : Array(String)
+  def self.fetch_crystal_versions(fetch : Bool) : Array(String)
     path = CACHE_DIR / "versions.txt"
-    import_crystal_versions unless File.exists? path
+    import_crystal_versions if fetch || !File.exists?(path)
 
     File.read_lines(path).map(&.split(',').first)
   end
@@ -26,7 +26,7 @@ module Docr::Resolver
   end
 
   def self.import_crystal_version(version : String) : Nil
-    versions = fetch_crystal_versions
+    versions = fetch_crystal_versions false
     unless versions.includes? version
       raise "crystal version '#{version}' not available"
     end

@@ -16,6 +16,7 @@ module Docr::Commands
 
       add_argument "name", description: "the name of the library", required: true
       add_argument "source", description: "the source of the library (or latest for crystal)", required: true
+      add_option 'f', "fetch", description: "fetch versions from the api"
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
@@ -23,16 +24,16 @@ module Docr::Commands
       source = arguments.get("source").as_s
 
       if name == "crystal"
-        add_crystal_library source
+        add_crystal_library source, options.has?("fetch")
       else
         add_external_library name, source, "latest"
       end
     end
 
-    private def add_crystal_library(version : String) : Nil
+    private def add_crystal_library(version : String, fetch : Bool) : Nil
       info "Fetching available versions..."
 
-      versions = Resolver.fetch_crystal_versions
+      versions = Resolver.fetch_crystal_versions fetch
       version = versions[1] if version == "latest"
 
       if version == "nightly"
@@ -47,7 +48,7 @@ module Docr::Commands
 
       if set.includes? version
         error "#{term} is already imported"
-        error "Did you mean to run 'docr update'?"
+        error "If a newer version is available, rerun with the '--fetch' flag"
         exit_program
       end
 
