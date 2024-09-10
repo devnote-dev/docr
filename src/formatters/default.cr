@@ -1,4 +1,112 @@
 module Docr::Formatters::Default
+  def self.format_signature(io : IO, type : Redoc::Const, with_parent : Bool) : Nil
+    io << type.name.colorize.blue << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Module, with_parent : Bool) : Nil
+    io << "module ".colorize.red
+    format_path io, type.full_name, :magenta
+    io << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Class, with_parent : Bool) : Nil
+    io << "abstract ".colorize.red if type.abstract?
+    io << "class ".colorize.red
+    format_path io, type.full_name, :magenta
+
+    if with_parent && (parent = type.parent)
+      io << " < "
+      format_path io, parent.full_name, :magenta
+    end
+    io << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Struct, with_parent : Bool) : Nil
+    io << "abstract ".colorize.red if type.abstract?
+    io << "struct ".colorize.red
+    format_path io, type.full_name, :magenta
+
+    if with_parent && (parent = type.parent)
+      io << " < "
+      format_path io, parent.full_name, :magenta
+    end
+    io << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Enum, with_parent : Bool) : Nil
+    io << "enum ".colorize.red
+    format_path io, type.full_name, :magenta
+
+    if with_parent && (base = type.type)
+      io << " : "
+      format_path io, base, :magenta
+    end
+    io << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Alias, with_parent : Bool) : Nil
+    io << "alias ".colorize.red
+    format_path io, type.full_name, :magenta
+    io << " = " << type.type.colorize.blue << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Annotation, with_parent : Bool) : Nil
+    io << "annotation ".colorize.red
+    format_path io, type.full_name, :magenta
+    io << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Def, with_parent : Bool) : Nil
+    io << "abstract ".colorize.red if type.abstract?
+    io << "def ".colorize.red
+    io << type.name.colorize.magenta
+
+    unless type.params.empty?
+      io << '('
+      format io, type.params[0]
+
+      if type.params.size > 1
+        type.params[1..].each do |param|
+          io << ", "
+          format io, param
+        end
+      end
+
+      io << ')'
+    end
+
+    if ret = type.return_type
+      io << " : "
+      format_path io, ret, :blue
+    end
+
+    if type.generic?
+      io << " forall ".colorize.red
+      type.free_vars.join(io, ", ") { |v, str| str << v.colorize.blue }
+    end
+    io << '\n'
+  end
+
+  def self.format_signature(io : IO, type : Redoc::Macro, with_parent : Bool) : Nil
+    io << "macro ".colorize.red
+    io << type.name.colorize.magenta
+
+    unless type.params.empty?
+      io << '('
+      format io, type.params[0]
+
+      if type.params.size > 1
+        type.params[1..].each do |param|
+          io << ", "
+          format io, param
+        end
+      end
+
+      io << ')'
+    end
+    io << '\n'
+  end
+
   def self.format(io : IO, type : Redoc::Const) : Nil
     io << type.name.colorize.blue << " = " << type.value << '\n'
 
