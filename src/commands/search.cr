@@ -28,37 +28,57 @@ module Docr::Commands
 
       version = Library.get_versions_for(name).sort.last
       project = Library.get name, version
-      namespace, symbol, kind = Redoc.parse_query arguments.get("input").as_s
+      input = arguments.get("input").as_s
+      query = Redoc.parse_query input
+      namespace, symbol, kind = query
 
       if symbol.nil?
-        if type = project.resolve?(namespace, nil, kind)
-          pp type
-          exit_program 0
-        end
+        types = [] of Redoc::Type
 
-        if namespace.empty? && name == "crystal"
-          namespace << "Object"
-          if type = project.resolve?(namespace, nil, kind)
-            pp type
-            exit_program 0
+        {% for type in %w[modules classes structs enums aliases annotations] %}
+          Fzy.search(input, project.{{type.id}}.map &.full_name).each do |match|
+            next if match.score < 1.0
+            types << project.{{type.id}}[match.index]
           end
-        end
+        {% end %}
+
+        {% for type in %w[modules classes structs] %}
+          project.{{type.id}}.each do |type|
+            recurse input, types, type
+          end
+        {% end %}
       else
-        methods = project.resolve_all(namespace, symbol, kind) rescue [] of Redoc::Type
-        if methods.empty?
-          if namespace.empty? && name == "crystal"
-            namespace << "Object"
-            methods = project.resolve_all(namespace, symbol, kind) rescue [] of Redoc::Type
-          end
-        end
-
-        unless methods.empty?
-          pp methods
-          exit_program 0
+        types = project.resolve_all(namespace, symbol, kind)
+        if types.empty? && namespace.empty? && name == "crystal"
+          namespace << "Object"
+          types = project.resolve_all(namespace, symbol, kind)
         end
       end
 
-      error "could not resolve types or symbols for input"
+      if types.empty?
+        error "could not resolve types or symbols for input"
+        exit_program
+      end
+
+      stdout << types.size << " Results found:\n\n"
+      types.each do |type|
+        Formatters::Default.format_signature stdout, type, false
+      end
+    end
+
+    private def recurse(query : String, results : Array(Redoc::Type), namespace : Redoc::Namespace) : Nil
+      {% for type in %w[modules classes structs enums aliases annotations] %}
+        Fzy.search(query, namespace.{{type.id}}.map &.full_name).each do |match|
+          next if match.score < 1.0
+          results << namespace.{{type.id}}[match.index]
+        end
+      {% end %}
+
+      {% for type in %w[modules classes structs] %}
+        namespace.{{type.id}}.each do |type|
+          recurse query, results, type
+        end
+      {% end %}
     end
   end
 end
