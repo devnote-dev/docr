@@ -26,5 +26,5 @@ shards:
 
   redoc:
     git: https://github.com/devnote-dev/redoc.git
-    version: 0.1.0+git.commit.6aa4955bf7e4d10dce3f4f3d1be22c6a43e62de3
+    version: 0.1.0+git.commit.0143fcdc83f8459028a4b0ccdffc323fe1bdeaef
 
