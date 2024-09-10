@@ -2,15 +2,15 @@ version: 2.0
 shards:
   ameba:
     git: https://github.com/crystal-ameba/ameba.git
-    version: 1.5.0
+    version: 1.6.1
 
   cling:
     git: https://github.com/devnote-dev/cling.git
-    version: 3.0.0+git.commit.feef890224a251694fc84181cae3f509faa86f08
+    version: 3.0.0+git.commit.b833b59c2ea54744a6e90078cdd0e04c7cf55b43
 
   crest:
     git: https://github.com/mamantoha/crest.git
-    version: 1.3.12
+    version: 1.4.1
 
   fzy:
     git: https://github.com/hugopl/fzy.git
@@ -22,7 +22,7 @@ shards:
 
   http_proxy:
     git: https://github.com/mamantoha/http_proxy.git
-    version: 0.10.1
+    version: 0.12.0
 
   redoc:
     git: https://github.com/devnote-dev/redoc.git

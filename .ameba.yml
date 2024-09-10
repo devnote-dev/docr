@@ -2,7 +2,13 @@ Globs:
   - src/**/*.cr
   - spec/**/*.cr
 
+Documentation:
+  Enabled: false
+
 Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Naming/BlockParameterName:
   Enabled: false
 
 # There is nothing to prove that this affects performance
