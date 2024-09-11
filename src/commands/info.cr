@@ -52,13 +52,13 @@ module Docr::Commands
       query = Redoc.parse_query arguments.get("input").as_s
 
       if type = project.resolve? *query
-        return Formatters::Default.format stdout, type
+        return Formatters::Default.format_info stdout, type, true
       end
 
       if query[0].empty? && name == "crystal"
         query[0] << "Object"
         if type = project.resolve? *query
-          return Formatters::Default.format stdout, type
+          return Formatters::Default.format_info stdout, type, true
         end
       end
 

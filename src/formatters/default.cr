@@ -107,7 +107,7 @@ module Docr::Formatters::Default
     io << '\n'
   end
 
-  def self.format(io : IO, type : Redoc::Const) : Nil
+  def self.format_info(io : IO, type : Redoc::Const, with_parent : Bool) : Nil
     io << type.name.colorize.blue << " = " << type.value << '\n'
 
     if summary = type.summary
@@ -127,45 +127,23 @@ module Docr::Formatters::Default
     end
   end
 
-  def self.format(io : IO, type : Redoc::Module) : Nil
-    io << "module ".colorize.red
-    format_path io, type.full_name, :magenta
-    io << '\n'
+  def self.format_info(io : IO, type : Redoc::Module, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
     format_base io, type
   end
 
-  def self.format(io : IO, type : Redoc::Class) : Nil
-    io << "abstract ".colorize.red if type.abstract?
-    io << "class ".colorize.red
-    format_path io, type.full_name, :magenta
-
-    if parent = type.parent
-      io << " < "
-      format_path io, parent.full_name, :magenta
-    end
-    io << '\n'
-
+  def self.format_info(io : IO, type : Redoc::Class, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
     format_base io, type
   end
 
-  def self.format(io : IO, type : Redoc::Struct) : Nil
-    io << "abstract ".colorize.red if type.abstract?
-    io << "struct ".colorize.red
-    format_path io, type.full_name, :magenta
-
-    if parent = type.parent
-      io << " < "
-      format_path io, parent.full_name, :magenta
-    end
-    io << '\n'
-
+  def self.format_info(io : IO, type : Redoc::Struct, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
     format_base io, type
   end
 
-  def self.format(io : IO, type : Redoc::Enum) : Nil
-    io << "enum ".colorize.red
-    format_path io, type.full_name, :magenta
-    io << '\n'
+  def self.format_info(io : IO, type : Redoc::Enum, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
 
     type.constants.each do |const|
       io << "  " << const.name.colorize.blue << " = " << const.value
@@ -179,52 +157,18 @@ module Docr::Formatters::Default
     format_base io, type
   end
 
-  def self.format(io : IO, type : Redoc::Alias) : Nil
-    io << "alias ".colorize.red
-    format_path io, type.full_name, :magenta
-    io << " = " << type.type.colorize.blue
-    # TODO: fix recursive aliases formatting
-    # format_path io, type.type, :blue
-    io << '\n'
+  def self.format_info(io : IO, type : Redoc::Alias, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
     format_base io, type
   end
 
-  def self.format(io : IO, type : Redoc::Annotation) : Nil
-    io << "annotation ".colorize.red
-    format_path io, type.full_name, :magenta
-    io << '\n'
+  def self.format_info(io : IO, type : Redoc::Annotation, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
     format_base io, type
   end
 
-  def self.format(io : IO, type : Redoc::Def) : Nil
-    io << "abstract ".colorize.red if type.abstract?
-    io << "def ".colorize.red
-    io << type.name.colorize.magenta
-
-    unless type.params.empty?
-      io << '('
-      format io, type.params[0]
-
-      if type.params.size > 1
-        type.params[1..].each do |param|
-          io << ", "
-          format io, param
-        end
-      end
-
-      io << ')'
-    end
-
-    if ret = type.return_type
-      io << " : "
-      format_path io, ret, :blue
-    end
-
-    if type.generic?
-      io << " forall ".colorize.red
-      type.free_vars.join(io, ", ") { |v, str| str << v.colorize.blue }
-    end
-    io << '\n'
+  def self.format_info(io : IO, type : Redoc::Def, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
 
     if summary = type.summary
       io << "\n  " << summary << '\n'
@@ -248,24 +192,8 @@ module Docr::Formatters::Default
     end
   end
 
-  def self.format(io : IO, type : Redoc::Macro) : Nil
-    io << "macro ".colorize.red
-    io << type.name.colorize.magenta
-
-    unless type.params.empty?
-      io << '('
-      format io, type.params[0]
-
-      if type.params.size > 1
-        type.params[1..].each do |param|
-          io << ", "
-          format io, param
-        end
-      end
-
-      io << ')'
-    end
-    io << '\n'
+  def self.format_info(io : IO, type : Redoc::Macro, with_parent : Bool) : Nil
+    format_signature io, type, with_parent
 
     if summary = type.summary
       io << "\n  " << summary << '\n'
