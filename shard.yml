@@ -19,6 +19,9 @@ dependencies:
   fzy:
     github: hugopl/fzy
 
+  markd:
+    github: icyleaf/markd
+
   redoc:
     github: devnote-dev/redoc
     branch: main
