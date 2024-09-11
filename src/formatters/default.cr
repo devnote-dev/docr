@@ -1,4 +1,106 @@
 module Docr::Formatters::Default
+  class Renderer < Markd::Renderer
+    def heading(node : Markd::Node, __) : Nil
+      level = node.data["level"].as(Int32)
+      if level == 1
+        literal(String.build do |str|
+          Colorize.with.back(:magenta).fore(:white).bold.surround(str) do |io|
+            io << ' ' << node.text << ' '
+          end
+        end)
+      else
+        literal(String.build do |str|
+          Colorize.with.bold.fore(:white).surround(str) do |io|
+            io << "#" * level
+            io << ' ' << node.text
+          end
+        end)
+      end
+    end
+
+    def code(node : Markd::Node, __) : Nil
+      literal(String.build do |str|
+        Colorize.with.back(236).fore(203).surround(str) do |io|
+          io << ' ' << node.text << ' '
+        end
+      end)
+    end
+
+    def code_block(node : Markd::Node, __) : Nil
+      literal(String.build do |str|
+        str << "\n\n"
+        node.text.each_line do |line|
+          str << "  " << line << '\n'
+        end
+        str << '\n'
+      end)
+    end
+
+    def thematic_break(node : Markd::Node, __) : Nil
+    end
+
+    def block_quote(node : Markd::Node, __) : Nil
+    end
+
+    def list(node : Markd::Node, __) : Nil
+    end
+
+    def item(node : Markd::Node, __) : Nil
+    end
+
+    def link(node : Markd::Node, __) : Nil
+    end
+
+    def image(node : Markd::Node, __) : Nil
+      literal node.text
+    end
+
+    def html_block(node : Markd::Node, __) : Nil
+      literal "\n"
+      literal node.text
+      literal "\n"
+    end
+
+    def html_inline(node : Markd::Node, __) : Nil
+      literal node.text
+    end
+
+    def paragraph(node : Markd::Node, __) : Nil
+      literal node.text
+    end
+
+    def emphasis(node : Markd::Node, __) : Nil
+      literal node.text.colorize.italic.to_s
+    end
+
+    def soft_break(node : Markd::Node, __) : Nil
+      literal "\n"
+    end
+
+    def line_break(node : Markd::Node, __) : Nil
+      literal "\n"
+    end
+
+    def strong(node : Markd::Node, __) : Nil
+      literal node.text.colorize.bold.to_s
+    end
+
+    def strikethrough(node : Markd::Node, __) : Nil
+      literal node.text.colorize.strikethrough.to_s
+    end
+
+    def text(node : Markd::Node, __) : Nil
+      literal node.text
+    end
+
+    # Markd::Renderer isn't reusable by default...
+    def render(document : Markd::Node) : String
+      str = super
+      @output_io = String::Builder.new
+      str
+    end
+  end
+
   def self.format_signature(io : IO, type : Redoc::Const, with_parent : Bool) : Nil
     io << type.name.colorize.blue << '\n'
   end
@@ -233,8 +335,11 @@ module Docr::Formatters::Default
   end
 
   def self.format_base(io : IO, type : Redoc::Type) : Nil
+    renderer = Renderer.new Markd::Options.new
+
     if summary = type.summary
-      io << "\n  " << summary << '\n'
+      doc = Markd::Parser.parse summary
+      io << "\n  " << renderer.render(doc)
     end
 
     io << "\nDefined:\n"
@@ -247,9 +352,9 @@ module Docr::Formatters::Default
       end
     end
 
-    if doc = type.doc
-      io << '\n'
-      doc.lines.join(io, '\n') { |line, str| str << "  " << line }
+    if content = type.doc
+      doc = Markd::Parser.parse content
+      io << '\n' << renderer.render(doc) << '\n'
     end
   end
 
