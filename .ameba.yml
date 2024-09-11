@@ -2,7 +2,10 @@ Globs:
   - src/**/*.cr
   - spec/**/*.cr
 
-Documentation:
+Documentation/Documentation:
+  Enabled: false
+
+Documentation/DocumentationAdmonition:
   Enabled: false
 
 Metrics/CyclomaticComplexity:
