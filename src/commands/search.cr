@@ -62,7 +62,10 @@ module Docr::Commands
         exit_program
       end
 
-      stdout << types.size << " Results found:\n\n"
+      stdout << types.size << " result"
+      stdout << "s" if types.size > 1
+      stdout << " found:\n\n"
+
       types.each do |type|
         Formatters::Default.format_signature stdout, type, false
       end

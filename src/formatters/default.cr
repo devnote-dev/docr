@@ -170,6 +170,11 @@ module Docr::Formatters::Default
   def self.format_signature(io : IO, type : Redoc::Def, with_parent : Bool) : Nil
     io << "abstract ".colorize.red if type.abstract?
     io << "def ".colorize.red
+
+    if with_parent && (ref = type.parent)
+      format_path io, ref.full_name, :magenta
+      io << '.'
+    end
     io << type.name.colorize.magenta
 
     unless type.params.empty?
@@ -200,6 +205,10 @@ module Docr::Formatters::Default
 
   def self.format_signature(io : IO, type : Redoc::Macro, with_parent : Bool) : Nil
     io << "macro ".colorize.red
+    if with_parent && (ref = type.parent)
+      format_path io, ref.full_name, :magenta
+      io << '.'
+    end
     io << type.name.colorize.magenta
 
     unless type.params.empty?
