@@ -121,22 +121,20 @@ module Docr::Commands
         exit_program
       end
 
-      # if Library.exists?(name, version)
-      #   error "Library #{name} version #{version} is already imported"
-      #   exit_program
-      # end
+      name = path.split('/')[1]
+      if Library.exists?(name, version)
+        error "Library #{name} version #{version} is already imported"
+        exit_program
+      end
 
-      debug lib_dir = LIBRARY_DIR / path
+      debug lib_dir = LIBRARY_DIR / name
       Dir.mkdir_p lib_dir
       debug url = "https://crystaldoc.info/#{host}/#{path}/#{version}/index.json"
 
       begin
-        name = nil
-
         Crest.get url do |res|
           File.open(lib_dir / "#{version}.json", mode: "w") do |dest|
             library = Redoc.load res.body_io.gets_to_end
-            name = library.name
             library.to_json dest
           end
         end
