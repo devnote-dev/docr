@@ -31,7 +31,11 @@ module Docr::Commands
       end
 
       version ||= Library.get_versions_for(name).sort.last
-      stdout.puts Library.get(name, version).description
+      library = Library.get name, version
+      doc = Markd::Parser.parse library.description
+      renderer = Formatters::Default::Renderer.new
+
+      stdout.puts renderer.render doc
     rescue JSON::Error
       error "failed to open library: source file is in an invalid format"
       error "please remove and import the library again"
