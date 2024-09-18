@@ -75,6 +75,8 @@ module Docr::Commands
     end
 
     private def add_external_library(source : String, version : String) : Nil
+      info "Resolving source..."
+
       case source
       when .starts_with?("github:"), .starts_with?("gh:")
         host = "github"
@@ -114,16 +116,16 @@ module Docr::Commands
           .sort!
       end
 
+      name = path.split('/')[1]
       if version == "latest"
         version = versions.last
       elsif !versions.includes?(version)
-        error "Version '#{version}' not found for library"
+        error "Version #{version} not found for '#{name}'"
         exit_program
       end
 
-      name = path.split('/')[1]
       if Library.exists?(name, version)
-        error "Library #{name} version #{version} is already imported"
+        error "'#{name}' version #{version} is already imported"
         exit_program
       end
 
@@ -139,7 +141,7 @@ module Docr::Commands
           end
         end
 
-        info "Imported #{name} version #{version}"
+        info "Imported '#{name}' version #{version}"
       rescue ex
         error "Failed to save library data:"
         error ex.to_s
