@@ -4,29 +4,40 @@ module Docr::Commands
       @name = "add"
       @summary = "imports documentation for a library"
       @description = <<-DESC
-        Imports documentation for the Crystal standard library or a third-party library
-        (or shard). If you are importing the standard library, the 'source' argument
-        should be the version to import ("latest" also works here). Otherwise, the
-        'source' argument should be a URI that resolves to the library's repository
-        (which is handled by git).
+        Imports a version of a specified library (or shard). By default the latest
+        version is installed, this can be changed by specifying the '--version' flag.
+        To import Crystal's standard library, specify 'crystal'. For all other libraries,
+        the following formats are supported for the source:
+
+          - docr add https://github.com/user/repo
+          - docr add github.com/user/repo
+          - docr add github:user/repo
+          - docr add gh:user/repo
+
+        The following shorthands are supported for sources:
+          - github: / gh:
+          - gitlab: / gl:
+          - bitbucket: / bb:
+
+        Absolute URLs to sources other than GitHub, GitLab and BitBucket are not yet
+        supported.
         DESC
 
-      add_usage "docr add <name> <source> [options]"
-      add_usage "docr add <name> latest [options]"
+      add_usage "docr add <source> [options]"
+      add_usage "docr add crystal [options]"
 
-      add_argument "name", description: "the name of the library", required: true
-      add_argument "source", description: "the source of the library (or latest for crystal)", required: true
+      add_argument "source", description: "the source of the library (or 'crystal')", required: true
       add_option 'f', "fetch", description: "fetch versions from the api"
+      add_option 'v', "version", type: :single, default: "latest"
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
-      name = arguments.get("name").as_s
       source = arguments.get("source").as_s
 
-      if name == "crystal"
-        add_crystal_library source, options.has?("fetch")
+      if source == "crystal"
+        add_crystal_library options.get("version").as_s, options.has?("fetch")
       else
-        add_external_library name, source, "latest"
+        add_external_library source, options.get("version").as_s
       end
     end
 
@@ -63,94 +74,80 @@ module Docr::Commands
       info "Imported #{term}"
     end
 
-    private def add_external_library(name : String, source : String, version : String) : Nil
-      uri = URI.parse source
-      cache_dir = CACHE_DIR / name
-      Dir.mkdir_p cache_dir
+    private def add_external_library(source : String, version : String) : Nil
+      case source
+      when .starts_with?("github:"), .starts_with?("gh:")
+        host = "github"
+        path = source.gsub(/github:|gh:/, "")
+      when .starts_with?("gitlab:"), .starts_with?("gl:")
+        host = "gitlab"
+        path = source.gsub(/gitlab:|gl:/, "")
+      when .starts_with?("bitbucket:"), .starts_with?("bb:")
+        host = "bitbucket"
+        path = source.gsub(/bitbucket:|bb:/, "")
+      else
+        source = URI.parse source
 
-      info "Cloning into #{uri}..."
-      args = ["git", "clone", uri.to_s, ".", "--quiet"]
-      unless version.empty?
-        args << "--branch" << version
-      end
-
-      if err = exec args.join(' '), cache_dir
-        if version.empty?
-          error "Failed to clone #{uri}:"
-          error err
+        unless source.host.in?("github.com", "gitlab.com", "bitbucket.com")
+          error "Unsupported library source"
+          error "See '#{"docr add --help".colorize.blue}' for more information"
           exit_program
         end
 
-        if err = exec args[0...-2].join(' '), cache_dir
-          error "Failed to clone #{uri}:"
-          error err
-          exit_program
-        end
+        host = source.host.as(String).rchop(".com")
+        path = source.path
       end
 
-      info "installing dependencies"
-      if err = exec "shards install --without-development", cache_dir
-        error "Failed to install library dependencies:"
-        error err
+      debug url = "https://crystaldoc.info/#{host}/#{path}/versions.json"
+      begin
+        Crest.head url
+      rescue Crest::NotFound
+        error "Library not found"
         exit_program
       end
 
-      info "Getting shard information..."
-      shard = YAML.parse File.read(cache_dir / "shard.yml")
-
-      unless shard["name"].as_s == name
-        error "Cannot verify shard: names do not match"
-        error "Expected '#{name}'; got '#{shard["name"]}'"
-        exit_program
+      versions = uninitialized Array(String)
+      Crest.get url do |res|
+        versions = Array({name: String})
+          .from_json(res.body_io, root: "versions")
+          .map(&.[:name])
+          .sort!
       end
 
       if version == "latest"
-        version = shard["version"].as_s
-      else
-        unless shard["version"].as_s == version
-          error "Cannot verify shard: versions do not match"
-          error "Expected version #{version}; got #{shard["version"]}"
-          exit_program
-        end
-      end
-
-      if Library.exists?(name, version)
-        error "Library #{name} version #{version} is already imported"
+        version = versions.last
+      elsif !versions.includes?(version)
+        error "Version '#{version}' not found for library"
         exit_program
       end
 
-      info "Building documentation..."
-      if err = exec "crystal docs", cache_dir
-        error "Failed to build documentation:"
-        error err
-        exit_program
-      end
+      # if Library.exists?(name, version)
+      #   error "Library #{name} version #{version} is already imported"
+      #   exit_program
+      # end
 
-      lib_dir = LIBRARY_DIR / name
+      debug lib_dir = LIBRARY_DIR / path
       Dir.mkdir_p lib_dir
+      debug url = "https://crystaldoc.info/#{host}/#{path}/#{version}/index.json"
 
-      File.open(lib_dir / (version + ".json"), mode: "w") do |dest|
-        File.open(cache_dir / "docs" / "index.json") do |src|
-          proj = Redoc.load src
-          proj.to_json dest
+      begin
+        name = nil
+
+        Crest.get url do |res|
+          File.open(lib_dir / "#{version}.json", mode: "w") do |dest|
+            library = Redoc.load res.body_io.gets_to_end
+            name = library.name
+            library.to_json dest
+          end
         end
+
+        info "Imported #{name} version #{version}"
+      rescue ex
+        error "Failed to save library data:"
+        error ex.to_s
+
+        FileUtils.rm_rf lib_dir
       end
-
-      info "Imported #{name} version #{version}"
-    ensure
-      debug "clearing: #{cache_dir}"
-      FileUtils.rm_r cache_dir.as(Path)
-    end
-
-    private def exec(command : String, dir : Path) : String?
-      debug "exec: #{command}"
-      debug "dir: #{dir}"
-
-      err = IO::Memory.new
-      res = Process.run command, chdir: dir, error: err, shell: true
-      debug "status: #{res.exit_status}"
-
-      return err.to_s unless res.success? && err.empty?
     end
   end
 end
