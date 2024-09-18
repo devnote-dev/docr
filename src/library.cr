@@ -27,9 +27,9 @@ module Docr::Library
 
   # def self.get_meta(name : String) : Meta
 
-  def self.get(name : String, version : String) : Redoc::Project
+  def self.get(name : String, version : String) : Redoc::Library
     File.open(LIBRARY_DIR / name / (version + ".json")) do |file|
-      Redoc::Project.from_json file
+      Redoc::Library.from_json file
     end
   end
 
