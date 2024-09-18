@@ -24,7 +24,7 @@ module Docr::Formatters::Default
         type.includes.each do |ref|
           io << (" " * indent)
           io << "include ".colorize.red
-          format_path io, ref.full_name, :magenta
+          io << format_path ref.full_name, 35
           io << '\n'
         end
         io << '\n'
@@ -38,7 +38,7 @@ module Docr::Formatters::Default
           if ref.full_name == type.full_name
             io << "self".colorize.blue
           else
-            format_path io, ref.full_name, :magenta
+            io << format_path ref.full_name, 35
           end
 
           io << '\n'
@@ -115,56 +115,45 @@ module Docr::Formatters::Default
   end
 
   def self.format_signature(io : IO, type : Redoc::Module, with_parent : Bool) : Nil
-    io << "module ".colorize.red
-    format_path io, type.full_name, :magenta
-    io << '\n'
+    io << "module ".colorize.red << format_path(type.full_name, 35) << '\n'
   end
 
   def self.format_signature(io : IO, type : Redoc::Class, with_parent : Bool) : Nil
     io << "abstract ".colorize.red if type.abstract?
-    io << "class ".colorize.red
-    format_path io, type.full_name, :magenta
+    io << "class ".colorize.red << format_path(type.full_name, 35)
 
     if with_parent && (parent = type.parent)
-      io << " < "
-      format_path io, parent.full_name, :magenta
+      io << " < " << format_path(parent.full_name, 35)
     end
     io << '\n'
   end
 
   def self.format_signature(io : IO, type : Redoc::Struct, with_parent : Bool) : Nil
     io << "abstract ".colorize.red if type.abstract?
-    io << "struct ".colorize.red
-    format_path io, type.full_name, :magenta
+    io << "struct ".colorize.red << format_path(type.full_name, 35)
 
     if with_parent && (parent = type.parent)
-      io << " < "
-      format_path io, parent.full_name, :magenta
+      io << " < " << format_path(parent.full_name, 35)
     end
     io << '\n'
   end
 
   def self.format_signature(io : IO, type : Redoc::Enum, with_parent : Bool) : Nil
-    io << "enum ".colorize.red
-    format_path io, type.full_name, :magenta
+    io << "enum ".colorize.red << format_path(type.full_name, 35)
 
     if with_parent && (base = type.type)
-      io << " : "
-      format_path io, base, :magenta
+      io << " : " << format_path(base, 35)
     end
     io << '\n'
   end
 
   def self.format_signature(io : IO, type : Redoc::Alias, with_parent : Bool) : Nil
-    io << "alias ".colorize.red
-    format_path io, type.full_name, :magenta
-    io << " = " << type.type.colorize.blue << '\n'
+    io << "alias ".colorize.red << format_path(type.full_name, 35)
+    io << " = " << format_path(type.type, 34) << '\n'
   end
 
   def self.format_signature(io : IO, type : Redoc::Annotation, with_parent : Bool) : Nil
-    io << "annotation ".colorize.red
-    format_path io, type.full_name, :magenta
-    io << '\n'
+    io << "annotation ".colorize.red << format_path(type.full_name, 35) << '\n'
   end
 
   def self.format_signature(io : IO, type : Redoc::Def, with_parent : Bool) : Nil
@@ -172,8 +161,7 @@ module Docr::Formatters::Default
     io << "def ".colorize.red
 
     if with_parent && (ref = type.parent)
-      format_path io, ref.full_name, :magenta
-      io << '.'
+      io << format_path(ref.full_name, 34) << '.'
     end
     io << type.name.colorize.magenta
 
@@ -192,8 +180,7 @@ module Docr::Formatters::Default
     end
 
     if ret = type.return_type
-      io << " : "
-      format_path io, ret, :blue
+      io << " : " << format_path(ret, 34)
     end
 
     if type.generic?
@@ -206,8 +193,7 @@ module Docr::Formatters::Default
   def self.format_signature(io : IO, type : Redoc::Macro, with_parent : Bool) : Nil
     io << "macro ".colorize.red
     if with_parent && (ref = type.parent)
-      format_path io, ref.full_name, :magenta
-      io << '.'
+      io << format_path(ref.full_name, 35) << '.'
     end
     io << type.name.colorize.magenta
 
@@ -376,24 +362,7 @@ module Docr::Formatters::Default
     end
   end
 
-  def self.format_path(io : IO, name : String, color : Colorize::ColorANSI) : Nil
-    if name.includes? '('
-      name, *params = name.split(/\(|\)|,/, remove_empty: true)
-      name.split("::").join(io, "::") { |n, str| str << n.colorize(color) }
-
-      io << '('
-      params.join(io, ", ") do |param, str|
-        if param.starts_with? "**"
-          str << "**".colorize.red << param[2..].colorize(color)
-        elsif param.starts_with? '*'
-          str << '*'.colorize.red << param[1..].colorize(color)
-        else
-          str << param.colorize(color)
-        end
-      end
-      io << ')'
-    else
-      name.split("::").join(io, "::") { |n, str| str << n.colorize(color) }
-    end
+  def self.format_path(name : String, color : UInt8) : String
+    name.gsub(/([^():|, ]+)/, "\e[#{color}m\\1\e[0m").gsub(/(\*\*?)/, "\e[31m\\1\e[0m")
   end
 end
