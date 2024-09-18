@@ -109,6 +109,117 @@ module Docr::Formatters::Default
     end
   end
 
+  def self.format_tree(io : IO, type : Redoc::Const, with_parent : Bool) : Nil
+    format_signature io, type, false
+  end
+
+  def self.format_namespace(io : IO, type : Redoc::Namespace, indent : Int32) : Nil
+    {% for type in %w[constants modules classes structs enums aliases annotations] %}
+      unless type.{{type.id}}.empty?
+        type.{{type.id}}.each do |%type|
+          io << (" " * indent)
+          format_tree io, %type, indent
+        end
+        io << '\n'
+      end
+    {% end %}
+  end
+
+  {% for type in %w[Module Class Struct] %}
+    def self.format_tree(io : IO, type : Redoc::{{type.id}}, indent : Int32) : Nil
+      format_signature io, type, true
+      indent += 2
+
+      unless type.includes.empty?
+        type.includes.each do |ref|
+          io << (" " * indent)
+          io << "include ".colorize.red
+          format_path io, ref.full_name, :magenta
+          io << '\n'
+        end
+        io << '\n'
+      end
+
+      unless type.extends.empty?
+        type.extends.each do |ref|
+          io << (" " * indent)
+          io << "extend ".colorize.red
+
+          if ref.full_name == type.full_name
+            io << "self".colorize.blue
+          else
+            format_path io, ref.full_name, :magenta
+          end
+
+          io << '\n'
+        end
+      end
+
+      format_namespace io, type, indent
+
+      type.class_methods.each do |method|
+        io << (" " * indent)
+        format_tree io, method, indent
+      end
+
+      {% unless type == "Module" %}
+        unless type.constructors.empty?
+          type.constructors.each do |method|
+            io << (" " * indent)
+            format_tree io, method, indent
+          end
+          io << '\n'
+        end
+      {% end %}
+
+      type.instance_methods.each do |method|
+        io << (" " * indent)
+        format_tree io, method, indent
+      end
+
+      type.macros.each do |method|
+        io << (" " * indent)
+        format_tree io, method, indent
+      end
+
+      indent -= 2
+      io << (" " * indent) << "end\n".colorize.red
+    end
+  {% end %}
+
+  def self.format_tree(io : IO, type : Redoc::Enum, indent : Int32) : Nil
+    format_signature io, type, true
+    indent += 2
+
+    type.constants.each do |const|
+      io << (" " * indent)
+      format_signature io, const, false
+      io << '\n'
+    end
+
+    indent -= 2
+    io << (" " * indent) << "end\n".colorize.red
+  end
+
+  def self.format_tree(io : IO, type : Redoc::Alias, indent : Int32) : Nil
+    format_signature io, type, false
+  end
+
+  def self.format_tree(io : IO, type : Redoc::Annotation, indent : Int32) : Nil
+    format_signature io, type, false
+  end
+
+  def self.format_tree(io : IO, type : Redoc::Def, indent : Int32) : Nil
+    format_signature io, type, false
+  end
+
+  def self.format_tree(io : IO, type : Redoc::Macro, indent : Int32) : Nil
+    format_signature io, type, false
+  end
+
+  def self.format_tree(io : IO, type : Redoc::Type, indent : Int32) : Nil
+  end
+
   def self.format_signature(io : IO, type : Redoc::Const, with_parent : Bool) : Nil
     io << type.name.colorize.blue << '\n'
   end
