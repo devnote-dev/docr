@@ -9,6 +9,8 @@ module Docr::Commands
     end
 
     def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Nil
+      super
+
       unless arguments.has? "input"
         arg = Cling::Argument.new "input"
         arg.value = arguments.get "library"
