@@ -22,10 +22,15 @@ module Docr::Library
   end
 
   def self.get_versions_for(name : String) : Array(String)
-    Dir.children(LIBRARY_DIR / name).map &.sub(".json", "")
-  end
+    versions = [] of String
 
-  # def self.get_meta(name : String) : Meta
+    Dir.each_child(LIBRARY_DIR / name) do |child|
+      next if child == "VERSIONS"
+      versions << child.chomp ".json"
+    end
+
+    versions
+  end
 
   def self.get(name : String, version : String) : Redoc::Library
     File.open(LIBRARY_DIR / name / (version + ".json")) do |file|
