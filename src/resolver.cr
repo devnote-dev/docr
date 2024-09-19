@@ -1,31 +1,28 @@
 module Docr::Resolver
-  def self.fetch_crystal_versions(fetch : Bool) : Array(String)
-    path = CACHE_DIR / "versions.txt"
-    import_crystal_versions if fetch || !File.exists?(path)
+  def self.fetch_versions_for(name : String, url : String, req : String) : Array(String)
+    path = LIBRARY_DIR / name / "VERSIONS"
 
-    File.read_lines(path).map(&.split(',').first)
-  end
+    if File.exists? path
+      versions = File.read_lines path
+      return versions if versions.includes? req
+    else
+      Dir.mkdir_p LIBRARY_DIR / name
+    end
 
-  def self.import_crystal_versions : Nil
-    FileUtils.rm_rf CACHE_DIR
-    Dir.mkdir_p CACHE_DIR
+    res = Crest.get url
+    versions = Array({name: String})
+      .from_json(res.body, root: "versions")
+      .map(&.[:name])
 
-    res = Crest.get "https://crystal-lang.org/api/versions.json"
-    data = JSON.parse res.body
-    content = data["versions"].as_a.map do |version|
-      version["name"].as_s + "," + version["url"].as_s
-    end.join('\n')
+    File.write(path, versions.join('\n'))
 
-    File.write(CACHE_DIR / "versions.txt", content)
+    versions
   end
 
   def self.import_crystal_version(version : String) : Nil
-    versions = fetch_crystal_versions false
-    unless versions.includes? version
-      raise "crystal version '#{version}' not available"
-    end
-
+    versions = File.read_lines LIBRARY_DIR / "crystal" / "VERSIONS"
     ver = version == "nightly" ? "master" : version
+
     File.open(LIBRARY_DIR / "crystal" / (version + ".json"), mode: "w") do |file|
       Crest.get "https://crystal-lang.org/api/#{ver}/index.json" do |res|
         proj = Redoc.load res.body_io

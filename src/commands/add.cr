@@ -44,17 +44,17 @@ module Docr::Commands
     private def add_crystal_library(version : String, check : Bool) : Nil
       info "Fetching available versions..."
 
-      versions = Resolver.fetch_crystal_versions check
+      versions = Resolver.fetch_versions_for(
+        "crystal",
+        "https://crystal-lang.org/api/versions.json",
+        version
+      )
       version = versions[1] if version == "latest"
       term = version == "nightly" ? "nightly build" : "version #{version}"
-      info "Importing crystal #{term}..."
-
-      Dir.mkdir_p LIBRARY_DIR / "crystal"
       set = Library.get_versions_for "crystal"
 
       if version != "nightly" && set.includes? version
         error "Crystal #{term} is already imported"
-        error "If a newer version is available, rerun with the '#{"--fetch".colorize.blue}' flag"
         exit_program
       end
 
@@ -64,6 +64,7 @@ module Docr::Commands
         exit_program
       end
 
+      info "Importing library..."
       Resolver.import_crystal_version version
 
       info "Imported crystal #{term}"
@@ -95,6 +96,7 @@ module Docr::Commands
         path = source.path
       end
 
+      info "Fetching available versions..."
       debug url = "https://crystaldoc.info/#{host}/#{path}/versions.json"
       begin
         Crest.head url
@@ -103,19 +105,14 @@ module Docr::Commands
         exit_program
       end
 
-      versions = uninitialized Array(String)
-      Crest.get url do |res|
-        versions = Array({name: String})
-          .from_json(res.body_io, root: "versions")
-          .map(&.[:name])
-          .sort!
-      end
-
       name = path.split('/')[1]
+      versions = Resolver.fetch_versions_for(name, url, version)
+
       if version == "latest"
-        version = versions.last
+        version = versions[1]
       elsif !versions.includes?(version)
         error "Version #{version} not found for #{name}"
+        error "Run '#{"docr check".colorize.blue}' to see available versions of imported libraries"
         exit_program
       end
 
@@ -124,8 +121,8 @@ module Docr::Commands
         exit_program
       end
 
+      info "Importing library..."
       debug lib_dir = LIBRARY_DIR / name
-      Dir.mkdir_p lib_dir
       debug url = "https://crystaldoc.info/#{host}/#{path}/#{version}/index.json"
 
       begin
@@ -140,8 +137,6 @@ module Docr::Commands
       rescue ex
         error "Failed to save library data:"
         error ex.to_s
-
-        FileUtils.rm_rf lib_dir
       end
     end
   end
