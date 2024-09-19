@@ -23,7 +23,7 @@ module Docr::Commands
       name = arguments.get("library").as_s
 
       unless Library.exists? name
-        error "library '#{name}' not imported"
+        error "Library '#{name}' not imported"
         exit_program
       end
 
@@ -42,7 +42,7 @@ module Docr::Commands
         end
       end
 
-      error "could not resolve types or symbols for input"
+      error "Could not resolve types or symbols for input"
     end
   end
 end

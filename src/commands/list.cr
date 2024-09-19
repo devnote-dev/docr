@@ -10,7 +10,7 @@ module Docr::Commands
       stdout << String.build do |io|
         libs = Library.list_all
         if libs.empty?
-          error "no libraries have been installed"
+          error "No libraries have been installed"
           exit_program
         end
 

@@ -99,7 +99,7 @@ module Docr::Commands
       return unless @debug
       debug "loading stack trace..."
 
-      stack = ex.backtrace || %w[???] # slow, needs investigating
+      stack = ex.backtrace || %w[???]
       stack.each { |line| debug " " + line }
     end
 

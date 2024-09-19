@@ -19,12 +19,12 @@ module Docr::Commands
       unless Library.exists?(name, version)
         if version
           if Library.exists?(name)
-            error "version '#{version}' of #{name} not found or imported"
+            error "Version '#{version}' of #{name} not found or imported"
             exit_program
           end
         end
 
-        error "library '#{name}' not imported"
+        error "Library '#{name}' not imported"
         exit_program
       end
 

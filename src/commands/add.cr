@@ -41,37 +41,32 @@ module Docr::Commands
       end
     end
 
-    private def add_crystal_library(version : String, fetch : Bool) : Nil
+    private def add_crystal_library(version : String, check : Bool) : Nil
       info "Fetching available versions..."
 
-      versions = Resolver.fetch_crystal_versions fetch
+      versions = Resolver.fetch_crystal_versions check
       version = versions[1] if version == "latest"
-
-      if version == "nightly"
-        info "Importing nightly build of crystal library"
-      else
-        info "Importing crystal library version #{version}"
-      end
+      term = version == "nightly" ? "nightly build" : "version #{version}"
+      info "Importing crystal #{term}"
 
       Dir.mkdir_p LIBRARY_DIR / "crystal"
       set = Library.get_versions_for "crystal"
-      term = version == "nightly" ? "Nightly build of crystal" : "Crystal version #{version}"
 
       if set.includes? version
-        error "#{term} is already imported"
-        error "If a newer version is available, rerun with the '--fetch' flag"
+        error "Crystal #{term} is already imported"
+        error "If a newer version is available, rerun with the '#{"--fetch".colorize.blue}' flag"
         exit_program
       end
 
       unless versions.includes? version
-        error "Crystal version #{version} is not available"
-        error "Run 'docr check' to see available versions of imported libraries"
+        error "Crystal #{term} is not available"
+        error "Run '#{"docr check".colorize.blue}' to see available versions of imported libraries"
         exit_program
       end
 
       Resolver.import_crystal_version version
 
-      info "Imported #{term}"
+      info "Imported crystal #{term}"
     end
 
     private def add_external_library(source : String, version : String) : Nil
@@ -120,12 +115,12 @@ module Docr::Commands
       if version == "latest"
         version = versions.last
       elsif !versions.includes?(version)
-        error "Version #{version} not found for '#{name}'"
+        error "Version #{version} not found for #{name}"
         exit_program
       end
 
       if Library.exists?(name, version)
-        error "'#{name}' version #{version} is already imported"
+        error "Library #{name} version #{version} is already imported"
         exit_program
       end
 
@@ -141,7 +136,7 @@ module Docr::Commands
           end
         end
 
-        info "Imported '#{name}' version #{version}"
+        info "Imported #{name} version #{version}"
       rescue ex
         error "Failed to save library data:"
         error ex.to_s

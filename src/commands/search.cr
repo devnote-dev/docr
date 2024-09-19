@@ -58,7 +58,7 @@ module Docr::Commands
       end
 
       if types.empty?
-        error "could not resolve types or symbols for input"
+        error "Could not resolve types or symbols for input"
         exit_program
       end
 
