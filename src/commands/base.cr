@@ -76,10 +76,6 @@ module Docr::Commands
       stdout << "(i) ".colorize.blue << data << '\n'
     end
 
-    def warn(data : _) : Nil
-      stdout << "(!) ".colorize.yellow << data << '\n'
-    end
-
     def error(data : _) : Nil
       stdout << "(!) ".colorize.red << data << '\n'
     end

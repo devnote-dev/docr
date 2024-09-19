@@ -1,10 +1,4 @@
 module Docr::Resolver
-  def self.fetch_crystal_docs(version : String) : Redoc::Project
-    Crest.get "https://crystal-lang.org/api/#{version}/index.json" do |res|
-      Redoc.load res
-    end
-  end
-
   def self.fetch_crystal_versions(fetch : Bool) : Array(String)
     path = CACHE_DIR / "versions.txt"
     import_crystal_versions if fetch || !File.exists?(path)

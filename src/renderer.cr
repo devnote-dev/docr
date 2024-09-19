@@ -93,10 +93,6 @@ module Docr
       literal node.text.colorize.bold.to_s
     end
 
-    def strikethrough(node : Markd::Node, __) : Nil
-      literal node.text.colorize.strikethrough.to_s
-    end
-
     def text(node : Markd::Node, __) : Nil
       literal node.text
     end

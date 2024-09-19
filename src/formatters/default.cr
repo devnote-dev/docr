@@ -1,8 +1,4 @@
 module Docr::Formatters::Default
-  def self.format_tree(io : IO, type : Redoc::Const, with_parent : Bool) : Nil
-    format_signature io, type, false
-  end
-
   def self.format_namespace(io : IO, type : Redoc::Namespace, indent : Int32) : Nil
     {% for type in %w[constants modules classes structs enums aliases annotations] %}
       unless type.{{type.id}}.empty?
