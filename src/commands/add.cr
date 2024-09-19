@@ -47,12 +47,12 @@ module Docr::Commands
       versions = Resolver.fetch_crystal_versions check
       version = versions[1] if version == "latest"
       term = version == "nightly" ? "nightly build" : "version #{version}"
-      info "Importing crystal #{term}"
+      info "Importing crystal #{term}..."
 
       Dir.mkdir_p LIBRARY_DIR / "crystal"
       set = Library.get_versions_for "crystal"
 
-      if set.includes? version
+      if version != "nightly" && set.includes? version
         error "Crystal #{term} is already imported"
         error "If a newer version is available, rerun with the '#{"--fetch".colorize.blue}' flag"
         exit_program
