@@ -57,7 +57,6 @@ module Docr
       add_command Commands::Tree.new
       add_command Commands::Add.new
       add_command Commands::Remove.new
-      add_command Commands::Env.new
       add_command Commands::Version.new
     end
 

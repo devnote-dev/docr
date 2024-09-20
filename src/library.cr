@@ -19,6 +19,10 @@ module Docr::Library
     end
 
     libs
+  rescue
+    Dir.mkdir_p LIBRARY_DIR
+
+    libs.not_nil! # ameba:disable Lint/NotNil
   end
 
   def self.get_versions_for(name : String) : Array(String)
