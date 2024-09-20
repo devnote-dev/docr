@@ -38,7 +38,6 @@ module Docr::Commands
       add_usage "docr add crystal [options]"
 
       add_argument "source", description: "the source of the library (or 'crystal')", required: true
-      add_option 'f', "fetch", description: "fetch versions from the api"
       add_option 'a', "alias", type: :single
       add_option 'v', "version", type: :single, default: "latest"
     end
@@ -47,13 +46,17 @@ module Docr::Commands
       source = arguments.get("source").as_s
 
       if source == "crystal"
-        add_crystal_library options.get("version").as_s, options.has?("fetch")
+        add_crystal_library options.get("version").as_s
       else
-        add_external_library source, options.get("version").as_s, options.get?("alias").try(&.as_s)
+        add_external_library(
+          source,
+          options.get("version").as_s,
+          options.get?("alias").try(&.as_s)
+        )
       end
     end
 
-    private def add_crystal_library(version : String, check : Bool) : Nil
+    private def add_crystal_library(version : String) : Nil
       info "Fetching available versions..."
 
       versions = Resolver.fetch_versions_for(
