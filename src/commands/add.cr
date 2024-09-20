@@ -39,6 +39,7 @@ module Docr::Commands
 
       add_argument "source", description: "the source of the library (or 'crystal')", required: true
       add_option 'f', "fetch", description: "fetch versions from the api"
+      add_option 'a', "alias", type: :single
       add_option 'v', "version", type: :single, default: "latest"
     end
 
@@ -48,7 +49,7 @@ module Docr::Commands
       if source == "crystal"
         add_crystal_library options.get("version").as_s, options.has?("fetch")
       else
-        add_external_library source, options.get("version").as_s
+        add_external_library source, options.get("version").as_s, options.get?("alias").try(&.as_s)
       end
     end
 
@@ -81,7 +82,7 @@ module Docr::Commands
       info "Imported crystal #{term}"
     end
 
-    private def add_external_library(source : String, version : String) : Nil
+    private def add_external_library(source : String, version : String, alias_name : String?) : Nil
       info "Resolving source..."
 
       case source
@@ -132,7 +133,7 @@ module Docr::Commands
         exit_program
       end
 
-      name = path.split('/')[1]
+      name = alias_name || path.split('/')[1]
       versions = Resolver.fetch_versions_for(name, url, version)
 
       if version == "latest"
@@ -143,9 +144,17 @@ module Docr::Commands
         exit_program
       end
 
-      if Library.exists?(name, version)
-        error "Library #{name} version #{version} is already imported"
-        exit_program
+      if Library.exists?(name)
+        unless Library.get_source(name) == url
+          error "Library #{name} has separate sources with the same name"
+          error "Install this library using an '#{"--alias".colorize.blue}' or remove the existing library"
+          exit_program
+        end
+
+        if Library.exists?(name, version)
+          error "Library #{name} version #{version} is already imported"
+          exit_program
+        end
       end
 
       info "Importing library..."
@@ -159,6 +168,7 @@ module Docr::Commands
             library.to_json dest
           end
         end
+        File.write(lib_dir / "SOURCE", url)
 
         info "Imported #{name} version #{version}"
       rescue ex

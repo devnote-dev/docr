@@ -29,7 +29,7 @@ module Docr::Library
     versions = [] of String
 
     Dir.each_child(LIBRARY_DIR / name) do |child|
-      next if child == "VERSIONS"
+      next if child == "VERSIONS" || child == "SOURCE"
       versions << child.chomp ".json"
     end
 
@@ -40,6 +40,10 @@ module Docr::Library
     File.open(LIBRARY_DIR / name / (version + ".json")) do |file|
       Redoc::Library.from_json file
     end
+  end
+
+  def self.get_source(name : String) : String
+    File.read LIBRARY_DIR / name / "SOURCE"
   end
 
   def self.delete(name : String, version : String?) : Nil
