@@ -1,5 +1,14 @@
 module Docr::Commands
   class Add < Base
+    KNOWN_SOURCES = {
+      "github.com",
+      "gitlab.com",
+      "bitbucket.com",
+      "codeberg.org",
+      "sr.ht",
+      "git.sr.ht",
+    }
+
     def setup : Nil
       @name = "add"
       @summary = "imports documentation for a library"
@@ -18,9 +27,11 @@ module Docr::Commands
           - github: / gh:
           - gitlab: / gl:
           - bitbucket: / bb:
+          - codeberg: / cb:
+          - srht:
 
-        Absolute URLs to sources other than GitHub, GitLab and BitBucket are not yet
-        supported.
+        Absolute URLs to sources other than GitHub, GitLab, BitBucket, Codeberg and
+        Source Hut are not yet supported.
         DESC
 
       add_usage "docr add <source> [options]"
@@ -83,21 +94,37 @@ module Docr::Commands
       when .starts_with?("bitbucket:"), .starts_with?("bb:")
         host = "bitbucket"
         path = source.gsub(/bitbucket:|bb:/, "")
+      when .starts_with?("codeberg:"), .starts_with?("cb:")
+        host = "codeberg-org"
+        path = source.gsub(/codeberg:|cb:/, "")
+      when .starts_with?("srht:")
+        host = "git-sr-ht"
+        path = source.gsub("srht:", "")
+        path = '~' + path unless path.starts_with? '~'
       else
         source = URI.parse source
 
-        unless source.host.in?("github.com", "gitlab.com", "bitbucket.com")
+        unless source.host.in? KNOWN_SOURCES
           error "Unsupported library source"
           error "See '#{"docr add --help".colorize.blue}' for more information"
           exit_program
         end
 
-        host = source.host.as(String).rchop(".com")
-        path = source.path
+        host = source.host.as(String)
+        if host == "sr.ht" || host == "git.sr.ht"
+          host = "git-sr-ht"
+        elsif host == "codeberg.org"
+          host = "codeberg-org"
+        else
+          host = host.chomp ".com"
+        end
+        path = source.path.lchop '/'
       end
 
+      path = path.chomp ".git"
       info "Fetching available versions..."
       debug url = "https://crystaldoc.info/#{host}/#{path}/versions.json"
+
       begin
         Crest.head url
       rescue Crest::NotFound
