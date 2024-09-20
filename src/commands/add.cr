@@ -81,6 +81,9 @@ module Docr::Commands
 
       info "Importing library..."
       Resolver.import_crystal_version version
+      unless File.exists?(LIBRARY_DIR / "crystal" / "SOURCE")
+        File.write(LIBRARY_DIR / "crystal" / "SOURCE", "https://crystal-lang.org/api")
+      end
 
       info "Imported crystal #{term}"
     end
@@ -171,7 +174,7 @@ module Docr::Commands
             library.to_json dest
           end
         end
-        File.write(lib_dir / "SOURCE", url)
+        File.write(lib_dir / "SOURCE", "https://crystaldoc.info/#{host}/#{path}")
 
         info "Imported #{name} version #{version}"
       rescue ex
