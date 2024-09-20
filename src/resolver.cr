@@ -20,7 +20,6 @@ module Docr::Resolver
   end
 
   def self.import_crystal_version(version : String) : Nil
-    versions = File.read_lines LIBRARY_DIR / "crystal" / "VERSIONS"
     ver = version == "nightly" ? "master" : version
 
     File.open(LIBRARY_DIR / "crystal" / (version + ".json"), mode: "w") do |file|

@@ -27,12 +27,6 @@ module Docr
                {% end %}
   BUILD_HASH = {{ `git rev-parse HEAD`.stringify[0...8] }}
 
-  CACHE_DIR = {% if flag?(:win32) %}
-                Path[ENV["LOCALAPPDATA"], "docr"]
-              {% else %}
-                Path[ENV["XDG_CACHE_HOME"]? || Path.home / ".config" / "docr"]
-              {% end %}
-
   LIBRARY_DIR = {% if flag?(:win32) %}
                   Path[ENV["APPDATA"], "docr"]
                 {% else %}
