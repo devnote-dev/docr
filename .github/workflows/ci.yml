@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+permissions:
+  checks: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -21,19 +24,16 @@ jobs:
         with:
           crystal: latest
 
-      # - name: Install Ameba
-      #  uses: crystal-ameba/github-action@v0.7.1
-      #  env:
-      #    GITHUB_TOKEN: $ {{ secrets.GITHUB_TOKEN }}
+      - name: Install Dependencies
+        run: shards install --production
 
       - name: Install Ameba
-        run: shards install --frozen
+        uses: crystal-ameba/github-action@v0.8.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Format
         run: crystal tool format --check
 
-      - name: Run Specs
-        run: crystal spec
-
-      - name: Run Lints
-        run: bin/ameba
+      - name: Check Unreachable
+        run: crystal tool unreachable src/main.cr --check

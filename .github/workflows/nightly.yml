@@ -1,9 +1,8 @@
-name: Release
+name: Nightly
 
 on:
-  push:
-    tags:
-      - "v*"
+  schedule:
+    - cron: 0 6 * * 6
 
 permissions:
   actions: write
@@ -19,15 +18,15 @@ jobs:
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: latest
+          crystal: nightly
 
       - name: Install Dependencies
         run: shards install --production
 
       - name: Compile Binaries
         run: |
-          crystal build src/main.cr --no-debug --release -o docr
-          tar -zcf docr-${{ github.ref_name }}-linux-x86_64.tar.gz docr
+          crystal build src/main.cr --debug -o docr
+          tar -zcf docr-nightly-linux-x86_64.tar.gz docr
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
@@ -35,7 +34,7 @@ jobs:
           name: docr
           path: |
             docr
-            docr-${{ github.ref_name }}-linux-x86_64.tar.gz
+            docr-nightly-linux-x86_64.tar.gz
 
   windows:
     needs: linux
@@ -47,17 +46,17 @@ jobs:
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
         with:
-          crystal: latest
+          crystal: nightly
 
       - name: Install Dependencies
         run: shards install --production
 
       - name: Compile Binaries
         run: |
-          crystal build src\main.cr --no-debug --release -o docr.exe
+          crystal build src\main.cr --debug -o docr.exe
           $compress = @{
-            Path = "docr.exe", "*.dll"
-            DestinationPath = "docr-${{ github.ref_name }}-windows-x86_64-msvc.zip"
+            Path = "docr.exe", "docr.pdb", "*.dll"
+            DestinationPath = "docr-nightly-windows-x86_64-msvc.zip"
           }
           Compress-Archive @compress
 
@@ -68,7 +67,7 @@ jobs:
           path: |
             docr.exe
             docr.pdb
-            docr-${{ github.ref_name }}-windows-x86_64-msvc.zip
+            docr-nightly-windows-x86_64-msvc.zip
 
   release:
     needs: windows
@@ -92,7 +91,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         run: |
-          gh release create ${{ github.ref_name }} -pt v${{ github.ref_name }}
-          gh release upload ${{ github.ref_name }} checksums.txt
-          gh release upload ${{ github.ref_name }} docr-${{ github.ref_name }}-linux-x86_64.tar.gz
-          gh release upload ${{ github.ref_name }} docr-${{ github.ref_name }}-windows-x86_64-msvc.zip
+          gh release view nightly &>/dev/null && gh release delete nightly -y
+          gh release create nightly -pt Nightly --notes "Nightly release for $(date +%F)."
+          gh release upload nightly checksums.txt
+          gh release upload nightly docr-nightly-linux-x86_64.tar.gz
+          gh release upload nightly docr-nightly-windows-x86_64-msvc.zip
