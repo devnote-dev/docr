@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Crystal
         uses: crystal-lang/install-crystal@v1
@@ -28,7 +28,7 @@ jobs:
         run: shards install --production
 
       - name: Install Ameba
-        uses: crystal-ameba/github-action@v0.8.0
+        uses: crystal-ameba/github-action@v0.9.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
