@@ -32,7 +32,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: docr
+          name: docr-linux
           path: |
             docr
             docr-${{ github.ref_name }}-linux-x86_64.tar.gz
@@ -64,7 +64,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: docr
+          name: docr-windows
           path: |
             docr.exe
             docr.pdb
@@ -81,10 +81,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
+          pattern: docr-*
+          merge-multiple: true
 
       - name: Prepare Artifacts
         run: |
-          mv artifacts/docr/* .
+          mv artifacts/* .
           sha256sum docr docr.exe docr.pdb > checksums.txt
 
       - name: Create Release
