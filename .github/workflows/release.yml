@@ -87,7 +87,7 @@ jobs:
       - name: Prepare Artifacts
         run: |
           mv artifacts/* .
-          sha256sum docr docr.exe docr.pdb > checksums.txt
+          sha256sum docr docr.exe > checksums.txt
 
       - name: Create Release
         env:
