@@ -1,12 +1,8 @@
 version: 2.0
 shards:
-  ameba:
-    git: https://github.com/crystal-ameba/ameba.git
-    version: 1.6.1
-
   cling:
     git: https://github.com/devnote-dev/cling.git
-    version: 3.0.0+git.commit.b833b59c2ea54744a6e90078cdd0e04c7cf55b43
+    version: 3.0.0+git.commit.3cd8b0baebb4b887b48a374f7e3f0887699fa4e5
 
   crest:
     git: https://github.com/mamantoha/crest.git
@@ -30,5 +26,5 @@ shards:
 
   redoc:
     git: https://github.com/devnote-dev/redoc.git
-    version: 0.1.0+git.commit.04eee835430048152c1d788a37082abdc6ad837d
+    version: 0.1.0+git.commit.1b470120caa1e642de134fe58c42943a6cf87de0
 

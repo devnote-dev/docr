@@ -1,7 +1,7 @@
 name: docr
 description: A CLI tool for searching Crystal documentation
 authors:
-  - Devonte W <https://github.com/devnote-dev>
+  - Devaune Whittle <https://github.com/devnote-dev>
 
 version: 1.0.0
 crystal: '>= 1.9.0'
@@ -25,10 +25,6 @@ dependencies:
   redoc:
     github: devnote-dev/redoc
     branch: main
-
-development_dependencies:
-  ameba:
-    github: crystal-ameba/ameba
 
 targets:
   docr:
