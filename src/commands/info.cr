@@ -25,6 +25,8 @@ module Docr::Commands
 
       add_argument "library"
       add_argument "input"
+      # TODO: maybe separate to --open-page and --open-source
+      add_option 'o', "open"
       add_option 'v', "version", type: :single
     end
 
@@ -60,18 +62,46 @@ module Docr::Commands
       project = Library.get name, version
       query = Redoc.parse_query arguments.get("input").as_s
 
-      if type = project.resolve? *query
-        return Formatters::Default.format_info stdout, type, true
-      end
-
-      if query[0].empty? && name == "crystal"
-        query[0] << "Object"
-        if type = project.resolve? *query
-          return Formatters::Default.format_info stdout, type, true
+      unless type = project.resolve? *query
+        if query[0].empty? && name == "crystal"
+          query[0] << "Object"
+          type = project.resolve? *query
         end
       end
 
-      error "Could not resolve types or symbols for input"
+      unless type
+        error "Could not resolve types or symbols for input"
+        exit_program
+      end
+
+      unless options.has? "open"
+        return Formatters::Default.format_info stdout, type, true
+      end
+
+      if type.responds_to?(:locations)
+        path = type.locations[0].url
+      elsif type.responds_to?(:location)
+        path = type.location.try &.url
+      end
+
+      unless path
+        error "Could not resolve a location for type"
+        exit_program
+      end
+
+      {% if flag?(:win32) %}
+        Process.run "cmd /c start #{path}", shell: true
+      {% elsif flag?(:macos) %}
+        Process.run "open", [path], shell: true
+      {% else %}
+        {"xdg-open", "sensible-browser", "firefox", "google-chrome"}.each do |command|
+          return if Process.run(command, [path], shell: true).success?
+        end
+
+        error "Could not find a program to open location:"
+        error path
+        exit_program
+      {% end %}
     end
   end
 end
