@@ -1,12 +1,21 @@
 name: Nightly
 
 on:
+  # temporary
+  push:
+    tags:
+      - nightly
+
   schedule:
-    - cron: 0 6 * * 6
+    # - cron: 0 6 * * 6
+    - cron: 0 22 * * */2
 
 permissions:
   actions: write
   contents: write
+
+env:
+  VERSION: 1.0.0
 
 jobs:
   linux:
@@ -26,7 +35,7 @@ jobs:
       - name: Compile Binaries
         run: |
           crystal build src/main.cr --debug -o docr
-          tar -zcf docr-nightly-linux-x86_64.tar.gz docr
+          tar -zcf docr-${{ env.VERSION }}-nightly-linux-x86_64.tar.gz docr
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -34,7 +43,7 @@ jobs:
           name: docr-linux
           path: |
             docr
-            docr-nightly-linux-x86_64.tar.gz
+            docr-${{ env.VERSION }}-nightly-linux-x86_64.tar.gz
 
   windows:
     needs: linux
@@ -56,7 +65,7 @@ jobs:
           crystal build src\main.cr --debug -o docr.exe
           $compress = @{
             Path = "docr.exe", "docr.pdb", "*.dll"
-            DestinationPath = "docr-nightly-windows-x86_64-msvc.zip"
+            DestinationPath = "docr-${{ env.VERSION }}-nightly-windows-x86_64-msvc.zip"
           }
           Compress-Archive @compress
 
@@ -67,7 +76,7 @@ jobs:
           path: |
             docr.exe
             docr.pdb
-            docr-nightly-windows-x86_64-msvc.zip
+            docr-${{ env.VERSION }}-nightly-windows-x86_64-msvc.zip
 
   release:
     needs: windows
@@ -94,7 +103,7 @@ jobs:
 
         run: |
           gh release view nightly &>/dev/null && gh release delete nightly -y
-          gh release create nightly -pt Nightly --notes "Nightly release for $(date +%F)."
+          gh release create nightly -pt Nightly --notes "Nightly release for v${{ env.VERSION }} ($(date +%F))."
           gh release upload nightly checksums.txt
-          gh release upload nightly docr-nightly-linux-x86_64.tar.gz
-          gh release upload nightly docr-nightly-windows-x86_64-msvc.zip
+          gh release upload nightly docr-${{ env.VERSION }}-nightly-linux-x86_64.tar.gz
+          gh release upload nightly docr-${{ env.VERSION }}-nightly-windows-x86_64-msvc.zip
