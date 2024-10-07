@@ -25,8 +25,8 @@ module Docr::Commands
 
       add_argument "library"
       add_argument "input"
-      # TODO: maybe separate to --open-page and --open-source
-      add_option 'o', "open"
+      add_option 'p', "open-page"
+      add_option 's', "open-source"
       add_option 'v', "version", type: :single
     end
 
@@ -74,34 +74,75 @@ module Docr::Commands
         exit_program
       end
 
-      unless options.has? "open"
+      if options.has? "open-page"
+        if name == "crystal"
+          uri = URI.parse "https://crystal-lang.org/api/#{version}/"
+        else
+          uri = URI.parse Library.get_source(name) + "/#{version}/"
+        end
+
+        build_page_uri(uri, type)
+      elsif options.has? "open-source"
+        uri = build_source_uri type
+      else
         return Formatters::Default.format_info stdout, type, true
       end
 
+      {% if flag?(:win32) %}
+        Process.run "cmd /c start #{uri}", shell: true
+      {% elsif flag?(:macos) %}
+        Process.run "open", [uri], shell: true
+      {% else %}
+        {"xdg-open", "sensible-browser", "firefox", "google-chrome"}.each do |command|
+          return if Process.run(command, [uri], shell: true).success?
+        end
+
+        error "Could not find a program to open URI:"
+        error uri
+        exit_program
+      {% end %}
+    end
+
+    private def build_page_uri(uri : URI, type : Redoc::Type) : Nil
+      case type
+      in Redoc::Namespace, Redoc::Enum, Redoc::Alias, Redoc::Annotation
+        uri.path += type.path
+      in Redoc::Def, Redoc::Macro
+        if ref_path = type.parent.try &.path
+          uri.path += ref_path
+        else
+          uri.path += "toplevel.html"
+        end
+        uri.fragment = type.html_id
+      in Redoc::Const
+        if ref_path = type.parent.try &.path
+          uri.path += ref_path
+          uri.fragment = type.name
+        elsif type.top_level?
+          uri.path += "toplevel.html"
+          uri.fragment = type.name
+        else
+          error "Could not resolve a location for constant type"
+          exit_program
+        end
+      in Redoc::Type
+        raise "unreachable"
+      end
+    end
+
+    private def build_source_uri(type : Redoc::Type) : URI
       if type.responds_to?(:locations)
-        path = type.locations[0].url
+        url = type.locations[0].url
       elsif type.responds_to?(:location)
-        path = type.location.try &.url
+        url = type.location.try &.url
       end
 
-      unless path
+      unless url
         error "Could not resolve a location for type"
         exit_program
       end
 
-      {% if flag?(:win32) %}
-        Process.run "cmd /c start #{path}", shell: true
-      {% elsif flag?(:macos) %}
-        Process.run "open", [path], shell: true
-      {% else %}
-        {"xdg-open", "sensible-browser", "firefox", "google-chrome"}.each do |command|
-          return if Process.run(command, [path], shell: true).success?
-        end
-
-        error "Could not find a program to open location:"
-        error path
-        exit_program
-      {% end %}
+      URI.parse url
     end
   end
 end
