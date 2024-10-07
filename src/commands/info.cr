@@ -7,20 +7,21 @@ module Docr::Commands
         Gets information about a specified type/namespace or symbol. This uses
         Crystal path syntax, meaning the following commands are valid:
 
-        • docr info puts
-        • docr info ::JSON.parse
-        • docr info JSON::Any#as_s
+        • docr info raise
+        • docr info ::puts
+        • docr info JSON.parse
+        • docr info ::JSON::Any#as_s
 
         However, the following commands are not valid:
 
-        • docr info ::puts
+        • docr info to_s.nil?
+        • docr info IO.Memory
         • docr info JSON::parse
         • docr info JSON#Any.as_s
 
         Type namespaces are separated by '::', class methods are denoted by '.'
         and instance methods are denoted by '#'. The type lookup order starts
-        at the top-level hence why '::puts' is invalid, '::JSON' is valid for
-        semantic reasons.
+        at the top-level and recurses down the type path.
         DESC
 
       add_argument "library"
