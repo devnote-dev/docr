@@ -89,6 +89,8 @@ module Docr::Commands
         return Formatters::Default.format_info stdout, type, true
       end
 
+      uri = uri.to_s
+
       {% if flag?(:win32) %}
         Process.run "cmd /c start #{uri}", shell: true
       {% elsif flag?(:macos) %}
