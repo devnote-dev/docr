@@ -3,8 +3,8 @@ description: A CLI tool for searching Crystal documentation
 authors:
   - Devaune Whittle <https://github.com/devnote-dev>
 
-version: 1.0.0
-crystal: '>= 1.9.0'
+version: 1.0.0-beta
+crystal: '>= 1.10.0'
 license: MPL
 repository: https://github.com/devnote-dev/docr
 

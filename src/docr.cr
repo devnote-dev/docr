@@ -18,7 +18,7 @@ require "./resolver"
 Colorize.on_tty_only!
 
 module Docr
-  VERSION = "1.0.0-alpha"
+  VERSION = "1.0.0-beta"
 
   BUILD_DATE = {% if flag?(:win32) %}
                  {{ `powershell.exe -NoProfile Get-Date -Format "yyyy-MM-dd"`.stringify.chomp }}
