@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0-nightly",
+    "description": "A CLI tool for searching Crystal documentation",
+    "homepage": "https://github.com/devnote-dev/docr#readme",
+    "license": {
+        "identifier": "MPL-2.0",
+        "url": "https://github.com/devnote-dev/docr/blob/main/LICENSE"
+    },
+    "url": [
+        "https://github.com/devnote-dev/docr/releases/download/nightly/docr-1.0.0-nightly-windows-x86_64-msvc.zip"
+    ],
+    "bin": [
+        "docr.exe",
+        "docr.pdb"
+    ]
+}
