@@ -5,12 +5,12 @@ module Docr::Formatters
     private getter io : IO
     private getter indent : Int32 = 0
 
-    def self.tree(io : IO, type : Redoc::Library | Redoc::Type, options : Cling::Options? = nil) : Nil
-      new(io, options).format(type)
+    def self.tree(io : IO, type : Redoc::Library | Redoc::Type, includes : Array(String)) : Nil
+      new(io, includes).format(type)
     end
 
-    private def initialize(@io : IO, options : Cling::Options?)
-      apply options if options
+    private def initialize(@io : IO, includes : Array(String))
+      apply includes
     end
 
     private def indent(value : Int32) : Nil
