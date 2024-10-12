@@ -65,11 +65,13 @@ module Docr::Commands
 
       version ||= Library.get_versions_for(name).sort.last
       library = Library.get name, version
-      types = [] of String
+      types = TYPES.dup
 
       if excludes = options.get?("exclude").try(&.as_a)
-        unless excludes.includes? "all"
-          types.concat TYPES.reject &.in? excludes
+        if excludes.includes? "all"
+          types.clear
+        else
+          types.reject! &.in? excludes
         end
       end
 
