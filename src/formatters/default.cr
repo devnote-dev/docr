@@ -1,4 +1,24 @@
 module Docr::Formatters::Default
+  def self.format_all(io : IO, library : Redoc::Library) : Nil
+    io << "# Top Level Namespace\n\n".colorize.dark_gray
+
+    unless library.methods.empty?
+      library.methods.each do |method|
+        format_tree io, method, 0
+      end
+      io << '\n'
+    end
+
+    unless library.macros.empty?
+      library.macros.each do |method|
+        format_tree io, method, 0
+      end
+      io << '\n'
+    end
+
+    format_namespace io, library, 0
+  end
+
   def self.format_namespace(io : IO, type : Redoc::Namespace, indent : Int32) : Nil
     {% for type in %w[constants modules classes structs enums aliases annotations] %}
       unless type.{{type.id}}.empty?
