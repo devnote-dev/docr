@@ -34,7 +34,8 @@ module Docr::Formatters
             end
           end
 
-        io << '\n' if newline
+          io << '\n' if newline
+          newline = false
         end
       {% end %}
     end
@@ -104,7 +105,7 @@ module Docr::Formatters
         io << '\n' if has_includes
         format_namespace type
 
-        unless type.class_methods.empty?
+        if defs? && !type.class_methods.empty?
           has_defs = true
 
           type.class_methods.each do |method|
@@ -114,7 +115,7 @@ module Docr::Formatters
         end
 
         {% unless type == "Module" %}
-          unless type.constructors.empty?
+          if defs? && !type.constructors.empty?
             io << '\n' if has_defs
             has_defs = true
 
@@ -125,7 +126,7 @@ module Docr::Formatters
           end
         {% end %}
 
-        unless type.instance_methods.empty?
+        if defs? && !type.instance_methods.empty?
           io << '\n' if has_defs
           has_defs = true
 
@@ -135,7 +136,7 @@ module Docr::Formatters
           end
         end
 
-        unless type.macros.empty?
+        if macros? && !type.macros.empty?
           io << '\n' if has_defs
 
           type.macros.each do |method|
@@ -165,7 +166,7 @@ module Docr::Formatters
 
     def format(type : Redoc::Alias) : Nil
       return unless aliases?
-      Default.signature io, type, true
+      Default.signature io, type, true, false
     end
 
     def format(type : Redoc::Annotation) : Nil
@@ -175,12 +176,12 @@ module Docr::Formatters
 
     def format(type : Redoc::Def) : Nil
       return unless defs?
-      Default.signature io, type, false
+      Default.signature io, type, false, nil
     end
 
     def format(type : Redoc::Macro) : Nil
       return unless macros?
-      Default.signature io, type, false
+      Default.signature io, type, false, nil
     end
 
     def format(type : Redoc::Type) : Nil

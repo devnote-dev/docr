@@ -115,10 +115,6 @@ module Docr::Formatters
       io << '\n'
     end
 
-    def self.signature(io, type : Redoc::Type, *__) : Nil
-      raise "BUG: erased method signature for #{type.class}"
-    end
-
     private def self.format(io : IO, type : Redoc::Parameter) : Nil
       io << '*'.colorize.red if type.splat?
       io << "**".colorize.red if type.double_splat?
