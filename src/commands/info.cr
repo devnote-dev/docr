@@ -86,7 +86,7 @@ module Docr::Commands
       elsif options.has? "open-source"
         uri = build_source_uri type
       else
-        return Formatters::Default.format_info stdout, type, true
+        return Formatters::Default.info stdout, type
       end
 
       uri = uri.to_s

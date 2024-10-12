@@ -76,10 +76,11 @@ module Docr::Commands
       stdout << " found:\n\n"
 
       types.each do |type|
-        Formatters::Default.format_signature stdout, type, false
+        Formatters::Default.signature stdout, type, true, false
       end
     end
 
+    # TODO: sort by score
     private def recurse(query : String, results : Array(Redoc::Type), namespace : Redoc::Namespace) : Nil
       {% for type in %w[modules classes structs enums aliases annotations] %}
         Fzy.search(query, namespace.{{type.id}}.map &.full_name).each do |match|

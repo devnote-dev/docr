@@ -28,18 +28,18 @@ module Docr::Commands
       library = Library.get name, version
 
       unless arguments.has? "symbol"
-        return Formatters::Default.format_all stdout, library
+        return Formatters::Default.tree(stdout, library, options)
       end
 
       query = Redoc.parse_query arguments.get("symbol").as_s
       if type = library.resolve? *query
-        return Formatters::Default.format_tree stdout, type, 0
+        return Formatters::Default.tree(stdout, type)
       end
 
       if query[0].empty? && name == "crystal"
         query[0] << "Object"
         if type = library.resolve? *query
-          return Formatters::Default.format_tree stdout, type, 0
+          return Formatters::Default.tree(stdout, type)
         end
       end
 
