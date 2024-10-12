@@ -21,7 +21,7 @@ module Docr::Formatters
       newline = false
 
       {% for type in %w[constants modules classes structs enums aliases annotations] %}
-        unless type.{{type.id}}.empty?
+        if {{type.id}}? && !type.{{type.id}}.empty?
           newline = true
           io << (" " * indent)
           format type.{{type.id}}[0]
@@ -42,14 +42,14 @@ module Docr::Formatters
     def format(type : Redoc::Library) : Nil
       io << "# Top Level Namespace\n\n".colorize.dark_gray
 
-      unless type.methods.empty?
+      if defs? && !type.methods.empty?
         type.methods.each do |method|
           format method
         end
         io << '\n'
       end
 
-      unless type.macros.empty?
+      if macros? && !type.macros.empty?
         type.macros.each do |method|
           format method
         end
@@ -59,8 +59,14 @@ module Docr::Formatters
       format_namespace type
     end
 
-    {% for type in %w[Module Class Struct] %}
+    def format(type : Redoc::Const) : Nil
+      return unless constants?
+      Default.signature io, type, true, false
+    end
+
+    {% for type, guard in {Module: :modules?, Class: :classes?, Struct: :structs?} %}
       def format(type : Redoc::{{type.id}}) : Nil
+        return unless {{guard.id}}
         Default.signature io, type, false, true
         indent 2
 
@@ -144,12 +150,13 @@ module Docr::Formatters
     {% end %}
 
     def format(type : Redoc::Enum) : Nil
+      return unless enums?
       Default.signature io, type, false, true
       indent 2
 
       type.constants.each do |const|
         io << (" " * indent)
-        Default.signature io, const, true
+        Default.signature io, const, true, false
       end
 
       indent -2
@@ -157,18 +164,22 @@ module Docr::Formatters
     end
 
     def format(type : Redoc::Alias) : Nil
+      return unless aliases?
       Default.signature io, type, true
     end
 
     def format(type : Redoc::Annotation) : Nil
-      Default.signature io, type
+      return unless annotations?
+      Default.signature io, type, false, nil
     end
 
     def format(type : Redoc::Def) : Nil
+      return unless defs?
       Default.signature io, type, false
     end
 
     def format(type : Redoc::Macro) : Nil
+      return unless macros?
       Default.signature io, type, false
     end
 
