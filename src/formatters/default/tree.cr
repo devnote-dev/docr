@@ -4,12 +4,14 @@ module Docr::Formatters
 
     private getter io : IO
     private getter indent : Int32 = 0
+    private getter? locations : Bool
 
-    def self.tree(io : IO, type : Redoc::Library | Redoc::Type, includes : Array(String)) : Nil
-      new(io, includes).format(type)
+    def self.tree(io : IO, type : Redoc::Library | Redoc::Type, includes : Array(String),
+                  locations : Bool) : Nil
+      new(io, includes, locations).format(type)
     end
 
-    private def initialize(@io : IO, includes : Array(String))
+    private def initialize(@io : IO, includes : Array(String), @locations : Bool)
       apply includes
     end
 
@@ -62,12 +64,34 @@ module Docr::Formatters
 
     def format(type : Redoc::Const) : Nil
       return unless constants?
+
+      if locations?
+        if type.top_level?
+          io << "# top level namespace\n".colorize.dark_gray
+        else
+          io << "(cannot resolve location)\n".colorize.dark_gray
+        end
+        io << (" " * indent)
+      end
+
       Default.signature io, type, true, false
     end
 
     {% for type, guard in {Module: :modules?, Class: :classes?, Struct: :structs?} %}
       def format(type : Redoc::{{type.id}}) : Nil
         return unless {{guard.id}}
+
+        if locations?
+          if url = type.locations[0]?.try(&.url)
+            Colorize.with.dark_gray.surround(io) do
+              io << "# " << url << '\n'
+            end
+          else
+            io << "(cannot resolve location)\n".colorize.dark_gray
+          end
+          io << (" " * indent)
+        end
+
         Default.signature io, type, false, true
         indent 2
 
@@ -109,6 +133,7 @@ module Docr::Formatters
           has_defs = true
 
           type.class_methods.each do |method|
+            io << '\n' if locations?
             io << (" " * indent)
             format method
           end
@@ -120,7 +145,8 @@ module Docr::Formatters
             has_defs = true
 
             type.constructors.each do |method|
-              io << (" " * indent)
+            io << '\n' if locations?
+            io << (" " * indent)
               format method
             end
           end
@@ -131,6 +157,7 @@ module Docr::Formatters
           has_defs = true
 
           type.instance_methods.each do |method|
+            io << '\n' if locations?
             io << (" " * indent)
             format method
           end
@@ -140,6 +167,7 @@ module Docr::Formatters
           io << '\n' if has_defs
 
           type.macros.each do |method|
+            io << '\n' if locations?
             io << (" " * indent)
             format method
           end
@@ -152,6 +180,18 @@ module Docr::Formatters
 
     def format(type : Redoc::Enum) : Nil
       return unless enums?
+
+      if locations?
+        if url = type.locations[0]?.try(&.url)
+          Colorize.with.dark_gray.surround(io) do
+            io << "# " << url << '\n'
+          end
+        else
+          io << "(cannot resolve location)\n".colorize.dark_gray
+        end
+        io << (" " * indent)
+      end
+
       Default.signature io, type, false, true
       indent 2
 
@@ -166,21 +206,69 @@ module Docr::Formatters
 
     def format(type : Redoc::Alias) : Nil
       return unless aliases?
+
+      if locations?
+        if url = type.locations[0]?.try(&.url)
+          Colorize.with.dark_gray.surround(io) do
+            io << "# " << url << '\n'
+          end
+        else
+          io << "(cannot resolve location)\n".colorize.dark_gray
+        end
+        io << (" " * indent)
+      end
+
       Default.signature io, type, true, false
     end
 
     def format(type : Redoc::Annotation) : Nil
       return unless annotations?
+
+      if locations?
+        if url = type.locations[0]?.try(&.url)
+          Colorize.with.dark_gray.surround(io) do
+            io << "# " << url << '\n'
+          end
+        else
+          io << "(cannot resolve location)\n".colorize.dark_gray
+        end
+        io << (" " * indent)
+      end
+
       Default.signature io, type, false, nil
     end
 
     def format(type : Redoc::Def) : Nil
       return unless defs?
+
+      if locations?
+        if url = type.location.try(&.url)
+          Colorize.with.dark_gray.surround(io) do
+            io << "# " << url << '\n'
+          end
+        else
+          io << "(cannot resolve location)\n".colorize.dark_gray
+        end
+        io << (" " * indent)
+      end
+
       Default.signature io, type, false, nil
     end
 
     def format(type : Redoc::Macro) : Nil
       return unless macros?
+
+      if locations?
+        if url = type.location.try(&.url)
+          Colorize.with.dark_gray.surround(io) do
+            io << "# " << url << '\n'
+          end
+        else
+          io << "(cannot resolve location)\n".colorize.dark_gray
+        end
+        io << (" " * indent)
+      end
+
       Default.signature io, type, false, nil
     end
 

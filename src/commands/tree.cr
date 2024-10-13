@@ -84,18 +84,18 @@ module Docr::Commands
       end
 
       unless arguments.has? "symbol"
-        return Formatters::Default.tree(stdout, library, types)
+        return Formatters::Default.tree(stdout, library, types, options.has?("location"))
       end
 
       query = Redoc.parse_query arguments.get("symbol").as_s
       if type = library.resolve? *query
-        return Formatters::Default.tree(stdout, type, types)
+        return Formatters::Default.tree(stdout, type, types, options.has?("location"))
       end
 
       if query[0].empty? && name == "crystal"
         query[0] << "Object"
         if type = library.resolve? *query
-          return Formatters::Default.tree(stdout, type, types)
+          return Formatters::Default.tree(stdout, type, types, options.has?("location"))
         end
       end
 
