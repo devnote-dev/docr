@@ -30,12 +30,18 @@ module Docr
     def code_block(node : Markd::Node, __) : Nil
       literal(String.build do |io|
         io << '\n'
-        Colorize.with.fore(244).surround(io) do
-          node.text.each_line do |line|
+        {% if flag?(:tzcolors) %}
+          Tartrazine.to_ansi(node.text, "crystal", "github-dark").each_line do |line|
             io << "  " << line << '\n'
           end
-        end
-        io << '\n'
+        {% else %}
+          Colorize.with.fore(244).surround(io) do
+            node.text.each_line do |line|
+              io << "  " << line << '\n'
+            end
+          end
+          io << '\n'
+        {% end %}
       end)
     end
 

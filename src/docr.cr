@@ -6,6 +6,9 @@ require "fzy"
 require "json"
 require "markd"
 require "redoc"
+{% if flag?(:tzcolors) %}
+  require "tartrazine"
+{% end %}
 require "yaml"
 
 require "./commands/base"
