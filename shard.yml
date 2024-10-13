@@ -26,7 +26,20 @@ dependencies:
     github: devnote-dev/redoc
     branch: main
 
+  tartrazine:
+    github: ralsina/tartrazine
+
+scripts:
+  build@windows: |
+    :: set TT_LEXERS=crystal
+    :: crystal build src\main.cr -Dtzcolors -Dnothemes -o bin\docr
+    crystal build src\main.cr -Dtzcolors -o bin\docr
+
+  build@linux: |
+    TT_LEXERS=crystal
+    crystal build src/main.cr -Dtzcolors -Dnothemes -o bin/docr
+
 targets:
   docr:
     main: src/main.cr
-    flags: --progress
+    flags: --stats
