@@ -13,7 +13,7 @@ module Docr::Commands
       @name = "tree"
 
       add_argument "library", required: true
-      add_argument "symbol"
+      add_argument "query"
       add_option 'i', "include", type: :multiple
       add_option 'x', "exclude", type: :multiple
       add_option 'f', "format", type: :single
@@ -25,8 +25,8 @@ module Docr::Commands
       super
 
       if format = options.get?("format").try(&.as_s)
-        unless format.in?("default", "json") # TODO: impl json, csv, signature
-          error "Invalid format (valid: default, json)"
+        unless format.in?("default", "signature") # TODO: impl json, csv
+          error "Invalid format (valid: default, signature)"
           exit_program
         end
       end
@@ -83,23 +83,30 @@ module Docr::Commands
         end
       end
 
-      unless arguments.has? "symbol"
-        return Formatters::Default.tree(stdout, library, types, options.has?("location"))
-      end
+      if arguments.has? "query"
+        query = Redoc.parse_query arguments.get("query").as_s
 
-      query = Redoc.parse_query arguments.get("symbol").as_s
-      if type = library.resolve? *query
-        return Formatters::Default.tree(stdout, type, types, options.has?("location"))
-      end
-
-      if query[0].empty? && name == "crystal"
-        query[0] << "Object"
-        if type = library.resolve? *query
-          return Formatters::Default.tree(stdout, type, types, options.has?("location"))
+        unless type = library.resolve? *query
+          if query[0].empty? && name == "crystal"
+            query[0] << "Object"
+            type = library.resolve? *query
+          end
         end
+
+        unless type
+          error "Could not resolve types or symbols for input"
+          exit_program
+        end
+      else
+        type = library
       end
 
-      error "Could not resolve types or symbols for input"
+      case options.get?("format").try(&.as_s)
+      when Nil, "default"
+        Formatters::Default.tree(stdout, type, types, options.has?("location"))
+      when "signature"
+        Formatters::Signature.format(stdout, type, types, options.has?("location"))
+      end
     end
   end
 end
