@@ -7,6 +7,11 @@ module Docr::Formatters
     end
 
     def self.signature(io : IO, type : Redoc::Const, full : Bool, with_value : Bool) : Nil
+      if full && (parent = type.parent)
+        io << format_path parent.full_name, :blue
+        io << "::"
+      end
+
       io << format_path type.name, :blue
       if with_value
         io << " = " << type.value
