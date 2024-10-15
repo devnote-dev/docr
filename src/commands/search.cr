@@ -4,25 +4,13 @@ module Docr::Commands
       @name = "search"
       @summary = "search for a symbol or type"
 
-      add_argument "library"
-      add_argument "symbol"
+      add_argument "query", required: true
+      add_option 'l', "library", type: :single, default: "crystal"
       add_option 'v', "version", type: :single
     end
 
-    def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Nil
-      super
-
-      unless arguments.has? "input"
-        arg = Cling::Argument.new "input"
-        arg.value = arguments.get "library"
-
-        arguments.hash["input"] = arg
-        arguments.hash["library"].value = Cling::Value.new "crystal"
-      end
-    end
-
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
-      name = arguments.get("library").as_s
+      name = options.get("library").as_s
       version = options.get?("version").try &.as_s
 
       unless Library.exists?(name, version)
@@ -39,7 +27,7 @@ module Docr::Commands
 
       version ||= Library.get_versions_for(name).sort.last
       project = Library.get name, version
-      input = arguments.get("input").as_s
+      input = arguments.get("query").as_s
       query = Redoc.parse_query input
       namespace, symbol, kind = query
 
