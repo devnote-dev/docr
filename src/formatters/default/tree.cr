@@ -30,7 +30,7 @@ module Docr::Formatters
 
           if type.{{type.id}}.size > 1
             type.{{type.id}}.skip(1).each do |%type|
-              io << '\n'
+              {% unless type == "constants" %}io << '\n'{% end %}
               io << (" " * indent)
               format %type
             end
@@ -74,7 +74,7 @@ module Docr::Formatters
         io << (" " * indent)
       end
 
-      Default.signature io, type, true, false
+      Default.signature io, type, false, false
     end
 
     {% for type, guard in {Module: :modules?, Class: :classes?, Struct: :structs?} %}
