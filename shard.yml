@@ -31,13 +31,12 @@ dependencies:
 
 scripts:
   build@windows: |
-    :: set TT_LEXERS=crystal
-    :: crystal build src\main.cr -Dtzcolors -Dnothemes -o bin\docr
-    crystal build src\main.cr -Dtzcolors -o bin\docr
+    set TT_THEMES=github-dark
+    crystal build src\main.cr -Dtzcolors -Dnolexers -Dnothemes -o bin\docr
 
   build@linux: |
-    TT_LEXERS=crystal
-    crystal build src/main.cr -Dtzcolors -Dnothemes -o bin/docr
+    TT_THEMES=github-dark
+    crystal build src/main.cr -Dtzcolors -Dnolexers -Dnothemes -o bin/docr
 
 targets:
   docr:
