@@ -135,7 +135,7 @@ module Docr::Formatters
           type.class_methods.each do |method|
             io << '\n' if locations?
             io << (" " * indent)
-            format method
+            format method, true
           end
         end
 
@@ -147,7 +147,7 @@ module Docr::Formatters
             type.constructors.each do |method|
             io << '\n' if locations?
             io << (" " * indent)
-              format method
+              format method, true
             end
           end
         {% end %}
@@ -238,7 +238,7 @@ module Docr::Formatters
       Default.signature io, type, false, nil
     end
 
-    def format(type : Redoc::Def) : Nil
+    def format(type : Redoc::Def, with_self : Bool = false) : Nil
       return unless defs?
 
       if locations?
@@ -252,7 +252,7 @@ module Docr::Formatters
         io << (" " * indent)
       end
 
-      Default.signature io, type, false, nil
+      Default.signature io, type, false, with_self
     end
 
     def format(type : Redoc::Macro) : Nil
@@ -270,9 +270,6 @@ module Docr::Formatters
       end
 
       Default.signature io, type, false, nil
-    end
-
-    def format(type : Redoc::Type) : Nil
     end
   end
 end

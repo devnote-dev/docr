@@ -55,13 +55,15 @@ module Docr::Formatters
       io << '\n'
     end
 
-    def self.signature(io : IO, type : Redoc::Def, with_parent : Bool, __) : Nil
+    def self.signature(io : IO, type : Redoc::Def, with_parent : Bool, with_self : Bool) : Nil
       io << "abstract ".colorize.red if type.abstract?
       io << "def ".colorize.red
 
       if with_parent && (parent = type.parent)
         io << format_path parent.full_name, :blue
         io << '.'
+      elsif with_self
+        io << "self.".colorize.magenta
       end
       io << type.name.colorize.magenta
 

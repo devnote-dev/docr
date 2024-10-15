@@ -45,7 +45,7 @@ module Docr::Formatters
 
     {% for type in %w[Def Macro] %}
       def self.info(io : IO, type : Redoc::{{type.id}}) : Nil
-        signature io, type, true, nil
+        signature io, type, true, false
 
         if summary = type.summary
           io << "\n  " << parse_markdown summary
