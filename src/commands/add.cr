@@ -14,9 +14,9 @@ module Docr::Commands
       @summary = "imports documentation for a library"
       @description = <<-DESC
         Imports a version of a specified library (or shard). By default the latest
-        version is installed, this can be changed by specifying the '--version' flag.
-        To import Crystal's standard library, specify 'crystal'. For all other libraries,
-        the following formats are supported for the source:
+        version is installed, this can be changed by specifying the version as the
+        second argument. To import Crystal's standard library, specify 'crystal'. For
+        all other libraries, the following formats are supported for the source:
 
           - docr add https://github.com/user/repo
           - docr add github.com/user/repo
@@ -34,23 +34,23 @@ module Docr::Commands
         Source Hut are not yet supported.
         DESC
 
-      add_usage "docr add <source> [options]"
-      add_usage "docr add crystal [options]"
+      add_usage "docr add <source> [version] [-a|--alias <name>]"
+      add_usage "docr add crystal [version]"
 
       add_argument "source", description: "the source of the library (or 'crystal')", required: true
+      add_argument "version", description: "the version to install (defaults to latest)"
       add_option 'a', "alias", type: :single
-      add_option 'v', "version", type: :single, default: "latest"
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
       source = arguments.get("source").as_s
 
       if source == "crystal"
-        add_crystal_library options.get("version").as_s
+        add_crystal_library arguments.get("version").as_s
       else
         add_external_library(
           source,
-          options.get("version").as_s,
+          arguments.get?("version").try(&.as_s),
           options.get?("alias").try(&.as_s)
         )
       end
@@ -88,7 +88,7 @@ module Docr::Commands
       info "Imported crystal #{term}"
     end
 
-    private def add_external_library(source : String, version : String, alias_name : String?) : Nil
+    private def add_external_library(source : String, version : String?, alias_name : String?) : Nil
       info "Resolving source..."
 
       case source
@@ -130,7 +130,8 @@ module Docr::Commands
 
       path = path.chomp ".git"
       info "Fetching available versions..."
-      debug url = "https://crystaldoc.info/#{host}/#{path}/versions.json"
+      base_url = "https://crystaldoc.info/#{host}/#{path}"
+      debug url = "#{base_url}/versions.json"
 
       begin
         Crest.head url
@@ -142,7 +143,7 @@ module Docr::Commands
       name = alias_name || path.split('/')[1]
       versions = Resolver.fetch_versions_for(name, url, version)
 
-      if version == "latest"
+      if version.nil?
         version = versions[1]
       elsif !versions.includes?(version)
         error "Version #{version} not found for #{name}"
@@ -151,7 +152,7 @@ module Docr::Commands
       end
 
       if Library.exists?(name)
-        unless Library.get_source(name) == url
+        unless Library.get_source(name) == base_url
           error "Library #{name} has separate sources with the same name"
           error "Install this library using an '#{"--alias".colorize.blue}' or remove the existing library"
           exit_program
@@ -165,7 +166,7 @@ module Docr::Commands
 
       info "Importing library..."
       debug lib_dir = LIBRARY_DIR / name
-      debug url = "https://crystaldoc.info/#{host}/#{path}/#{version}/index.json"
+      debug url = "#{base_url}/#{version}/index.json"
 
       begin
         Crest.get url do |res|

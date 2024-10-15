@@ -1,8 +1,8 @@
 module Docr::Resolver
-  def self.fetch_versions_for(name : String, url : String, req : String) : Array(String)
+  def self.fetch_versions_for(name : String, url : String, req : String?) : Array(String)
     path = LIBRARY_DIR / name / "VERSIONS"
 
-    if File.exists? path
+    if req && File.exists? path
       versions = File.read_lines path
       return versions if versions.includes? req
     else
