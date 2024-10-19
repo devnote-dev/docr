@@ -46,7 +46,7 @@ module Docr::Commands
       source = arguments.get("source").as_s
 
       if source == "crystal"
-        add_crystal_library arguments.get("version").as_s
+        add_crystal_library arguments.get?("version").try(&.as_s)
       else
         add_external_library(
           source,
@@ -56,7 +56,7 @@ module Docr::Commands
       end
     end
 
-    private def add_crystal_library(version : String) : Nil
+    private def add_crystal_library(version : String?) : Nil
       info "Fetching available versions..."
 
       versions = Resolver.fetch_versions_for(
@@ -64,7 +64,7 @@ module Docr::Commands
         "https://crystal-lang.org/api/versions.json",
         version
       )
-      version = versions[1] if version == "latest"
+      version = versions[1] if version.nil?
       term = version == "nightly" ? "nightly build" : "version #{version}"
       set = Library.get_versions_for "crystal"
 
