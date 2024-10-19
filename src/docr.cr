@@ -16,7 +16,6 @@ require "./commands/*"
 require "./formatters/**"
 require "./library"
 require "./renderer"
-require "./resolver"
 
 Colorize.on_tty_only!
 

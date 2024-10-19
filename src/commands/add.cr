@@ -59,7 +59,7 @@ module Docr::Commands
     private def add_crystal_library(version : String?) : Nil
       info "Fetching available versions..."
 
-      versions = Resolver.fetch_versions_for(
+      versions = fetch_versions_for(
         "crystal",
         "https://crystal-lang.org/api/versions.json",
         version
@@ -80,7 +80,15 @@ module Docr::Commands
       end
 
       info "Importing library..."
-      Resolver.import_crystal_version version
+
+      File.open(LIBRARY_DIR / "crystal" / (version + ".json"), mode: "w") do |file|
+        version = "master" if version == "nightly"
+        Crest.get "https://crystal-lang.org/api/#{version}/index.json" do |res|
+          library = Redoc.load res.body_io
+          library.to_json file
+        end
+      end
+
       unless File.exists?(LIBRARY_DIR / "crystal" / "SOURCE")
         File.write(LIBRARY_DIR / "crystal" / "SOURCE", "https://crystal-lang.org/api")
       end
@@ -141,7 +149,7 @@ module Docr::Commands
       end
 
       name = alias_name || path.split('/')[1]
-      versions = Resolver.fetch_versions_for(name, url, version)
+      versions = fetch_versions_for(name, url, version)
 
       if version.nil?
         version = versions[1]
@@ -182,6 +190,26 @@ module Docr::Commands
         error "Failed to save library data:"
         error ex.to_s
       end
+    end
+
+    private def fetch_versions_for(name : String, url : String, req : String?) : Array(String)
+      path = LIBRARY_DIR / name / "VERSIONS"
+
+      if req && File.exists? path
+        versions = File.read_lines path
+        return versions if versions.includes? req
+      else
+        Dir.mkdir_p LIBRARY_DIR / name
+      end
+
+      res = Crest.get url
+      versions = Array({name: String})
+        .from_json(res.body, root: "versions")
+        .map(&.[:name])
+
+      File.write(path, versions.join('\n'))
+
+      versions
     end
   end
 end
