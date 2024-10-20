@@ -41,7 +41,7 @@ The following shorthands are supported for sources:
 - codeberg: / cb:
 - srht:
 
-> ![IMPORTANT]
+> [!IMPORTANT]
 > Only GitHub, GitLab, BitBucket, Codeberg and Source Hut are supported sources. Bare repositories are not supported.
 
 After importing the libraries you want, you can simply lookup or search whatever you want! Use the `docr search` command to search for all types and symbols matching the query, and the `docr info` command to get direct information about a specified type or symbol:
