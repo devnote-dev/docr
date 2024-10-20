@@ -26,31 +26,75 @@ module Docr::Commands
       end
 
       version ||= Library.get_versions_for(name).sort.last
-      project = Library.get name, version
+      library = Library.get name, version
       input = arguments.get("query").as_s
       query = Redoc.parse_query input
-      namespace, symbol, kind = query
+      namespace, symbol, scope = query
+      types = [] of Redoc::Type
 
-      if symbol.nil?
-        types = [] of Redoc::Type
+      unless namespace.empty?
+        full_name = namespace.join "::"
 
         {% for type in %w[modules classes structs enums aliases annotations] %}
-          Fzy.search(input, project.{{type.id}}.map &.full_name).each do |match|
-            next if match.score < 1.0
-            types << project.{{type.id}}[match.index]
+          Fzy.search(full_name, library.{{type.id}}.map &.full_name).each do |match|
+            # types << {match.score, library.{{type.id}}[match.index]}
+            types << library.{{type.id}}[match.index]
           end
         {% end %}
 
         {% for type in %w[modules classes structs] %}
-          project.{{type.id}}.each do |type|
-            recurse input, types, type
+          library.{{type.id}}.each do |type|
+            recurse full_name, types, type
           end
         {% end %}
-      else
-        types = project.resolve_all(namespace, symbol, kind)
-        if types.empty? && namespace.empty? && name == "crystal"
-          namespace << "Object"
-          types = project.resolve_all(namespace, symbol, kind)
+      end
+
+      if symbol
+        if namespace.empty?
+          {% for type in %w[methods macros] %}
+            Fzy.search(symbol, library.{{type.id}}.map &.name).each do |match|
+              # types << {match.score, library.{{type.id}}[match.index]}
+              types << library.{{type.id}}[match.index]
+            end
+          {% end %}
+
+          {% for type in %w[modules classes structs] %}
+            library.{{type.id}}.each do |type|
+              recurse symbol, types, type
+            end
+          {% end %}
+        else
+          types.each_with_index do |type, index|
+            methods = [] of Redoc::Type
+
+            if scope.class?
+              if type.responds_to?(:constructors)
+                Fzy.search(symbol, type.constructors.map &.name).each do |match|
+                  # methods << {match.score, type.constructors[match.index]}
+                  methods << type.constructors[match.index]
+                end
+              end
+
+              if type.responds_to?(:class_methods)
+                Fzy.search(symbol, type.class_methods.map &.name).each do |match|
+                  # methods << {match.score, type.class_methods[match.index]}
+                  methods << type.class_methods[match.index]
+                end
+              end
+            else
+              if type.responds_to?(:instance_methods)
+                Fzy.search(symbol, type.instance_methods.map &.name).each do |match|
+                  # methods << {match.score, type.instance_methods[match.index]}
+                  methods << type.instance_methods[match.index]
+                end
+              end
+            end
+
+            unless methods.empty?
+              types.insert_all index + 1, methods
+            end
+            types.delete_at index
+          end
         end
       end
 
@@ -73,6 +117,7 @@ module Docr::Commands
       {% for type in %w[modules classes structs enums aliases annotations] %}
         Fzy.search(query, namespace.{{type.id}}.map &.full_name).each do |match|
           next if match.score < 1.0
+          # results << {match.score, namespace.{{type.id}}[match.index]}
           results << namespace.{{type.id}}[match.index]
         end
       {% end %}
