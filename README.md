@@ -1,16 +1,22 @@
-# Docr
-
-`docr` is a tool for searching Crystal API and shards documentation from the command line.
-
-![demo_1](/assets/demo_1.png)
+<p>
+  <h3 align="center">docr | doc-cr | /ˈdɒ·kur/</h3>
+  <p align="center">A CLI tool for searching Crystal documentation</p>
+</p>
 
 ## Installation
 
 See the [releases page](https://github.com/devnote-dev/docr/releases/latest) for available binaries.
 
+### Windows
+
+```
+scoop bucket add docr https://github.com/devnote-dev/docr
+scoop install docr
+```
+
 ### From Source
 
-Crystal v1.8.0 or above is required to build Docr.
+Crystal v1.10.0 or above is required to build Docr.
 
 ```sh
 git clone https://github.com/devnote-dev/docr
@@ -20,13 +26,23 @@ shards build
 
 ## Usage
 
-By default, Docr comes with no libraries, but you can easily import the standard library documentation using `docr update`. This command will search for the `crystal` executable on your system and import that version of the API documentation. If the executable isn't found, it defaults to the latest available Crystal release. If you want to import the standard library directly or a specific version, you can do so with the `docr add crystal <version>` command (also accepts "latest" as a version).
+By default Docr comes with no libraries, but you can easily import the standard library documentation using `docr add crystal`. Docr will default to the latest available version, but you can specify the version as a second argument. You can also import shard documentation by specifying the source URL in one of the following formats:
 
-![demo_2](/assets/demo_2.png)
+- docr add https://github.com/user/repo
+- docr add github.com/user/repo
+- docr add github:user/repo
+- docr add gh:user/repo
 
-You can also import third-party libraries (or shards) using the `docr add` command:
+The following shorthands are supported for sources:
 
-![demo_3](/assets/demo_3.png)
+- github: / gh:
+- gitlab: / gl:
+- bitbucket: / bb:
+- codeberg: / cb:
+- srht:
+
+> ![IMPORTANT]
+> Only GitHub, GitLab, BitBucket, Codeberg and Source Hut are supported sources. Bare repositories are not supported.
 
 After importing the libraries you want, you can simply lookup or search whatever you want! Use the `docr search` command to search for all types and symbols matching the query, and the `docr info` command to get direct information about a specified type or symbol:
 
@@ -34,19 +50,19 @@ After importing the libraries you want, you can simply lookup or search whatever
 
 Both the `info` and `search` commands support Crystal path syntax for queries, meaning the following commands are valid:
 
-* `docr info JSON::Any.as_s`
-* `docr info JSON::Any#as_s`
-* `docr info JSON::Any as_s`
+- `docr info raise`
+- `docr info ::puts`
+- `docr info JSON.parse`
+- `docr info ::JSON::Any#as_s`
 
 However, the following commands _are not_ valid:
 
-* `docr info JSON Any as_s`
-* `docr info JSON Any.as_s`
-* `docr info JSON Any#as_s`
+- `docr info to_s.nil?`
+- `docr info IO.Memory`
+- `docr info JSON::parse`
+- `docr info JSON#Any.as_s`
 
-This is because the first argument is parsed as the base type or namespace to look in, and the second argument is parsed as the symbol to look for. In the first example, `JSON::Any` is the namespace and `as_s` the symbol, whereas in the second example, `JSON` is the namespace and `Any as_s` is the symbol, which is invalid. This doesn't mean you have to specify the namespace of a symbol, Docr can determine whether an argument is a type/namespace or symbol and handle it accordingly.
-
-<!-- TODO: add "Updating" section with update command -->
+TODO: complete 'info' & 'search' headers
 
 ## Contributing
 
@@ -58,8 +74,8 @@ This is because the first argument is parsed as the base type or namespace to lo
 
 ## Contributors
 
-* [Devonte W](https://github.com/devnote-dev) - creator and maintainer
+- [Devonte](https://github.com/devnote-dev) - creator and maintainer
 
 This repository is managed under the Mozilla Public License v2.
 
-© 2023 devnote-dev
+© 2023-present devnote-dev
