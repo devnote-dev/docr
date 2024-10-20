@@ -85,22 +85,28 @@ module Docr::Commands
     end
 
     def on_error(ex : Exception)
-      if ex.is_a? Cling::CommandError
-        error ex.to_s
+      case ex
+      when Cling::CommandError
+        error ex
         error "See '#{"docr --help".colorize.blue}' for more information"
-        return
+      when Redoc::Error
+        error ex
+        # TODO: "See 'docr help query' for more information"
+      else
+        error "Unexpected exception:"
+        error ex
+        error "Please report this on the Docr GitHub issues:"
+        error "https://github.com/devnote-dev/docr/issues"
       end
 
-      error "Unexpected exception:"
-      error ex
-      error "Please report this on the Docr GitHub issues:"
-      error "https://github.com/devnote-dev/docr/issues"
+      if @debug
+        debug "loading stack trace..."
 
-      return unless @debug
-      debug "loading stack trace..."
+        stack = ex.backtrace || %w[???]
+        stack.each { |line| debug " " + line }
+      end
 
-      stack = ex.backtrace || %w[???]
-      stack.each { |line| debug " " + line }
+      exit_program
     end
 
     def on_missing_arguments(args : Array(String))
