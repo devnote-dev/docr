@@ -30,15 +30,14 @@ module Docr::Commands
       input = arguments.get("query").as_s
       query = Redoc.parse_query input
       namespace, symbol, scope = query
-      types = [] of Redoc::Type
+      types = [] of {Float32, Redoc::Type}
 
       unless namespace.empty?
         full_name = namespace.join "::"
 
         {% for type in %w[modules classes structs enums aliases annotations] %}
           Fzy.search(full_name, library.{{type.id}}.map &.full_name).each do |match|
-            # types << {match.score, library.{{type.id}}[match.index]}
-            types << library.{{type.id}}[match.index]
+            types << {match.score, library.{{type.id}}[match.index]}
           end
         {% end %}
 
@@ -51,8 +50,6 @@ module Docr::Commands
 
       if symbol
         if namespace.empty?
-          types = [] of {Float32, Redoc::Type}
-
           {% for type in %w[methods macros] %}
             Fzy.search(symbol, library.{{type.id}}.map &.name).each do |match|
               types << {match.score, library.{{type.id}}[match.index]}
@@ -64,31 +61,26 @@ module Docr::Commands
               recurse_methods symbol, types, type, :all
             end
           {% end %}
-
-          types = types.sort_by!(&.[0]).reverse!.map(&.[1])
         else
           types.each_with_index do |type, index|
-            methods = [] of Redoc::Type
+            methods = [] of {Float32, Redoc::Type}
 
             if scope.class?
               if type.responds_to?(:constructors)
                 Fzy.search(symbol, type.constructors.map &.name).each do |match|
-                  # methods << {match.score, type.constructors[match.index]}
-                  methods << type.constructors[match.index]
+                  methods << {match.score, type.constructors[match.index]}
                 end
               end
 
               if type.responds_to?(:class_methods)
                 Fzy.search(symbol, type.class_methods.map &.name).each do |match|
-                  # methods << {match.score, type.class_methods[match.index]}
-                  methods << type.class_methods[match.index]
+                  methods << {match.score, type.class_methods[match.index]}
                 end
               end
             else
               if type.responds_to?(:instance_methods)
                 Fzy.search(symbol, type.instance_methods.map &.name).each do |match|
-                  # methods << {match.score, type.instance_methods[match.index]}
-                  methods << type.instance_methods[match.index]
+                  methods << {match.score, type.instance_methods[match.index]}
                 end
               end
             end
@@ -106,22 +98,38 @@ module Docr::Commands
         exit_program
       end
 
+      types.sort_by!(&.[0]).reverse!.sort_by! do |(score, type)|
+        if type.responds_to?(:full_name)
+          type.full_name
+        else
+          type.name
+        end
+      end.reverse!
+
       stdout << types.size << " result"
       stdout << "s" if types.size > 1
       stdout << " found:\n\n"
 
-      types.each do |type|
-        Formatters::Default.signature stdout, type, true, false
+      if options.has? "debug"
+        types.each do |score, type|
+          Colorize.with.dark_gray.surround(stdout) do
+            stdout << '[' << score << "] "
+          end
+          Formatters::Default.signature stdout, type, true, false
+        end
+      else
+        types.each do |_, type|
+          Formatters::Default.signature stdout, type, true, false
+        end
       end
     end
 
-    # TODO: sort by score
-    private def recurse_types(query : String, results : Array(Redoc::Type), namespace : Redoc::Namespace) : Nil
+    private def recurse_types(query : String, results : Array({Float32, Redoc::Type}),
+                              namespace : Redoc::Namespace) : Nil
       {% for type in %w[modules classes structs enums aliases annotations] %}
         Fzy.search(query, namespace.{{type.id}}.map &.full_name).each do |match|
           next if match.score < 1.0
-          # results << {match.score, namespace.{{type.id}}[match.index]}
-          results << namespace.{{type.id}}[match.index]
+          results << {match.score, namespace.{{type.id}}[match.index]}
         end
       {% end %}
 
