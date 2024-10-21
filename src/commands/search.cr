@@ -44,25 +44,28 @@ module Docr::Commands
 
         {% for type in %w[modules classes structs] %}
           library.{{type.id}}.each do |type|
-            recurse full_name, types, type
+            recurse_types full_name, types, type
           end
         {% end %}
       end
 
       if symbol
         if namespace.empty?
+          types = [] of {Float32, Redoc::Type}
+
           {% for type in %w[methods macros] %}
             Fzy.search(symbol, library.{{type.id}}.map &.name).each do |match|
-              # types << {match.score, library.{{type.id}}[match.index]}
-              types << library.{{type.id}}[match.index]
+              types << {match.score, library.{{type.id}}[match.index]}
             end
           {% end %}
 
           {% for type in %w[modules classes structs] %}
             library.{{type.id}}.each do |type|
-              recurse symbol, types, type
+              recurse_methods symbol, types, type, :all
             end
           {% end %}
+
+          types = types.sort_by!(&.[0]).reverse!.map(&.[1])
         else
           types.each_with_index do |type, index|
             methods = [] of Redoc::Type
@@ -113,7 +116,7 @@ module Docr::Commands
     end
 
     # TODO: sort by score
-    private def recurse(query : String, results : Array(Redoc::Type), namespace : Redoc::Namespace) : Nil
+    private def recurse_types(query : String, results : Array(Redoc::Type), namespace : Redoc::Namespace) : Nil
       {% for type in %w[modules classes structs enums aliases annotations] %}
         Fzy.search(query, namespace.{{type.id}}.map &.full_name).each do |match|
           next if match.score < 1.0
@@ -124,7 +127,39 @@ module Docr::Commands
 
       {% for type in %w[modules classes structs] %}
         namespace.{{type.id}}.each do |type|
-          recurse query, results, type
+          recurse_types query, results, type
+        end
+      {% end %}
+    end
+
+    private def recurse_methods(query : String, results : Array({Float32, Redoc::Type}),
+                                namespace : Redoc::Namespace, scope : Redoc::QueryScope) : Nil
+      if scope.all? || scope.class?
+        if namespace.responds_to?(:constructors)
+          Fzy.search(query, namespace.constructors.map &.name).each do |match|
+            next if match.score < 2.0
+            results << {match.score, namespace.constructors[match.index]}
+          end
+        end
+
+        if namespace.responds_to?(:class_methods)
+          Fzy.search(query, namespace.class_methods.map &.name).each do |match|
+            next if match.score < 2.0
+            results << {match.score, namespace.class_methods[match.index]}
+          end
+        end
+      end
+
+      if (scope.all? || scope.instance?) && namespace.responds_to?(:instance_methods)
+        Fzy.search(query, namespace.instance_methods.map &.name).each do |match|
+          next if match.score < 2.0
+          results << {match.score, namespace.instance_methods[match.index]}
+        end
+      end
+
+      {% for type in %w[modules classes structs] %}
+        namespace.{{type.id}}.each do |type|
+          recurse_methods query, results, type, scope
         end
       {% end %}
     end
