@@ -47,7 +47,7 @@ module Docr::Commands
         exit_program
       end
 
-      version ||= Library.get_versions_for(name).sort.last
+      version ||= Library.get_versions_for(name).last
       project = Library.get name, version
       query = Redoc.parse_query arguments.get("query").as_s
 

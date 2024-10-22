@@ -29,11 +29,13 @@ module Docr::Library
     versions = [] of String
 
     Dir.each_child(LIBRARY_DIR / name) do |child|
-      next if child == "VERSIONS" || child == "SOURCE"
+      next unless child.ends_with? ".json"
       versions << child.chomp ".json"
     end
 
-    versions
+    zero = SemanticVersion.new(0, 0, 0)
+
+    versions.sort_by! { |v| SemanticVersion.parse(v) rescue zero }
   end
 
   def self.get(name : String, version : String) : Redoc::Library
