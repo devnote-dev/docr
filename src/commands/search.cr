@@ -98,27 +98,27 @@ module Docr::Commands
         exit_program
       end
 
-      types.sort_by!(&.[0]).reverse!.sort_by! do |(score, type)|
+      types.sort_by! do |(score, type)|
         if type.responds_to?(:full_name)
-          type.full_name
+          {score, type.full_name}
         else
-          type.name
+          {score, type.name}
         end
-      end.reverse!
+      end
 
       stdout << types.size << " result"
       stdout << "s" if types.size > 1
       stdout << " found:\n\n"
 
       if options.has? "debug"
-        types.each do |score, type|
+        types.reverse_each do |score, type|
           Colorize.with.dark_gray.surround(stdout) do
             stdout << '[' << score << "] "
           end
           Formatters::Default.signature stdout, type, true, false
         end
       else
-        types.each do |_, type|
+        types.reverse_each do |_, type|
           Formatters::Default.signature stdout, type, true, false
         end
       end
