@@ -16,7 +16,7 @@ module Docr::Commands
 
         libs.each do |name, versions|
           io << name << '\n'
-          versions.each do |version|
+          versions.reverse_each do |version|
             io << "• "
             io << 'v' if version[0].ascii_number?
             io << version << '\n'
