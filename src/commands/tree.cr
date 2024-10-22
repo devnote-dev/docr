@@ -12,12 +12,12 @@ module Docr::Commands
     def setup : Nil
       @name = "tree"
 
-      add_argument "library", required: true
       add_argument "query"
       add_option 'i', "include", type: :multiple
       add_option 'x', "exclude", type: :multiple
       add_option 'f', "format", type: :single
-      add_option 'l', "location"
+      add_option "location"
+      add_option 'l', "library", type: :single, default: "crystal"
       add_option 'v', "version", type: :single
     end
 
@@ -48,7 +48,7 @@ module Docr::Commands
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
-      name = arguments.get("library").as_s
+      name = options.get("library").as_s
       version = options.get?("version").try &.as_s
 
       unless Library.exists?(name, version)
