@@ -28,7 +28,20 @@ module Docr::Commands
       add_option 'l', "library", type: :single, default: "crystal"
       add_option 'p', "open-page"
       add_option 's', "open-source"
+      add_option 'r', "result", type: :single, default: 1
       add_option 'v', "version", type: :single
+    end
+
+    def pre_run(arguments : Cling::Arguments, options : Cling::Options) : Nil
+      if result = options.get("result").to_i32?
+        if result < 1
+          error "Result integer cannot be less than 1"
+          exit_program
+        end
+      else
+        error "Invalid integer for result option"
+        exit_program
+      end
     end
 
     def run(arguments : Cling::Arguments, options : Cling::Options) : Nil
@@ -48,19 +61,47 @@ module Docr::Commands
       end
 
       version ||= Library.get_versions_for(name).last
-      project = Library.get name, version
-      query = Redoc.parse_query arguments.get("query").as_s
+      library = Library.get name, version
+      namespace, symbol, scope = Redoc.parse_query arguments.get("query").as_s
 
-      unless type = project.resolve? *query
-        if query[0].empty? && name == "crystal"
-          query[0] << "Object"
-          type = project.resolve? *query
+      if symbol
+        types = library.resolve_all namespace, symbol, scope
+        if types.empty? && namespace.empty? && name == "crystal"
+          namespace << "Object"
+          types = library.resolve_all namespace, symbol, scope
         end
-      end
 
-      unless type
-        error "Could not resolve types or symbols for input"
-        exit_program
+        if types.empty?
+          error "Could not resolve types or symbols for input"
+          exit_program
+        end
+
+        result_index = options.get("result").to_i32
+        max_types = types.size
+
+        if result_index > max_types
+          error "Result index out of range (#{result_index}/#{max_types})"
+          exit_program
+        end
+
+        type = types[result_index - 1]
+
+        unless max_types == 1
+          stdout << max_types << " results found "
+          stdout << "(select using '--result')\n\n".colorize.dark_gray
+        end
+      else
+        unless type = library.resolve? namespace, symbol, scope
+          if namespace.empty? && name == "crystal"
+            namespace << "Object"
+            type = library.resolve? namespace, symbol, scope
+          end
+        end
+
+        unless type
+          error "Could not resolve types or symbols for input"
+          exit_program
+        end
       end
 
       if options.has? "open-page"
