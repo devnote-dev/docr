@@ -66,7 +66,7 @@ module Docr::Formatters
 
       if with_parent && (parent = type.parent)
         io << format_path parent.full_name, :blue
-        io << '.'
+        io << (type.html_id.ends_with?("-class-method") ? "." : "#")
       elsif with_self
         io << "self.".colorize.magenta
       end
